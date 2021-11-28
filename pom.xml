@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.amaxilatis.metis</groupId>
+    <artifactId>parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>parent</name>
+    <description>Metis satellite and aerial photography image validation</description>
+    <inceptionYear>2021</inceptionYear>
+
+    <properties>
+        <java.version>11</java.version>
+        <spring.boot.version>2.5.6</spring.boot.version>
+        <maven.failsafe.plugin.version>2.22.2</maven.failsafe.plugin.version>
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <git-commit-id-plugin.version>4.0.3</git-commit-id-plugin.version>
+    </properties>
+
+    <modules>
+        <module>util</module>
+        <module>server</module>
+    </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven.failsafe.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                        <showDeprecation>true</showDeprecation>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring.boot.version}</version>
+
+                </plugin>
+                <plugin>
+                    <groupId>pl.project13.maven</groupId>
+                    <artifactId>git-commit-id-plugin</artifactId>
+                    <version>${git-commit-id-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>get-the-git-infos</id>
+                            <goals>
+                                <goal>revision</goal>
+                            </goals>
+                            <phase>initialize</phase>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+                        <prefix>git</prefix>
+                        <dateFormat>yyyy-MM-dd'T'HH:mm:ssZ</dateFormat>
+                        <dateFormatTimeZone>${user.timezone}</dateFormatTimeZone>
+                        <verbose>false</verbose>
+                        <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                        <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties
+                        </generateGitPropertiesFilename>
+                        <format>properties</format>
+                        <skipPoms>true</skipPoms>
+                        <injectAllReactorProjects>false</injectAllReactorProjects>
+                        <failOnNoGitDirectory>true</failOnNoGitDirectory>
+                        <failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
+                        <skip>false</skip>
+                        <runOnlyOnce>false</runOnlyOnce>
+                        <excludeProperties>
+                            <!-- <excludeProperty>git.user.*</excludeProperty> -->
+                        </excludeProperties>
+                        <includeOnlyProperties>
+                            <!-- <includeOnlyProperty>^git.commit.id.full$</includeOnlyProperty> -->
+                        </includeOnlyProperties>
+                        <useNativeGit>false</useNativeGit>
+                        <abbrevLength>7</abbrevLength>
+                        <commitIdGenerationMode>flat</commitIdGenerationMode>
+                        <gitDescribe>
+                            <skip>false</skip>
+                            <always>false</always>
+                            <abbrev>7</abbrev>
+                            <dirty>-dirty</dirty>
+                            <match>*</match>
+                            <tags>false</tags>
+                            <forceLongFormat>false</forceLongFormat>
+                        </gitDescribe>
+                        <validationProperties>
+                            <validationProperty>
+                                <name>validating project version</name>
+                                <value>${project.version}</value>
+                                <shouldMatchTo><![CDATA[^.*(?<!-SNAPSHOT)$]]></shouldMatchTo>
+                            </validationProperty>
+                        </validationProperties>
+                        <validationShouldFailIfNoMatch>true</validationShouldFailIfNoMatch>
+                        <evaluateOnCommit>HEAD</evaluateOnCommit>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring.boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter</artifactId>
+                <version>${spring.boot.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.amaxilatis.metis</groupId>
+                <artifactId>parent</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amaxilatis.metis</groupId>
+                <artifactId>util</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amaxilatis.metis</groupId>
+                <artifactId>server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-test</artifactId>
+                <version>${spring.boot.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>
