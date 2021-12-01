@@ -3,7 +3,17 @@ spring.rabbitmq.port: 5672
 spring.rabbitmq.username: guest
 spring.rabbitmq.password: guest
 
+spring.application.name: Metis
+
+spring.thymeleaf:
+  cache: false
+  enabled: true
+  prefix: classpath:/templates/
+  suffix: .html
 
 logging:
   level:
     com.amaxilatis.metis: DEBUG
+
+app.reportLocation: reports
+app.filesLocation: "S:\\OPEKEPE\\"
