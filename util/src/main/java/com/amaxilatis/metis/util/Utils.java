@@ -1,6 +1,7 @@
 package com.amaxilatis.metis.util;
 
 import com.amaxilatis.metis.util.model.FileJobResult;
+import com.amaxilatis.metis.util.model.WorldFile;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -9,8 +10,10 @@ import org.apache.tika.parser.image.TiffParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.amaxilatis.metis.util.Conditions.N1_PIXEL_SIZE;
+import static com.amaxilatis.metis.util.Conditions.N2_BIT_SIZE;
+import static com.amaxilatis.metis.util.Conditions.N3_SAMPLES_PER_PIXEL;
 
 @Slf4j
 public class Utils {
@@ -99,22 +106,65 @@ public class Utils {
      */
     public static FileJobResult testN1(final File file, final BodyContentHandler handler, final Metadata metadata, final ParseContext pcontext) throws IOException, TikaException, SAXException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(1);
+        
+        boolean worldConditionRes = true;
+        boolean metadataRes = true;
+        
+        final File worldFileFile = getWorldFile(file);
+        final WorldFile worldFile = parseWorldFile(worldFileFile);
+        worldConditionRes &= worldFile.getXPixelSize() == 0.5;
+        worldConditionRes &= worldFile.getXRotation() == 0;
+        worldConditionRes &= worldFile.getYRotation() == 0;
+        worldConditionRes &= worldFile.getYPixelSize() == -0.5;
+        worldConditionRes &= ((int) (worldFile.getXCenter() * 100) % 100) == 25;
+        worldConditionRes &= ((int) (worldFile.getYCenter() * 100) % 100) == 75;
+        log.info("[N1] file:{}, n1:{} world", file.getName(), worldConditionRes);
+        
         for (final String metadataName : metadata.names()) {
+            log.info("metadataname: " + metadataName);
             if (metadataName.contains("0x830e")) {
                 final String metadataValue = metadata.get(metadataName);
                 log.debug("[N1] file:{}, {}:{} ", file.getName(), metadataName, metadataValue);
                 final String[] pixelSizes = metadataValue.replaceAll(",", "\\.").split(" ");
-                boolean metadataTest = true;
+                
                 for (final String pixelSize : pixelSizes) {
-                    if (Double.parseDouble(pixelSizes[0]) > 0.5 || Double.parseDouble(pixelSizes[2]) > 0.5) {
-                        metadataTest = false;
+                    if (Double.parseDouble(pixelSizes[0]) > N1_PIXEL_SIZE || Double.parseDouble(pixelSizes[2]) > N1_PIXEL_SIZE) {
+                        metadataRes = false;
                     }
                 }
-                log.info("[N1] file:{}, n1:{}", file.getName(), metadataTest);
-                return resultBuilder.result(metadataTest).note(metadataName + ": " + metadataValue).build();
+                log.info("[N1] file:{}, n1:{} exif", file.getName(), metadataRes);
+                resultBuilder.note(metadataName + ": " + metadataValue);
             }
         }
-        return resultBuilder.result(false).build();
+        return resultBuilder.result(worldConditionRes && metadataRes).build();
+    }
+    
+    public static File getWorldFile(final File file) {
+        final File parentFile = file.getParentFile();
+        if (file.getName().endsWith(".tif")) {
+            return new File(parentFile, file.getName().replaceAll("tif$", "tfw"));
+        } else if (file.getName().endsWith(".jpg")) {
+            return new File(parentFile, file.getName().replaceAll("jpg$", "jgw"));
+        } else if (file.getName().endsWith(".ecw")) {
+            return new File(parentFile, file.getName().replaceAll("ecw$", "eww"));
+        } else if (file.getName().endsWith(".jp2")) {
+            return new File(parentFile, file.getName().replaceAll("jp2$", "j2w"));
+        } else {
+            return null;
+        }
+    }
+    
+    public static WorldFile parseWorldFile(final File wFile) {
+        final List<Object> lines = new ArrayList<>();
+        try (final BufferedReader br = new BufferedReader(new FileReader(wFile))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                lines.add(line);
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return WorldFile.builder().xPixelSize(Double.parseDouble((String) lines.get(0))).yRotation(Double.parseDouble((String) lines.get(1))).xRotation(Double.parseDouble((String) lines.get(2))).yPixelSize(Double.parseDouble((String) lines.get(3))).xCenter(Double.parseDouble((String) lines.get(4))).yCenter(Double.parseDouble((String) lines.get(5))).build();
     }
     
     /**
@@ -137,7 +187,7 @@ public class Utils {
                 boolean metadataTest = true;
                 for (String bitsCount : bitsCounts) {
                     Integer bitCountInt = Integer.valueOf(bitsCount);
-                    if (bitCountInt != 11 && bitCountInt != 12) {
+                    if (bitCountInt < N2_BIT_SIZE) {
                         metadataTest = false;
                     }
                 }
@@ -166,7 +216,8 @@ public class Utils {
                 //if (name.contains("Exif IFD0:Photometric Interpretation")) {
                 final String metadataValue = metadata.get(metadataName);
                 log.debug("[N3] file:{}, {}:{} ", file.getName(), metadataName, metadataValue);
-                final boolean metadataTest = metadataValue.equals("4");
+                final int samplesPerPixel = Integer.parseInt(metadataValue);
+                final boolean metadataTest = samplesPerPixel == N3_SAMPLES_PER_PIXEL;
                 log.info("[N3] file:{}, n3:{}", file.getName(), metadataTest);
                 return resultBuilder.result(metadataTest).note(metadataName + ": " + metadataValue).build();
             }
