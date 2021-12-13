@@ -22,7 +22,8 @@ spring:
 logging:
   level:
     com.amaxilatis.metis: DEBUG
-
+    org.springframework.messaging: INFO
+    org.springframework.web.socket: INFO
 metis.reportLocation: reports
 metis.filesLocation: "S:\\OPEKEPE\\"
 metis.version: 0.3.0-SNAPSHOT

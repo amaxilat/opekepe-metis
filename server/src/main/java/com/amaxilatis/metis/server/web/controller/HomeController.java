@@ -3,6 +3,8 @@ package com.amaxilatis.metis.server.web.controller;
 import com.amaxilatis.metis.model.FileJob;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.rabbit.FileService;
+import com.amaxilatis.metis.server.service.ImageProcessingService;
+import com.amaxilatis.metis.server.service.PoolInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +13,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +39,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class HomeController {
     
+    private final ImageProcessingService imageProcessingService;
     private final FileService fileService;
     private final RabbitTemplate rabbitTemplate;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -47,10 +51,10 @@ public class HomeController {
     @GetMapping("/")
     public String homePage(Model model) {
         final List<File> reports = Arrays.stream(Objects.requireNonNull(new File(props.getReportLocation()).listFiles())).filter(file -> file.getName().endsWith(".csv")).collect(Collectors.toList());
-        final SortedMap<String, Long> sizes = new TreeMap<>();
+        final SortedMap<String, Double> sizes = new TreeMap<>();
         reports.forEach(report -> {
             try {
-                sizes.put(report.getName(), Files.size(report.toPath()) / 1024);
+                sizes.put(report.getName(), Files.size(report.toPath()) / 1024.0);
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }
@@ -59,6 +63,7 @@ public class HomeController {
         final List<File> files = Arrays.stream(Objects.requireNonNull(new File(props.getFilesLocation()).listFiles())).filter(File::isDirectory).collect(Collectors.toList());
         final SortedMap<String, Long> fileCounts = files.stream().collect(Collectors.toMap(File::getName, file -> Arrays.stream(Objects.requireNonNull(file.listFiles())).filter(file1 -> file1.getName().endsWith(".tif")).count(), (a, b) -> b, TreeMap::new));
         
+        model.addAttribute("pool", imageProcessingService.getPoolInfo());
         model.addAttribute("reports", sizes);
         model.addAttribute("fileCounts", fileCounts);
         model.addAttribute("appName", appName);
@@ -87,4 +92,11 @@ public class HomeController {
         rabbitTemplate.convertAndSend("metis-jobs", "metis-jobs", mapper.writeValueAsString(job));
         return "redirect:/";
     }
+    
+    @ResponseBody
+    @GetMapping(value = "/api/pool", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PoolInfo apiPool() {
+        return imageProcessingService.getPoolInfo();
+    }
+    
 }
