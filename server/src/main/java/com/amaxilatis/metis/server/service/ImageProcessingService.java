@@ -1,19 +1,16 @@
 package com.amaxilatis.metis.server.service;
 
+import com.amaxilatis.metis.server.config.ProcessingProperties;
 import com.amaxilatis.metis.server.rabbit.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.WebSocketSession;
 
 import javax.annotation.PostConstruct;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -22,13 +19,14 @@ public class ImageProcessingService {
     
     private final FileService fileService;
     private final SimpMessagingTemplate webSocketService;
+    private final ProcessingProperties processingProperties;
     
     private ThreadPoolTaskExecutor taskExecutor;
     
     @PostConstruct
     public void init() {
         final ThreadPoolTaskExecutor tp = new ThreadPoolTaskExecutor();
-        tp.setCorePoolSize(6);
+        tp.setCorePoolSize(processingProperties.getThreads());
         tp.initialize();
         this.taskExecutor = tp;
     }

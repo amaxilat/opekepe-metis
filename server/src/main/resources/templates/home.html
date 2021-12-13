@@ -40,7 +40,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link">
-                        Υπολείπονται:
+                        Ουρά:
                         &nbsp;
                         <span id="pool-pending" th:text="${pool.pending}">0</span>
                     </a>
@@ -69,7 +69,9 @@
                                     <li>
                                     <span class="folder-name">
                                         <span th:text="${filedir.key}+' ('+${filedir.value} +' images)'"></span>
-                                            <a class="" th:href="'run?name='+${filedir.key}">
+                                        <!--                                        th:href="'run?name='+${filedir.key}"-->
+                                            <a class="" data-toggle="modal"
+                                               th:attr="data-target='#modal-'+${filedir.key}">
                                                 <i class="fas fa-play"></i>
                                             </a>
                                     </span>
@@ -78,6 +80,56 @@
                                     </li>
                                 </th:block>
                             </ul>
+                            <th:block th:each="filedir: ${fileCounts}">
+                                <div class="modal fade" th:id="'modal-'+${filedir.key}" tabindex="-1"
+                                     aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel" th:text="${filedir.key}">
+                                                    Modal title</h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                        aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form>
+                                                    <div class="form-group form-check">
+                                                        <input type="checkbox" class="form-check-input"
+                                                               checked="checked" th:id="'check1-'+${filedir.key}">
+                                                        <label class="form-check-label"
+                                                               th:attr="for='check1-'+${filedir.key}">
+                                                            Έλεγχος 1: </label>
+                                                    </div>
+                                                    <div class="form-group form-check">
+                                                        <input type="checkbox" class="form-check-input"
+                                                               checked="checked" th:id="'check2-'+${filedir.key}">
+                                                        <label class="form-check-label"
+                                                               th:attr="for='check2-'+${filedir.key}">
+                                                            Έλεγχος 2: </label>
+                                                    </div>
+                                                    <div class="form-group form-check">
+                                                        <input type="checkbox" class="form-check-input"
+                                                               checked="checked" th:id="'check3-'+${filedir.key}">
+                                                        <label class="form-check-label"
+                                                               th:attr="for='check3-'+${filedir.key}">
+                                                            Έλεγχος 3: </label>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                    Close
+                                                </button>
+                                                <a type="button" class="btn btn-primary"
+                                                   th:href="'run?name='+${filedir.key}">Εκτέλεση
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th:block>
                         </div>
                     </div>
                 </div>
