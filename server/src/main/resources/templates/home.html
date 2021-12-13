@@ -5,6 +5,7 @@
     <title th:text="${appName}">AppName</title>
 
     <link th:rel="stylesheet" th:href="@{webjars/bootstrap/css/bootstrap.min.css} "/>
+    <link rel="stylesheet" type="text/css" th:href="@{css/file-tree.css}"/>
     <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
           integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
 
@@ -22,9 +23,26 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarResponsive">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="#">Αρχική
-                        <span class="sr-only">(current)</span>
+                <li class="nav-item">
+                    <a class="nav-link">
+                        <span id="dot"
+                              style="height: 15px;  width: 15px;  background-color: #bbb;  border-radius: 50%;  display: inline-block;"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link">
+                        Θέσεις:
+                        &nbsp;
+                        <span id="pool-active" th:text="${pool.active}">0</span>
+                        /
+                        <span id="pool-max" th:text="${pool.max}">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link">
+                        Υπολείπονται:
+                        &nbsp;
+                        <span id="pool-pending" th:text="${pool.pending}">0</span>
                     </a>
                 </li>
             </ul>
@@ -39,23 +57,24 @@
             <div class="accordion" id="accordionFiles">
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="mb-0">
-                            <button class="btn btn-block text-left" type="button" aria-expanded="true">
-                                Φάκελοι
-                            </button>
-                        </h2>
+                        <h6 class="mb-0">
+                            Φάκελοι
+                        </h6>
                     </div>
 
                     <div id="collapseFiles" class="collapse show" data-parent="#accordionFiles">
                         <div class="card-body">
-                            <ul>
+                            <ul id="file-tree" class="file-tree">
                                 <th:block th:each="filedir: ${fileCounts}">
                                     <li>
-                                    <span th:text="${filedir.key}+' ('+${filedir.value} +' images)'">
+                                    <span class="folder-name">
+                                        <span th:text="${filedir.key}+' ('+${filedir.value} +' images)'"></span>
+                                            <a class="" th:href="'run?name='+${filedir.key}">
+                                                <i class="fas fa-play"></i>
+                                            </a>
                                     </span>
-                                        <a class="" th:href="'run?name='+${filedir.key}">
-                                            <i class="fas fa-play"></i>
-                                        </a>
+                                        <ul>
+                                        </ul>
                                     </li>
                                 </th:block>
                             </ul>
@@ -68,11 +87,9 @@
             <div class="accordion" id="accordionReports">
                 <div class="card">
                     <div class="card-header">
-                        <h2 class="mb-0">
-                            <button class="btn btn-block text-left" type="button" aria-expanded="true">
-                                Αναφορές
-                            </button>
-                        </h2>
+                        <h6 class="mb-0">
+                            Αναφορές
+                        </h6>
                     </div>
 
                     <div id="collapseReports" class="collapse show" data-parent="#accordionReports">
@@ -80,8 +97,9 @@
                             <ul>
                                 <th:block th:each="report: ${reports}">
                                     <li>
-                                        <a th:text="${report.key}+' ('+${report.value}+'kB)'"
-                                           th:href="'download?name='+${report.key}"></a>
+                                        <a th:href="'download?name='+${report.key}">
+                                            <span th:text="${report.key}"></span>
+                                        </a>
                                         <i th:if="${report.value}==0" class="fas fa-spinner fa-spin"></i>
                                     </li>
                                 </th:block>
@@ -99,6 +117,16 @@
 <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
 <script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
 <script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+<script th:src="@{js/file-tree.js}"></script>
+<script th:src="@{js/app.js}"></script>
 
+<script type="text/javascript">
+    window.onload = function () {
+        fileTree('file-tree');
+        connect();
+    };
+</script>
 </body>
 </html>
