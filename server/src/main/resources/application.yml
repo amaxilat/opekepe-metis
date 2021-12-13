@@ -24,7 +24,11 @@ logging:
     com.amaxilatis.metis: DEBUG
     org.springframework.messaging: INFO
     org.springframework.web.socket: INFO
-metis.reportLocation: reports
-metis.filesLocation: "S:\\OPEKEPE\\"
-metis.version: 0.3.0-SNAPSHOT
+
+metis:
+  reportLocation: reports
+  filesLocation: "S:\\OPEKEPE\\"
+  version: 0.3.0-SNAPSHOT
+  processing:
+    threads: 12
 
