@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "metis.reportLocation",
+      "type": "java.lang.String",
+      "description": "Location where the server should store the reports generated."
+    },
+    {
+      "name": "metis.filesLocation",
+      "type": "java.lang.String",
+      "description": "Location where the server can find the base directory for accessing the image files for analysis."
+    }
+  ]
+}

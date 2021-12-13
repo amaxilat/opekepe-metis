@@ -1,4 +1,4 @@
-package com.amaxilatis.metis.util.model;
+package com.amaxilatis.metis.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,12 +16,8 @@ import java.io.Serializable;
 @Data
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WorldFile implements Serializable {
+public class FileJob implements Serializable {
     private static final long serialVersionUID = 1L;
-    double xPixelSize;
-    double yRotation;
-    double xRotation;
-    double yPixelSize;
-    double xCenter;
-    double yCenter;
+    String name;
+    List<Integer> tasks;
 }
