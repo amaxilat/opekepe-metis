@@ -1,7 +1,7 @@
 package com.amaxilatis.metis.util;
 
-import com.amaxilatis.metis.util.model.FileJobResult;
-import com.amaxilatis.metis.util.model.WorldFile;
+import com.amaxilatis.metis.model.FileJobResult;
+import com.amaxilatis.metis.model.WorldFile;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -23,9 +23,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.amaxilatis.metis.util.Conditions.N1_PIXEL_SIZE;
-import static com.amaxilatis.metis.util.Conditions.N2_BIT_SIZE;
-import static com.amaxilatis.metis.util.Conditions.N3_SAMPLES_PER_PIXEL;
+import static com.amaxilatis.metis.config.Conditions.N1_PIXEL_SIZE;
+import static com.amaxilatis.metis.config.Conditions.N2_BIT_SIZE;
+import static com.amaxilatis.metis.config.Conditions.N3_SAMPLES_PER_PIXEL;
 
 @Slf4j
 public class Utils {
@@ -46,38 +46,39 @@ public class Utils {
         
         if (file.getName().endsWith(".tif")) {
             log.info("[{}] parsing...", file.getName());
+            long start = System.currentTimeMillis();
             final BodyContentHandler handler = new BodyContentHandler();
-            final FileInputStream inputstream = new FileInputStream(file);
-            final ParseContext pcontext = new ParseContext();
+            final FileInputStream inputStream = new FileInputStream(file);
+            final ParseContext context = new ParseContext();
             final TiffParser JpegParser = new TiffParser();
-            JpegParser.parse(inputstream, handler, metadata, pcontext);
-            
+            JpegParser.parse(inputStream, handler, metadata, context);
+            log.info("[{}] jpegParser took {}ms", file.getName(), (System.currentTimeMillis() - start));
             
             if (tasks.contains(0)) {
                 try {
-                    Utils.parseFile(file, handler, metadata, pcontext);
-                } catch (IOException | TikaException | SAXException e) {
+                    Utils.parseFile(file, handler, metadata, context);
+                } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
             }
             if (tasks.contains(1)) {
                 try {
-                    results.add(Utils.testN1(file, handler, metadata, pcontext));
-                } catch (IOException | TikaException | SAXException e) {
+                    results.add(Utils.testN1(file, handler, metadata, context));
+                } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
             }
             if (tasks.contains(2)) {
                 try {
-                    results.add(Utils.testN2(file, handler, metadata, pcontext));
-                } catch (IOException | TikaException | SAXException e) {
+                    results.add(Utils.testN2(file, handler, metadata, context));
+                } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
             }
             if (tasks.contains(3)) {
                 try {
-                    results.add(Utils.testN3(file, handler, metadata, pcontext));
-                } catch (IOException | TikaException | SAXException e) {
+                    results.add(Utils.testN3(file, handler, metadata, context));
+                } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
             }
@@ -85,12 +86,9 @@ public class Utils {
         return results;
     }
     
-    public static List<FileJobResult> parseFile(final File file, final BodyContentHandler handler, final Metadata metadata, final ParseContext pcontext) throws IOException, TikaException, SAXException {
-        //final String[] metadataNames = metadata.names();
-        //Arrays.stream(metadataNames).forEach(name -> log.info("{}: {}", name, metadata.get(name)));
+    public static void parseFile(final File file, final BodyContentHandler handler, final Metadata metadata, final ParseContext context) {
         final Map<String, Object> map = Arrays.stream(metadata.names()).collect(Collectors.toMap(name -> name, metadata::get, (a, b) -> b, HashMap::new));
-        log.info("[{}] Metadata: {}", file.getName(), map);
-        return new ArrayList<>();
+        log.debug("[{}] Metadata: {}", file.getName(), map);
     }
     
     /**
@@ -100,28 +98,20 @@ public class Utils {
      *
      * @param file
      * @return
-     * @throws IOException
-     * @throws TikaException
-     * @throws SAXException
      */
-    public static FileJobResult testN1(final File file, final BodyContentHandler handler, final Metadata metadata, final ParseContext pcontext) throws IOException, TikaException, SAXException {
+    public static FileJobResult testN1(final File file, final BodyContentHandler handler, final Metadata metadata, final ParseContext context) {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(1);
-        
-        boolean worldConditionRes = true;
-        boolean metadataRes = true;
         
         final File worldFileFile = getWorldFile(file);
         final WorldFile worldFile = parseWorldFile(worldFileFile);
-        worldConditionRes &= worldFile.getXPixelSize() == 0.5;
-        worldConditionRes &= worldFile.getXRotation() == 0;
-        worldConditionRes &= worldFile.getYRotation() == 0;
-        worldConditionRes &= worldFile.getYPixelSize() == -0.5;
-        worldConditionRes &= ((int) (worldFile.getXCenter() * 100) % 100) == 25;
-        worldConditionRes &= ((int) (worldFile.getYCenter() * 100) % 100) == 75;
+        
+        boolean worldConditionRes = evaluateWorldFile(worldFile);
+        boolean metadataRes = true;
+        
         log.info("[N1] file:{}, n1:{} world", file.getName(), worldConditionRes);
         
         for (final String metadataName : metadata.names()) {
-            log.info("metadataname: " + metadataName);
+            log.info("metadataName: " + metadataName);
             if (metadataName.contains("0x830e")) {
                 final String metadataValue = metadata.get(metadataName);
                 log.debug("[N1] file:{}, {}:{} ", file.getName(), metadataName, metadataValue);
@@ -137,6 +127,10 @@ public class Utils {
             }
         }
         return resultBuilder.result(worldConditionRes && metadataRes).build();
+    }
+    
+    private static boolean evaluateWorldFile(final WorldFile worldFile) {
+        return worldFile.getXPixelSize() == 0.5 && worldFile.getXRotation() == 0 && worldFile.getYRotation() == 0 && worldFile.getYPixelSize() == -0.5 && ((int) (worldFile.getXCenter() * 100) % 100) == 25 && ((int) (worldFile.getYCenter() * 100) % 100) == 75;
     }
     
     public static File getWorldFile(final File file) {
@@ -173,21 +167,17 @@ public class Utils {
      *
      * @param file
      * @return
-     * @throws IOException
-     * @throws TikaException
-     * @throws SAXException
      */
-    public static FileJobResult testN2(final File file, final BodyContentHandler handler, final Metadata metadata, final ParseContext pcontext) throws IOException, TikaException, SAXException {
+    public static FileJobResult testN2(final File file, final BodyContentHandler handler, final Metadata metadata, final ParseContext context) {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(2);
         for (final String metadataName : metadata.names()) {
             if (metadataName.contains("Exif IFD0:Bits Per Sample")) {
                 final String metadataValue = metadata.get(metadataName).replaceAll("[^0-9 ]", "");
                 log.debug("[N2] file:{}, {}:{} ", file.getName(), metadataName, metadataValue);
-                String[] bitsCounts = metadataValue.split(" ");
+                final String[] bitsCounts = metadataValue.split(" ");
                 boolean metadataTest = true;
-                for (String bitsCount : bitsCounts) {
-                    Integer bitCountInt = Integer.valueOf(bitsCount);
-                    if (bitCountInt < N2_BIT_SIZE) {
+                for (final String bitsCount : bitsCounts) {
+                    if (Integer.parseInt(bitsCount) < N2_BIT_SIZE) {
                         metadataTest = false;
                     }
                 }
@@ -204,11 +194,8 @@ public class Utils {
      *
      * @param file
      * @return
-     * @throws IOException
-     * @throws TikaException
-     * @throws SAXException
      */
-    public static FileJobResult testN3(final File file, final BodyContentHandler handler, final Metadata metadata, final ParseContext pcontext) throws IOException, TikaException, SAXException {
+    public static FileJobResult testN3(final File file, final BodyContentHandler handler, final Metadata metadata, final ParseContext context) {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(3);
         for (final String metadataName : metadata.names()) {
             if (metadataName.contains("tiff:SamplesPerPixel")) {

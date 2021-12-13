@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="${appName}">AppName</title>
+
+    <link th:rel="stylesheet" th:href="@{webjars/bootstrap/css/bootstrap.min.css} "/>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+          integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+    <div class="container">
+        <a class="navbar-brand" href="/" th:text="${appName}">AppName</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Αρχική
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="row">
+        <div class="col-md-6 mt-5">
+            <div class="accordion" id="accordionFiles">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="mb-0">
+                            <button class="btn btn-block text-left" type="button" aria-expanded="true">
+                                Φάκελοι
+                            </button>
+                        </h2>
+                    </div>
+
+                    <div id="collapseFiles" class="collapse show" data-parent="#accordionFiles">
+                        <div class="card-body">
+                            <ul>
+                                <th:block th:each="filedir: ${fileCounts}">
+                                    <li>
+                                    <span th:text="${filedir.key}+' ('+${filedir.value} +' images)'">
+                                    </span>
+                                        <a class="" th:href="'run?name='+${filedir.key}">
+                                            <i class="fas fa-play"></i>
+                                        </a>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mt-5">
+            <div class="accordion" id="accordionReports">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="mb-0">
+                            <button class="btn btn-block text-left" type="button" aria-expanded="true">
+                                Αναφορές
+                            </button>
+                        </h2>
+                    </div>
+
+                    <div id="collapseReports" class="collapse show" data-parent="#accordionReports">
+                        <div class="card-body">
+                            <ul>
+                                <th:block th:each="report: ${reports}">
+                                    <li>
+                                        <a th:text="${report.key}+' ('+${report.value}+'kB)'"
+                                           th:href="'download?name='+${report.key}"></a>
+                                        <i th:if="${report.value}==0" class="fas fa-spinner fa-spin"></i>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+<script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+
+</body>
+</html>

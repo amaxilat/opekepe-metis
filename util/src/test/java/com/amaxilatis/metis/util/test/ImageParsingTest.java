@@ -1,7 +1,7 @@
 package com.amaxilatis.metis.util.test;
 
 import com.amaxilatis.metis.util.Utils;
-import com.amaxilatis.metis.util.model.FileJobResult;
+import com.amaxilatis.metis.model.FileJobResult;
 import org.apache.tika.exception.TikaException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

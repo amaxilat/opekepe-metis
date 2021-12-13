@@ -1,7 +1,7 @@
 package com.amaxilatis.metis.util.test;
 
 import com.amaxilatis.metis.util.Utils;
-import com.amaxilatis.metis.util.model.WorldFile;
+import com.amaxilatis.metis.model.WorldFile;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
