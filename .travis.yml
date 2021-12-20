@@ -1,0 +1,11 @@
+os:
+  - linux
+services:
+  - docker
+language: java
+jdk: openjdk11
+
+script:
+  - java -version
+  - mvn clean install
+  - cd server && ./build.sh
