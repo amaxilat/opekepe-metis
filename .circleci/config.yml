@@ -23,9 +23,6 @@ jobs:
           name: Build Java
           command: mvn -B -DskipTests clean install
       - run:
-          name: chdir
-          command: cd server
-      - run:
           name: Build Image
           command: ./build.sh
 # Invoke jobs via workflows
