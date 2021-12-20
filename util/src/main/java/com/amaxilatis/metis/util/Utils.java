@@ -111,7 +111,7 @@ public class Utils {
         log.info("[N1] file:{}, n1:{} world", file.getName(), worldConditionRes);
         
         for (final String metadataName : metadata.names()) {
-            log.info("metadataName: " + metadataName);
+            log.debug("metadataName: " + metadataName);
             if (metadataName.contains("0x830e")) {
                 final String metadataValue = metadata.get(metadataName);
                 log.debug("[N1] file:{}, {}:{} ", file.getName(), metadataName, metadataValue);
