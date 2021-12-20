@@ -13,7 +13,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,7 +53,7 @@ public class HomeController {
         final SortedMap<String, Double> sizes = new TreeMap<>();
         reports.forEach(report -> {
             try {
-                sizes.put(report.getName(), Files.size(report.toPath()) / 1024.0);
+                sizes.put(report.getName(), (double) Files.size(report.toPath()));
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }

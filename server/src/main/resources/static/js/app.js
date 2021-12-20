@@ -1,15 +1,15 @@
-var stompClient = null;
+let stompClient = null;
 
 function setConnected(connected) {
     if (connected) {
-        $("#dot").css("background-color", "green");
+        $("#dot").css("background-color", "#49660e");
     } else {
         $("#dot").css("background-color", "#bbb");
     }
 }
 
 function connect() {
-    var socket = new SockJS('/metis-websocket');
+    const socket = new SockJS('/metis-websocket');
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function (frame) {
         setConnected(true);

@@ -1,4 +1,6 @@
 spring:
+  jmx:
+    enabled: false
   rabbitmq:
     host: localhost
     port: 5672
@@ -21,7 +23,7 @@ spring:
 
 logging:
   level:
-    com.amaxilatis.metis: DEBUG
+    com.amaxilatis.metis: INFO
     org.springframework.messaging: INFO
     org.springframework.web.socket: INFO
 
@@ -30,5 +32,5 @@ metis:
   filesLocation: "S:\\OPEKEPE\\"
   version: 0.3.0-SNAPSHOT
   processing:
-    threads: 12
+    threads: -1
 

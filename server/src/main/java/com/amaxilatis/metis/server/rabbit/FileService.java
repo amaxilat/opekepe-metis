@@ -79,6 +79,7 @@ public class FileService {
         try {
             final FileWriter myWriter = new FileWriter(name, Charsets.UTF_8, append);
             myWriter.write(text + "\n");
+            myWriter.flush();
             myWriter.close();
         } catch (IOException e) {
             log.error(e.getMessage(), e);

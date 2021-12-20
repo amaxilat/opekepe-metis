@@ -3,13 +3,13 @@ function fileTree(elementId) {
         return Array.from(this).filter(e => e.querySelector(selector));
     };
 
-    var element = document.getElementById(elementId);
+    const element = document.getElementById(elementId);
     element.classList.add('file-list');
-    var liElementsInideUl = element.querySelectorAll('li');
+    const liElementsInideUl = element.querySelectorAll('li');
     liElementsInideUl.has('ul').forEach(li => {
         li.classList.add('folder-root');
         li.classList.add('closed');
-        var spanFolderElementsInsideLi = li.querySelectorAll('span.folder-name');
+        const spanFolderElementsInsideLi = li.querySelectorAll('span.folder-name');
         spanFolderElementsInsideLi.forEach(span => {
             if (span.parentNode.nodeName === 'LI') {
                 span.onclick = function (e) {
