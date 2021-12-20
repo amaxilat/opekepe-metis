@@ -1,34 +1,27 @@
 package com.amaxilatis.metis.server.rabbit;
 
+import com.amaxilatis.metis.model.FileJob;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
-import com.amaxilatis.metis.util.Utils;
-import com.amaxilatis.metis.model.FileJob;
-import com.amaxilatis.metis.model.FileJobResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.tika.exception.TikaException;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.annotation.Queue;
+import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
-import org.xml.sax.SAXException;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -45,6 +38,21 @@ public class QueueReceiver {
     
     final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
     
+    @Bean
+    TopicExchange exchange() {
+        return new TopicExchange("metis-jobs", true, false);
+    }
+    
+    @Bean
+    Queue queue() {
+        return new Queue("metis-jobs-handler", true);
+    }
+    
+    @Bean
+    Binding binding(Queue queue, TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with("#");
+    }
+    
     @PostConstruct
     public void init() {
         final File reports = new File(props.getReportLocation());
@@ -55,8 +63,7 @@ public class QueueReceiver {
         }
     }
     
-    
-    @RabbitListener(queuesToDeclare = @Queue(name = "metis-jobs-handler", durable = "true"), concurrency = "1-5")
+    @RabbitListener(queues = "metis-jobs-handler", concurrency = "1-5")
     public void onMessage(Message message) {
         receive(message.getBody());
     }
@@ -74,11 +81,7 @@ public class QueueReceiver {
         
         final List<File> fileList = new ArrayList<>();
         if (targetFile.isDirectory()) {
-            for (final File file : Objects.requireNonNull(targetFile.listFiles())) {
-                if (file.getName().endsWith(".tif")) {
-                    fileList.add(file);
-                }
-            }
+            Arrays.stream(Objects.requireNonNull(targetFile.listFiles())).filter(file -> file.getName().endsWith(".tif")).forEach(fileList::add);
         } else {
             fileList.add(targetFile);
         }

@@ -26,15 +26,26 @@ public class ImageProcessingService {
     @PostConstruct
     public void init() {
         final ThreadPoolTaskExecutor tp = new ThreadPoolTaskExecutor();
-        tp.setCorePoolSize(processingProperties.getThreads());
+        if (processingProperties.getThreads() == -1) {
+            tp.setCorePoolSize(getCpuCountBasedThreads());
+        } else {
+            tp.setCorePoolSize(processingProperties.getThreads());
+        }
         tp.initialize();
         this.taskExecutor = tp;
+    }
+    
+    private int getCpuCountBasedThreads() {
+        final int cores = Runtime.getRuntime().availableProcessors();
+        final int usedCores = cores == 1 ? 1 : cores - 1;
+        log.info("found {} processors, defaulting to {} threads", cores, usedCores);
+        return usedCores;
     }
     
     @Scheduled(fixedRate = 10000L)
     public void logPool() {
         final long pending = taskExecutor.getThreadPoolExecutor().getTaskCount() - taskExecutor.getThreadPoolExecutor().getCompletedTaskCount();
-        log.info("[pool] size:{} active:{} pending:{}", taskExecutor.getPoolSize(), taskExecutor.getActiveCount(), pending);
+        log.debug("[pool] size:{} active:{} pending:{}", taskExecutor.getPoolSize(), taskExecutor.getActiveCount(), pending);
     }
     
     @Scheduled(fixedRate = 1000L)

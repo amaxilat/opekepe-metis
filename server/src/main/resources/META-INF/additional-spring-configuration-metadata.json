@@ -9,6 +9,11 @@
       "name": "metis.filesLocation",
       "type": "java.lang.String",
       "description": "Location where the server can find the base directory for accessing the image files for analysis."
+    },
+    {
+      "name": "metis.version",
+      "type": "java.lang.String",
+      "description": "Version of the application."
     }
   ]
 }
