@@ -31,8 +31,8 @@ public class ImageProcessingTask implements Runnable {
             
             final StringBuilder sb = new StringBuilder();
             sb.append(file.getName()).append(",");
-            results.forEach(result -> sb.append(result.getResult() ? "ΟΚ" : "ΛΑΘΟΣ").append(","));
-            results.forEach(result -> sb.append(!result.getResult() ? result.getNote() : "").append(","));
+            results.forEach(result -> sb.append(String.format("\"%s\"", result.getResult() ? "ΟΚ" : "ΛΑΘΟΣ")).append(","));
+            results.forEach(result -> sb.append(String.format("\"%s\"", result.getNote())).append(","));
             
             fileService.append(outFileName, sb.toString());
             

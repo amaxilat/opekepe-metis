@@ -5,6 +5,8 @@ import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.model.ImageFileInfo;
 import com.amaxilatis.metis.server.model.ReportFileInfo;
 import com.drew.lang.Charsets;
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvException;
 import lombok.RequiredArgsConstructor;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +18,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -60,22 +61,25 @@ public class FileService {
             final Workbook wb = new XSSFWorkbook();
             final Sheet sheet = wb.createSheet("report");
             
-            final File file = new File(name);
-            final FileReader fr = new FileReader(file, Charsets.UTF_8);   //reads the file
-            final BufferedReader br = new BufferedReader(fr);  //creates a buffering character input stream
             boolean first = true;
-            String line;
-            while ((line = br.readLine()) != null) {
-                Row row;
-                if (first) {
-                    row = appendRow(sheet, 0);
-                    first = false;
-                } else {
-                    row = appendRow(sheet);
+            try (CSVReader reader = new CSVReader(new FileReader(name, Charsets.UTF_8))) {
+                List<String[]> r = reader.readAll();
+                for (String[] strings : r) {
+                    Row row;
+                    if (first) {
+                        row = appendRow(sheet, 0);
+                        first = false;
+                    } else {
+                        row = appendRow(sheet);
+                    }
+                    Arrays.stream(strings).forEach(s -> appendCell(row, s));
                 }
-                Arrays.stream(line.split(",")).forEach(s -> appendCell(row, s));
+                r.forEach(x -> {
+                
+                });
+            } catch (CsvException e) {
+                log.error(e.getMessage(), e);
             }
-            fr.close();    //closes the stream and release the resources
             wb.write(fos);
             wb.close();
             return xlsxFileName;

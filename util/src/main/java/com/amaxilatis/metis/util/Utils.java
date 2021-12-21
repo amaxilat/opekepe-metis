@@ -2,6 +2,8 @@ package com.amaxilatis.metis.util;
 
 import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.model.WorldFile;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -105,11 +107,14 @@ public class Utils {
         final File worldFileFile = getWorldFile(file);
         final WorldFile worldFile = parseWorldFile(worldFileFile);
         
-        boolean worldConditionRes = evaluateWorldFile(worldFile);
+        final WorldFileResult worldConditionRes = evaluateWorldFile(worldFile);
         boolean metadataRes = true;
         
-        log.info("[N1] file:{}, n1:{} world", file.getName(), worldConditionRes);
-        
+        log.info("[N1] file:{}, n1:{} world", file.getName(), worldConditionRes.isOk());
+        StringBuilder note = new StringBuilder();
+        note.append("world: ");
+        note.append(worldConditionRes.getNote());
+        note.append(" exif: ");
         for (final String metadataName : metadata.names()) {
             log.debug("metadataName: " + metadataName);
             if (metadataName.contains("0x830e")) {
@@ -117,20 +122,33 @@ public class Utils {
                 log.debug("[N1] file:{}, {}:{} ", file.getName(), metadataName, metadataValue);
                 final String[] pixelSizes = metadataValue.replaceAll(",", "\\.").split(" ");
                 
-                for (final String pixelSize : pixelSizes) {
-                    if (Double.parseDouble(pixelSizes[0]) > N1_PIXEL_SIZE || Double.parseDouble(pixelSizes[2]) > N1_PIXEL_SIZE) {
-                        metadataRes = false;
-                    }
+                double doublePixelSize0 = Double.parseDouble(pixelSizes[0]);
+                double doublePixelSize1 = Double.parseDouble(pixelSizes[2]);
+                if (doublePixelSize0 > N1_PIXEL_SIZE || doublePixelSize1 > N1_PIXEL_SIZE) {
+                    metadataRes = false;
                 }
+                note.append(doublePixelSize0);
+                note.append(",");
+                note.append(doublePixelSize1);
                 log.info("[N1] file:{}, n1:{} exif", file.getName(), metadataRes);
-                resultBuilder.note(metadataName + ": " + metadataValue);
+                resultBuilder.note(note.toString());
             }
         }
-        return resultBuilder.result(worldConditionRes && metadataRes).build();
+        return resultBuilder.result(worldConditionRes.isOk() && metadataRes).build();
     }
     
-    private static boolean evaluateWorldFile(final WorldFile worldFile) {
-        return worldFile.getXPixelSize() == 0.5 && worldFile.getXRotation() == 0 && worldFile.getYRotation() == 0 && worldFile.getYPixelSize() == -0.5 && ((int) (worldFile.getXCenter() * 100) % 100) == 25 && ((int) (worldFile.getYCenter() * 100) % 100) == 75;
+    private static WorldFileResult evaluateWorldFile(final WorldFile worldFile) {
+        final int xCenterDecimal = ((int) (worldFile.getXCenter() * 100) % 100);
+        final int yCenterDecimal = ((int) (worldFile.getYCenter() * 100) % 100);
+        final String note = String.format("%.1f,%.1f,%.1f,%.1f,%d,%d", worldFile.getXPixelSize(), worldFile.getXRotation(), worldFile.getYRotation(), worldFile.getYPixelSize(), xCenterDecimal, yCenterDecimal);
+        return new WorldFileResult(note, worldFile.getXPixelSize() == 0.5 && worldFile.getXRotation() == 0 && worldFile.getYRotation() == 0 && worldFile.getYPixelSize() == -0.5 && xCenterDecimal == 25 && yCenterDecimal == 75);
+    }
+    
+    @Data
+    @AllArgsConstructor
+    static class WorldFileResult {
+        private String note;
+        private boolean ok;
     }
     
     public static File getWorldFile(final File file) {
@@ -177,12 +195,13 @@ public class Utils {
                 final String[] bitsCounts = metadataValue.split(" ");
                 boolean metadataTest = true;
                 for (final String bitsCount : bitsCounts) {
-                    if (Integer.parseInt(bitsCount) < N2_BIT_SIZE) {
+                    int bitsCountInt = Integer.parseInt(bitsCount);
+                    if (bitsCountInt < N2_BIT_SIZE) {
                         metadataTest = false;
                     }
                 }
                 log.info("[N2] file:{}, n2:{}", file.getName(), metadataTest);
-                return resultBuilder.result(metadataTest).note(metadataName + ": " + metadataValue).build();
+                return resultBuilder.result(metadataTest).note(metadataValue).build();
             }
         }
         return resultBuilder.result(false).build();
