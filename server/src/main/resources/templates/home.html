@@ -71,8 +71,8 @@
                                         <span th:text="${imagedir.name}+' ('+${imagedir.count} +' images)'"></span>
                                         <!--                                        th:href="'run?name='+${imagedir.name}"-->
                                             <a class="" data-toggle="modal"
-                                               th:attr="data-target='#modal-'+${imagedir.name}">
-                                                <i class="fas fa-play"></i>
+                                               th:attr="data-target='#modal-'+${imagedir.hash}">
+                                                <i class="fas fa-search"></i>
                                             </a>
                                     </span>
                                         <ul>
@@ -81,7 +81,7 @@
                                 </th:block>
                             </ul>
                             <th:block th:each="imagedir: ${imagedirs}">
-                                <div class="modal fade" th:id="'modal-'+${imagedir.name}" tabindex="-1"
+                                <div class="modal fade" th:id="'modal-'+${imagedir.hash}" tabindex="-1"
                                      aria-labelledby="exampleModalLabel" aria-hidden="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
@@ -98,65 +98,65 @@
                                                 <form>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               checked="checked" th:id="'check1-'+${imagedir.name}">
+                                                               checked="checked" th:id="'check1-'+${imagedir.hash}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check1-'+${imagedir.name}">
+                                                               th:attr="for='check1-'+${imagedir.hash}">
                                                             Έλεγχος 1: Χωρική Ανάλυση</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               checked="checked" th:id="'check2-'+${imagedir.name}">
+                                                               checked="checked" th:id="'check2-'+${imagedir.hash}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check2-'+${imagedir.name}">
+                                                               th:attr="for='check2-'+${imagedir.hash}">
                                                             Έλεγχος 2: Ραδιομετρική Ανάλυση</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               checked="checked" th:id="'check3-'+${imagedir.name}">
+                                                               checked="checked" th:id="'check3-'+${imagedir.hash}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check3-'+${imagedir.name}">
+                                                               th:attr="for='check3-'+${imagedir.hash}">
                                                             Έλεγχος 3: Φασματική Ανάλυση</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check4-'+${imagedir.name}">
+                                                               disabled="disabled" th:id="'check4-'+${imagedir.hash}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check4-'+${imagedir.name}">
+                                                               th:attr="for='check4-'+${imagedir.hash}">
                                                             Έλεγχος 4: Νεφοκάλυψη</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check5-'+${imagedir.name}">
+                                                               disabled="disabled" th:id="'check5-'+${imagedir.hash}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check5-'+${imagedir.name}">
+                                                               th:attr="for='check5-'+${imagedir.hash}">
                                                             Έλεγχος 5: Ολικό clipping</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check6-'+${imagedir.name}">
+                                                               disabled="disabled" th:id="'check6-'+${imagedir.hash}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check6-'+${imagedir.name}">
+                                                               th:attr="for='check6-'+${imagedir.hash}">
                                                             Έλεγχος 6: Κορυφής Ιστογράμματος</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check7-'+${imagedir.name}">
+                                                               disabled="disabled" th:id="'check7-'+${imagedir.hash}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check7-'+${imagedir.name}">
+                                                               th:attr="for='check7-'+${imagedir.hash}">
                                                             Έλεγχος 7: Αντίθεσης</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check8-'+${imagedir.name}">
+                                                               disabled="disabled" th:id="'check8-'+${imagedir.hash}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check8-'+${imagedir.name}">
+                                                               th:attr="for='check8-'+${imagedir.hash}">
                                                             Έλεγχος 8: Συμπίεσης</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check9-'+${imagedir.name}">
+                                                               disabled="disabled" th:id="'check9-'+${imagedir.hash}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check9-'+${imagedir.name}">
+                                                               th:attr="for='check9-'+${imagedir.hash}">
                                                             Έλεγχος 9: Ομοιογενών Αντικειμένων</label>
                                                     </div>
 
@@ -168,7 +168,7 @@
                                                     Close
                                                 </button>
                                                 <a type="button" class="btn btn-primary"
-                                                   th:href="'run?name='+${imagedir.name}">Εκτέλεση
+                                                   th:href="'run?name='+${imagedir.hash}">Εκτέλεση
                                                 </a>
                                             </div>
                                         </div>
@@ -199,6 +199,9 @@
                                         <span class="badge badge-secondary" th:text="${report.date}"></span>
                                         <a th:href="'download?name='+${report.name}">
                                             <i class="fas fa-download"></i>
+                                        </a>
+                                        <a th:href="'download?name='+${report.name}">
+                                            <i class="fas fa-trash"></i>
                                         </a>
                                     </li>
                                 </th:block>

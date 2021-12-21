@@ -1,5 +1,6 @@
 package com.amaxilatis.metis.server.rabbit;
 
+import com.adobe.internal.xmp.impl.Base64;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.model.ImageFileInfo;
 import com.amaxilatis.metis.server.model.ReportFileInfo;
@@ -25,9 +26,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -135,7 +134,15 @@ public class FileService {
     public SortedSet<ImageFileInfo> listImages() {
         final SortedSet<ImageFileInfo> imagesSet = new TreeSet<>();
         final List<File> files = Arrays.stream(Objects.requireNonNull(new File(props.getFilesLocation()).listFiles())).filter(File::isDirectory).collect(Collectors.toList());
-        files.forEach(file -> imagesSet.add(ImageFileInfo.builder().name(file.getName()).count(Arrays.stream(file.listFiles()).filter(file1 -> file1.getName().endsWith(".tif")).count()).build()));
+        files.forEach(file -> imagesSet.add(ImageFileInfo.builder().name(file.getName()).hash(getStringHash(file.getName())).count(Arrays.stream(file.listFiles()).filter(file1 -> file1.getName().endsWith(".tif")).count()).build()));
         return imagesSet;
+    }
+    
+    public String getStringHash(String name) {
+        return Base64.encode(name).replaceAll("=", "-");
+    }
+    
+    public String getStringFromHash(String hash) {
+        return Base64.decode(hash.replaceAll("-", "="));
     }
 }
