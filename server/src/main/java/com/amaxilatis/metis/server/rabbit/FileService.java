@@ -49,8 +49,12 @@ public class FileService {
         writeToFile(name, StringUtils.join(parts, ","));
     }
     
+    public String csv2xlsxName(final String name) {
+        return name.replace(".csv", ".xlsx");
+    }
+    
     public String csv2xlsx(final String name) {
-        final String xlsxFileName = name.replace(".csv", ".xlsx");
+        final String xlsxFileName = csv2xlsxName(name);
         final File outFile = new File(xlsxFileName);
         try (final FileOutputStream fos = new FileOutputStream(outFile)) {
             final Workbook wb = new XSSFWorkbook();
@@ -123,7 +127,7 @@ public class FileService {
             try {
                 final String[] parts = report.getName().replaceAll("\\.csv", "").split("-", 3);
                 
-                reportSet.add(ReportFileInfo.builder().directory(parts[1]).date(parts[2]).name(report.getName()).path(report.toPath().toString()).size((double) Files.size(report.toPath())).build());
+                reportSet.add(ReportFileInfo.builder().directory(parts[1]).date(parts[2]).name(report.getName()).hash(getStringHash(report.getName())).path(report.toPath().toString()).size((double) Files.size(report.toPath())).build());
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }

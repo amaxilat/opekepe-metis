@@ -7,6 +7,7 @@ import lombok.Data;
 @Builder
 public class ReportFileInfo implements Comparable<ReportFileInfo> {
     private final String name;
+    private final String hash;
     private final String date;
     private final String directory;
     private final String path;
