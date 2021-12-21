@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,5 +37,13 @@ public class ReportController {
         return IOUtils.toByteArray(in);
     }
     
+    @GetMapping(value = "/report/delete", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public String reportDelete(@RequestParam("hash") final String hash) throws IOException {
+        final String decodedName = fileService.getStringFromHash(hash);
+        final String decodedNameXlsx = fileService.csv2xlsxName(decodedName);
+        new File(props.getReportLocation() + "/" + decodedName).delete();
+        new File(props.getReportLocation() + "/" + decodedNameXlsx).delete();
+        return "redirect:/";
+    }
     
 }
