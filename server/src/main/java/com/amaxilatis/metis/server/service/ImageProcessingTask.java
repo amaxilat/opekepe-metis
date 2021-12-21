@@ -30,7 +30,7 @@ public class ImageProcessingTask implements Runnable {
             final List<FileJobResult> results = Utils.parseFile(file, tasks);
             
             final StringBuilder sb = new StringBuilder();
-            sb.append(file.getName()).append(",");
+            sb.append("\"").append(file.getName()).append("\"").append(",");
             results.forEach(result -> sb.append(String.format("\"%s\"", result.getResult() ? "ΟΚ" : "ΛΑΘΟΣ")).append(","));
             results.forEach(result -> sb.append(String.format("\"%s\"", result.getNote())).append(","));
             

@@ -90,8 +90,8 @@ public class QueueReceiver {
             fileList.add(targetFile);
         }
         
-        fileService.append(outFileName, "Φάκελος: " + fileJob.getName());
-        fileService.append(outFileName, "Έλεγχοι : " + StringUtils.join(fileJob.getTasks(), "-"));
+        fileService.append(outFileName, "\"Φάκελος\",\"" + fileJob.getName() + "\"");
+        fileService.append(outFileName, "\"Έλεγχοι\",\"" + StringUtils.join(fileJob.getTasks(), "-") + "\"");
         // add header
         final List<String> titles = new ArrayList<>(List.of("ΑΡΧΕΙΟ"));
         fileJob.getTasks().stream().map(integer -> String.format("ΕΛΕΓΧΟΣ %d", integer)).forEach(titles::add);

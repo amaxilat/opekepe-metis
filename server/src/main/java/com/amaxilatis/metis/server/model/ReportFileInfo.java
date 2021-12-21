@@ -15,6 +15,6 @@ public class ReportFileInfo implements Comparable<ReportFileInfo> {
     
     @Override
     public int compareTo(ReportFileInfo o) {
-        return name.compareTo(o.getName());
+        return date.compareTo(o.getDate());
     }
 }
