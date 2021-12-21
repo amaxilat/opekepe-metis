@@ -65,13 +65,13 @@
                     <div id="collapseFiles" class="collapse show" data-parent="#accordionFiles">
                         <div class="card-body">
                             <ul id="file-tree" class="file-tree">
-                                <th:block th:each="filedir: ${fileCounts}">
+                                <th:block th:each="imagedir: ${imagedirs}">
                                     <li>
                                     <span class="folder-name">
-                                        <span th:text="${filedir.key}+' ('+${filedir.value} +' images)'"></span>
-                                        <!--                                        th:href="'run?name='+${filedir.key}"-->
+                                        <span th:text="${imagedir.name}+' ('+${imagedir.count} +' images)'"></span>
+                                        <!--                                        th:href="'run?name='+${imagedir.name}"-->
                                             <a class="" data-toggle="modal"
-                                               th:attr="data-target='#modal-'+${filedir.key}">
+                                               th:attr="data-target='#modal-'+${imagedir.name}">
                                                 <i class="fas fa-play"></i>
                                             </a>
                                     </span>
@@ -80,13 +80,14 @@
                                     </li>
                                 </th:block>
                             </ul>
-                            <th:block th:each="filedir: ${fileCounts}">
-                                <div class="modal fade" th:id="'modal-'+${filedir.key}" tabindex="-1"
+                            <th:block th:each="imagedir: ${imagedirs}">
+                                <div class="modal fade" th:id="'modal-'+${imagedir.name}" tabindex="-1"
                                      aria-labelledby="exampleModalLabel" aria-hidden="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title" id="exampleModalLabel" th:text="${filedir.key}">
+                                                <h5 class="modal-title" id="exampleModalLabel"
+                                                    th:text="${imagedir.name}">
                                                     Modal title</h5>
                                                 <button type="button" class="close" data-dismiss="modal"
                                                         aria-label="Close">
@@ -97,65 +98,65 @@
                                                 <form>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               checked="checked" th:id="'check1-'+${filedir.key}">
+                                                               checked="checked" th:id="'check1-'+${imagedir.name}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check1-'+${filedir.key}">
+                                                               th:attr="for='check1-'+${imagedir.name}">
                                                             Έλεγχος 1: Χωρική Ανάλυση</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               checked="checked" th:id="'check2-'+${filedir.key}">
+                                                               checked="checked" th:id="'check2-'+${imagedir.name}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check2-'+${filedir.key}">
+                                                               th:attr="for='check2-'+${imagedir.name}">
                                                             Έλεγχος 2: Ραδιομετρική Ανάλυση</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               checked="checked" th:id="'check3-'+${filedir.key}">
+                                                               checked="checked" th:id="'check3-'+${imagedir.name}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check3-'+${filedir.key}">
+                                                               th:attr="for='check3-'+${imagedir.name}">
                                                             Έλεγχος 3: Φασματική Ανάλυση</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check4-'+${filedir.key}">
+                                                               disabled="disabled" th:id="'check4-'+${imagedir.name}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check4-'+${filedir.key}">
+                                                               th:attr="for='check4-'+${imagedir.name}">
                                                             Έλεγχος 4: Νεφοκάλυψη</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check5-'+${filedir.key}">
+                                                               disabled="disabled" th:id="'check5-'+${imagedir.name}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check5-'+${filedir.key}">
+                                                               th:attr="for='check5-'+${imagedir.name}">
                                                             Έλεγχος 5: Ολικό clipping</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check6-'+${filedir.key}">
+                                                               disabled="disabled" th:id="'check6-'+${imagedir.name}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check6-'+${filedir.key}">
+                                                               th:attr="for='check6-'+${imagedir.name}">
                                                             Έλεγχος 6: Κορυφής Ιστογράμματος</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check7-'+${filedir.key}">
+                                                               disabled="disabled" th:id="'check7-'+${imagedir.name}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check7-'+${filedir.key}">
+                                                               th:attr="for='check7-'+${imagedir.name}">
                                                             Έλεγχος 7: Αντίθεσης</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check8-'+${filedir.key}">
+                                                               disabled="disabled" th:id="'check8-'+${imagedir.name}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check8-'+${filedir.key}">
+                                                               th:attr="for='check8-'+${imagedir.name}">
                                                             Έλεγχος 8: Συμπίεσης</label>
                                                     </div>
                                                     <div class="form-group form-check">
                                                         <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check9-'+${filedir.key}">
+                                                               disabled="disabled" th:id="'check9-'+${imagedir.name}">
                                                         <label class="form-check-label"
-                                                               th:attr="for='check9-'+${filedir.key}">
+                                                               th:attr="for='check9-'+${imagedir.name}">
                                                             Έλεγχος 9: Ομοιογενών Αντικειμένων</label>
                                                     </div>
 
@@ -167,7 +168,7 @@
                                                     Close
                                                 </button>
                                                 <a type="button" class="btn btn-primary"
-                                                   th:href="'run?name='+${filedir.key}">Εκτέλεση
+                                                   th:href="'run?name='+${imagedir.name}">Εκτέλεση
                                                 </a>
                                             </div>
                                         </div>

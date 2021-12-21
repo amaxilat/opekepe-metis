@@ -2,7 +2,9 @@ package com.amaxilatis.metis.server.web.controller;
 
 import com.amaxilatis.metis.model.FileJob;
 import com.amaxilatis.metis.server.config.MetisProperties;
+import com.amaxilatis.metis.server.model.ImageFileInfo;
 import com.amaxilatis.metis.server.model.ReportFileInfo;
+import com.amaxilatis.metis.server.rabbit.FileService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class HomeController {
     
+    private final FileService fileService;
     private final ImageProcessingService imageProcessingService;
     private final RabbitTemplate rabbitTemplate;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -44,24 +47,16 @@ public class HomeController {
     
     @GetMapping("/")
     public String homePage(Model model) {
-        final List<File> reports = Arrays.stream(Objects.requireNonNull(new File(props.getReportLocation()).listFiles())).filter(file -> file.getName().endsWith(".csv")).collect(Collectors.toList());
-        final SortedSet<ReportFileInfo> reportSet = new TreeSet<>();
-        reports.forEach(report -> {
-            try {
-                final String[] parts = report.getName().replaceAll("\\.csv", "").split("-", 3);
-                
-                reportSet.add(ReportFileInfo.builder().directory(parts[1]).date(parts[2]).name(report.getName()).path(report.toPath().toString()).size((double) Files.size(report.toPath())).build());
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            }
-        });
         
-        final List<File> files = Arrays.stream(Objects.requireNonNull(new File(props.getFilesLocation()).listFiles())).filter(File::isDirectory).collect(Collectors.toList());
-        final SortedMap<String, Long> fileCounts = files.stream().collect(Collectors.toMap(File::getName, file -> Arrays.stream(Objects.requireNonNull(file.listFiles())).filter(file1 -> file1.getName().endsWith(".tif")).count(), (a, b) -> b, TreeMap::new));
+        final SortedSet<ReportFileInfo> reportSet = fileService.listReports();
+        SortedSet<ImageFileInfo> imagedirs = fileService.listImages();
         
+        //        final List<File> files = Arrays.stream(Objects.requireNonNull(new File(props.getFilesLocation()).listFiles())).filter(File::isDirectory).collect(Collectors.toList());
+        //        final SortedMap<String, Long> fileCounts = files.stream().collect(Collectors.toMap(File::getName, file -> Arrays.stream(Objects.requireNonNull(file.listFiles())).filter(file1 -> file1.getName().endsWith(".tif")).count(), (a, b) -> b, TreeMap::new));
+        //
         model.addAttribute("pool", imageProcessingService.getPoolInfo());
         model.addAttribute("reports", reportSet);
-        model.addAttribute("fileCounts", fileCounts);
+        model.addAttribute("imagedirs", imagedirs);
         model.addAttribute("appName", appName);
         return "home";
     }

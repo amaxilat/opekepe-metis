@@ -1,5 +1,8 @@
 package com.amaxilatis.metis.server.rabbit;
 
+import com.amaxilatis.metis.server.config.MetisProperties;
+import com.amaxilatis.metis.server.model.ImageFileInfo;
+import com.amaxilatis.metis.server.model.ReportFileInfo;
 import com.drew.lang.Charsets;
 import lombok.RequiredArgsConstructor;
 import lombok.Synchronized;
@@ -18,13 +21,22 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileService {
+    
+    private final MetisProperties props;
     
     public void createTempReport(final String name) {
         writeToFile(name, "", false);
@@ -105,4 +117,25 @@ public class FileService {
         cell.setCellValue(text);
     }
     
+    public SortedSet<ReportFileInfo> listReports() {
+        final List<File> reports = Arrays.stream(Objects.requireNonNull(new File(props.getReportLocation()).listFiles())).filter(file -> file.getName().endsWith(".csv")).collect(Collectors.toList());
+        final SortedSet<ReportFileInfo> reportSet = new TreeSet<>();
+        reports.forEach(report -> {
+            try {
+                final String[] parts = report.getName().replaceAll("\\.csv", "").split("-", 3);
+                
+                reportSet.add(ReportFileInfo.builder().directory(parts[1]).date(parts[2]).name(report.getName()).path(report.toPath().toString()).size((double) Files.size(report.toPath())).build());
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
+        });
+        return reportSet;
+    }
+    
+    public SortedSet<ImageFileInfo> listImages() {
+        final SortedSet<ImageFileInfo> imagesSet = new TreeSet<>();
+        final List<File> files = Arrays.stream(Objects.requireNonNull(new File(props.getFilesLocation()).listFiles())).filter(File::isDirectory).collect(Collectors.toList());
+        files.forEach(file -> imagesSet.add(ImageFileInfo.builder().name(file.getName()).count(Arrays.stream(file.listFiles()).filter(file1 -> file1.getName().endsWith(".tif")).count()).build()));
+        return imagesSet;
+    }
 }
