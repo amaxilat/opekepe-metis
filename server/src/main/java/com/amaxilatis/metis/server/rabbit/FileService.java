@@ -1,6 +1,7 @@
 package com.amaxilatis.metis.server.rabbit;
 
 import com.drew.lang.Charsets;
+import lombok.RequiredArgsConstructor;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FileService {
     
     public void createTempReport(final String name) {

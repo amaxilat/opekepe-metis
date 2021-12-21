@@ -2,35 +2,30 @@ package com.amaxilatis.metis.server.web.controller;
 
 import com.amaxilatis.metis.model.FileJob;
 import com.amaxilatis.metis.server.config.MetisProperties;
-import com.amaxilatis.metis.server.rabbit.FileService;
+import com.amaxilatis.metis.server.model.ReportFileInfo;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
-import com.amaxilatis.metis.server.service.PoolInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,10 +34,10 @@ import java.util.stream.Collectors;
 public class HomeController {
     
     private final ImageProcessingService imageProcessingService;
-    private final FileService fileService;
     private final RabbitTemplate rabbitTemplate;
     private final ObjectMapper mapper = new ObjectMapper();
     private final MetisProperties props;
+    
     
     @Value("${spring.application.name}")
     String appName;
@@ -50,10 +45,12 @@ public class HomeController {
     @GetMapping("/")
     public String homePage(Model model) {
         final List<File> reports = Arrays.stream(Objects.requireNonNull(new File(props.getReportLocation()).listFiles())).filter(file -> file.getName().endsWith(".csv")).collect(Collectors.toList());
-        final SortedMap<String, Double> sizes = new TreeMap<>();
+        final SortedSet<ReportFileInfo> reportSet = new TreeSet<>();
         reports.forEach(report -> {
             try {
-                sizes.put(report.getName(), (double) Files.size(report.toPath()));
+                final String[] parts = report.getName().replaceAll("\\.csv", "").split("-", 3);
+                
+                reportSet.add(ReportFileInfo.builder().directory(parts[1]).date(parts[2]).name(report.getName()).path(report.toPath().toString()).size((double) Files.size(report.toPath())).build());
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }
@@ -63,20 +60,10 @@ public class HomeController {
         final SortedMap<String, Long> fileCounts = files.stream().collect(Collectors.toMap(File::getName, file -> Arrays.stream(Objects.requireNonNull(file.listFiles())).filter(file1 -> file1.getName().endsWith(".tif")).count(), (a, b) -> b, TreeMap::new));
         
         model.addAttribute("pool", imageProcessingService.getPoolInfo());
-        model.addAttribute("reports", sizes);
+        model.addAttribute("reports", reportSet);
         model.addAttribute("fileCounts", fileCounts);
         model.addAttribute("appName", appName);
         return "home";
-    }
-    
-    @ResponseBody
-    @GetMapping(value = "/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public byte[] download(HttpServletResponse response, @RequestParam("name") final String name) throws IOException {
-        final String fullFileName = props.getReportLocation() + "/" + name;
-        final String xlsxName = fileService.csv2xlsx(fullFileName);
-        final InputStream in = new FileInputStream(xlsxName);
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=\"" + xlsxName + "\"");
-        return IOUtils.toByteArray(in);
     }
     
     @GetMapping(value = "/run", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -90,12 +77,6 @@ public class HomeController {
         
         rabbitTemplate.convertAndSend("metis-jobs", "metis-jobs", mapper.writeValueAsString(job));
         return "redirect:/";
-    }
-    
-    @ResponseBody
-    @GetMapping(value = "/api/pool", produces = MediaType.APPLICATION_JSON_VALUE)
-    public PoolInfo apiPool() {
-        return imageProcessingService.getPoolInfo();
     }
     
 }

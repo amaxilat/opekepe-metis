@@ -190,13 +190,15 @@
 
                     <div id="collapseReports" class="collapse show" data-parent="#accordionReports">
                         <div class="card-body">
-                            <ul>
+                            <ul id="reports-tree" class="file-tree">
                                 <th:block th:each="report: ${reports}">
                                     <li>
-                                        <a th:href="'download?name='+${report.key}">
-                                            <span th:text="${report.key}"></span>
+                                        <span th:text="${report.directory}"></span>
+                                        &nbsp;
+                                        <span class="badge badge-secondary" th:text="${report.date}"></span>
+                                        <a th:href="'download?name='+${report.name}">
+                                            <i class="fas fa-download"></i>
                                         </a>
-                                        <!--<i th:if="${report.value}==0" class="fas fa-spinner fa-spin"></i>-->
                                     </li>
                                 </th:block>
                             </ul>
@@ -221,6 +223,7 @@
 <script type="text/javascript">
     window.onload = function () {
         fileTree('file-tree');
+        fileTree('reports-tree');
         connect();
     };
 </script>

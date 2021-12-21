@@ -13,10 +13,11 @@
 
     <properties>
         <java.version>11</java.version>
-        <spring.boot.version>2.5.6</spring.boot.version>
+        <spring.boot.version>2.6.1</spring.boot.version>
         <maven.failsafe.plugin.version>2.22.2</maven.failsafe.plugin.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <git-commit-id-plugin.version>4.0.3</git-commit-id-plugin.version>
+        <log4j2.version>2.17.0</log4j2.version>
     </properties>
 
     <modules>
@@ -46,7 +47,6 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <version>${spring.boot.version}</version>
-
                 </plugin>
                 <plugin>
                     <groupId>pl.project13.maven</groupId>
@@ -110,8 +110,38 @@
         </pluginManagement>
     </build>
 
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>6.5.1</version>
+                <configuration>
+                    <formats>
+                        <format>HTML</format>
+                        <format>XML</format>
+                    </formats>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>aggregate</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+        </plugins>
+    </reporting>
+
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-bom</artifactId>
+                <version>${log4j2.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -119,6 +149,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter</artifactId>
@@ -140,7 +171,6 @@
                 <artifactId>server</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-test</artifactId>

@@ -76,8 +76,12 @@ public class QueueReceiver {
             log.error(e.getMessage(), e);
             return;
         }
+        
+        final Date startTime = new Date(System.currentTimeMillis());
         final File targetFile = new File(fileJob.getName());
         log.info("[fileJob] target:{} isDir:{} tasks:{}", fileJob.getName(), targetFile.isDirectory(), fileJob.getTasks());
+        final String outFileName = String.format("%s/metis-%s-%s.csv", props.getReportLocation(), targetFile.getName(), sdf.format(startTime));
+        fileService.createTempReport(outFileName);
         
         final List<File> fileList = new ArrayList<>();
         if (targetFile.isDirectory()) {
@@ -86,8 +90,6 @@ public class QueueReceiver {
             fileList.add(targetFile);
         }
         
-        final String outFileName = props.getReportLocation() + "/report-" + sdf.format(new Date(System.currentTimeMillis())) + ".csv";
-        fileService.createTempReport(outFileName);
         fileService.append(outFileName, "Φάκελος: " + fileJob.getName());
         fileService.append(outFileName, "Έλεγχοι : " + StringUtils.join(fileJob.getTasks(), "-"));
         // add header

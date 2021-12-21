@@ -21,10 +21,7 @@ jobs:
       # Use mvn clean and package as the standard maven build phase
       - run:
           name: Build Java
-          command: mvn -B -DskipTests clean install
-      - run:
-          name: Build Image
-          command: bash build.sh
+          command: mvn -B -DskipTests clean dependency-check:aggregate install
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
