@@ -17,18 +17,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -47,13 +39,8 @@ public class HomeController {
     
     @GetMapping("/")
     public String homePage(Model model) {
-        
         final SortedSet<ReportFileInfo> reportSet = fileService.listReports();
-        SortedSet<ImageFileInfo> imagedirs = fileService.listImages();
-        
-        //        final List<File> files = Arrays.stream(Objects.requireNonNull(new File(props.getFilesLocation()).listFiles())).filter(File::isDirectory).collect(Collectors.toList());
-        //        final SortedMap<String, Long> fileCounts = files.stream().collect(Collectors.toMap(File::getName, file -> Arrays.stream(Objects.requireNonNull(file.listFiles())).filter(file1 -> file1.getName().endsWith(".tif")).count(), (a, b) -> b, TreeMap::new));
-        //
+        final SortedSet<ImageFileInfo> imagedirs = fileService.listImages();
         model.addAttribute("pool", imageProcessingService.getPoolInfo());
         model.addAttribute("reports", reportSet);
         model.addAttribute("imagedirs", imagedirs);
@@ -63,12 +50,12 @@ public class HomeController {
     
     @GetMapping(value = "/run", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public String run(@RequestParam("name") final String name) throws IOException {
-        
+        final String decodedName = fileService.getStringFromHash(name);
         final List<Integer> list = new ArrayList<>();
         list.add(1);
         list.add(2);
         list.add(3);
-        final FileJob job = FileJob.builder().name(props.getFilesLocation() + "/" + name).tasks(list).build();
+        final FileJob job = FileJob.builder().name(props.getFilesLocation() + "/" + decodedName).tasks(list).build();
         
         rabbitTemplate.convertAndSend("metis-jobs", "metis-jobs", mapper.writeValueAsString(job));
         return "redirect:/";

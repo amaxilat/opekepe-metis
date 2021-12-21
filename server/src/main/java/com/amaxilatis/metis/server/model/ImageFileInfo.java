@@ -7,6 +7,7 @@ import lombok.Data;
 @Builder
 public class ImageFileInfo implements Comparable<ImageFileInfo> {
     private final String name;
+    private final String hash;
     private final long count;
     
     @Override
