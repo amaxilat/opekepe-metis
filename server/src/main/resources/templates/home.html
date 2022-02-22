@@ -1,56 +1,8 @@
 <!DOCTYPE HTML>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title th:text="${appName}">AppName</title>
-
-    <link th:rel="stylesheet" th:href="@{webjars/bootstrap/css/bootstrap.min.css} "/>
-    <link rel="stylesheet" type="text/css" th:href="@{css/file-tree.css}"/>
-    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
-          integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
-
-</head>
+<head th:replace="fragments/base :: head"></head>
 <body>
-
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
-    <div class="container">
-        <a class="navbar-brand" href="/">
-            <img th:src="@{/img/metis.png}" width="30" height="30" class="d-inline-block align-top" alt=""/>
-            <span th:text="${appName}">AppName</span>
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
-                aria-controls="navbarResponsive"
-                aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarResponsive">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link">
-                        <span id="dot"
-                              style="height: 15px;  width: 15px;  background-color: #bbb;  border-radius: 50%;  display: inline-block;"></span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link">
-                        Θέσεις:
-                        &nbsp;
-                        <span id="pool-active" th:text="${pool.active}">0</span>
-                        /
-                        <span id="pool-max" th:text="${pool.max}">0</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link">
-                        Ουρά:
-                        &nbsp;
-                        <span id="pool-pending" th:text="${pool.pending}">0</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+<nav th:replace="fragments/navbar :: navbar"></nav>
 
 <div class="container">
 
@@ -67,114 +19,39 @@
                     <div id="collapseFiles" class="collapse show" data-parent="#accordionFiles">
                         <div class="card-body">
                             <ul id="file-tree" class="file-tree">
-                                <th:block th:each="imagedir: ${imagedirs}">
-                                    <li>
-                                    <span class="folder-name">
-                                        <span th:text="${imagedir.name}+' ('+${imagedir.count} +' images)'"></span>
-                                            <a class="" data-toggle="modal"
-                                               th:attr="data-target='#modal-'+${imagedir.hash}">
-                                                <i class="fas fa-search text-info"></i>
-                                            </a>
-                                    </span>
+                                <th:block th:each="imageDirectory: ${imageDirectories}">
+                                    <li style="min-height: 35px">
+                                        <span class="folder-name">
+                                            <span th:text="${imageDirectory.name}+' ('+${imageDirectory.count} +' images)'"></span>
+                                            <div class="btn-group btn-group-sm close" role="group"
+                                                 aria-label="report actions">
+                                                <a type="button" class="btn btn-primary"
+                                                   th:href="'/view/'+${imageDirectory.hash}">
+                                                    <i class="fas fa-arrow-right"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-primary btn-sm"
+                                                        data-toggle="modal"
+                                                        th:attr="data-target='#modal-run-'+${imageDirectory.hash}">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-warning btn-sm"
+                                                        data-toggle="modal"
+                                                        th:attr="data-target='#modal-clean-'+${imageDirectory.hash}">
+                                                    <i class="fas fa-eraser"></i>
+                                                </button>
+                                            </div>
+                                        </span>
                                         <ul>
                                         </ul>
                                     </li>
                                 </th:block>
                             </ul>
-                            <th:block th:each="imagedir: ${imagedirs}">
-                                <div class="modal fade" th:id="'modal-'+${imagedir.hash}" tabindex="-1"
-                                     aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="exampleModalLabel"
-                                                    th:text="${imagedir.name}">
-                                                    Modal title</h5>
-                                                <button type="button" class="close" data-dismiss="modal"
-                                                        aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form>
-                                                    <div class="form-group form-check">
-                                                        <input type="checkbox" class="form-check-input"
-                                                               checked="checked" th:id="'check1-'+${imagedir.hash}">
-                                                        <label class="form-check-label"
-                                                               th:attr="for='check1-'+${imagedir.hash}">
-                                                            Έλεγχος 1: Χωρική Ανάλυση</label>
-                                                    </div>
-                                                    <div class="form-group form-check">
-                                                        <input type="checkbox" class="form-check-input"
-                                                               checked="checked" th:id="'check2-'+${imagedir.hash}">
-                                                        <label class="form-check-label"
-                                                               th:attr="for='check2-'+${imagedir.hash}">
-                                                            Έλεγχος 2: Ραδιομετρική Ανάλυση</label>
-                                                    </div>
-                                                    <div class="form-group form-check">
-                                                        <input type="checkbox" class="form-check-input"
-                                                               checked="checked" th:id="'check3-'+${imagedir.hash}">
-                                                        <label class="form-check-label"
-                                                               th:attr="for='check3-'+${imagedir.hash}">
-                                                            Έλεγχος 3: Φασματική Ανάλυση</label>
-                                                    </div>
-                                                    <div class="form-group form-check">
-                                                        <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check4-'+${imagedir.hash}">
-                                                        <label class="form-check-label"
-                                                               th:attr="for='check4-'+${imagedir.hash}">
-                                                            Έλεγχος 4: Νεφοκάλυψη</label>
-                                                    </div>
-                                                    <div class="form-group form-check">
-                                                        <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check5-'+${imagedir.hash}">
-                                                        <label class="form-check-label"
-                                                               th:attr="for='check5-'+${imagedir.hash}">
-                                                            Έλεγχος 5: Ολικό clipping</label>
-                                                    </div>
-                                                    <div class="form-group form-check">
-                                                        <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check6-'+${imagedir.hash}">
-                                                        <label class="form-check-label"
-                                                               th:attr="for='check6-'+${imagedir.hash}">
-                                                            Έλεγχος 6: Κορυφής Ιστογράμματος</label>
-                                                    </div>
-                                                    <div class="form-group form-check">
-                                                        <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check7-'+${imagedir.hash}">
-                                                        <label class="form-check-label"
-                                                               th:attr="for='check7-'+${imagedir.hash}">
-                                                            Έλεγχος 7: Αντίθεσης</label>
-                                                    </div>
-                                                    <div class="form-group form-check">
-                                                        <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check8-'+${imagedir.hash}">
-                                                        <label class="form-check-label"
-                                                               th:attr="for='check8-'+${imagedir.hash}">
-                                                            Έλεγχος 8: Συμπίεσης</label>
-                                                    </div>
-                                                    <div class="form-group form-check">
-                                                        <input type="checkbox" class="form-check-input"
-                                                               disabled="disabled" th:id="'check9-'+${imagedir.hash}">
-                                                        <label class="form-check-label"
-                                                               th:attr="for='check9-'+${imagedir.hash}">
-                                                            Έλεγχος 9: Ομοιογενών Αντικειμένων</label>
-                                                    </div>
+                            <th:block th:each="imageDirectory: ${imageDirectories}"
+                                      th:with="imageDirectoryHash=${imageDirectory.hash}, imageDirectoryName=${imageDirectory.name}">
+                                <div th:replace="fragments/modals :: modal-run"></div>
+                                <div th:replace="fragments/modals :: modal-clean"></div>
 
 
-                                                </form>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                                                    Close
-                                                </button>
-                                                <a type="button" class="btn btn-primary"
-                                                   th:href="'run?name='+${imagedir.hash}">Εκτέλεση
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </th:block>
                         </div>
                     </div>
@@ -194,49 +71,56 @@
                         <div class="card-body">
                             <ul id="reports-tree" class="file-tree">
                                 <th:block th:each="report: ${reports}">
-                                    <li>
-                                        <span th:text="${report.directory}"></span>
-                                        &nbsp;
-                                        <span class="badge badge-secondary" th:text="${report.date}"></span>
-                                        <a th:href="'download?name='+${report.name}">
-                                            <i class="fas fa-download text-info"></i>
-                                        </a>
-                                        <a data-toggle="modal" th:attr="data-target='#modal-delete-'+${report.hash}">
-                                            <i class="fas fa-trash text-danger"></i>
-                                        </a>
+                                    <li style="min-height: 35px">
+                                        <span>
+                                            <span th:text="${report.directory}"></span>
+                                            <span class="badge badge-secondary" th:text="${report.date}"></span>
+                                            <div class="btn-group btn-group-sm close" role="group"
+                                                 aria-label="report actions">
+                                                <a type="button" class="btn btn-info"
+                                                   th:href="'download?name='+${report.name}">
+                                                    <i class="fas fa-file-export"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-danger btn-sm"
+                                                        data-toggle="modal"
+                                                        th:attr="data-target='#modal-delete-'+${report.hash}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
 
-                                        <div class="modal fade" th:id="'modal-delete-'+${report.hash}" tabindex="-1"
-                                             aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="exampleModalLabel"
-                                                            th:text="${report.directory}">
-                                                            Modal title</h5>
-                                                        <button type="button" class="close" data-dismiss="modal"
-                                                                aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        Είστε σίγουροι οτι θέλετε να διαγράψετε την αναφορά<br/>
-                                                        <span class="text-muted" th:text="${report.directory}"></span>
-                                                        &nbsp;
-                                                        <span class="text-muted" th:text="${report.date}"></span>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary"
-                                                                data-dismiss="modal">
-                                                            Close
-                                                        </button>
-                                                        <a type="button" class="btn btn-danger"
-                                                           th:href="'report/delete?hash='+${report.hash}">Διαγραφή
-                                                        </a>
+                                            <div class="modal fade" th:id="'modal-delete-'+${report.hash}" tabindex="-1"
+                                                 aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="exampleModalLabel"
+                                                                th:text="${report.directory}">
+                                                                Modal title</h5>
+                                                            <button type="button" class="close" data-dismiss="modal"
+                                                                    aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            Είστε σίγουροι οτι θέλετε να διαγράψετε την αναφορά<br/>
+                                                            <span class="text-muted"
+                                                                  th:text="${report.directory}"></span>
+                                                            &nbsp;
+                                                            <span class="text-muted" th:text="${report.date}"></span>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary"
+                                                                    data-dismiss="modal">
+                                                                Close
+                                                            </button>
+                                                            <a type="button" class="btn btn-danger"
+                                                               th:href="'report/delete?hash='+${report.hash}">Διαγραφή
+                                                            </a>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-
+                                        </span>
                                     </li>
                                 </th:block>
                             </ul>
@@ -248,15 +132,7 @@
     </div>
 
 </div>
-
-
-<script th:src="@{/webjars/jquery/jquery.min.js}"></script>
-<script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
-<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
-<script src="/webjars/sockjs-client/sockjs.min.js"></script>
-<script src="/webjars/stomp-websocket/stomp.min.js"></script>
-<script th:src="@{js/file-tree.js}"></script>
-<script th:src="@{js/app.js}"></script>
+<th:block th:replace="fragments/base :: script"></th:block>
 
 <script type="text/javascript">
     window.onload = function () {

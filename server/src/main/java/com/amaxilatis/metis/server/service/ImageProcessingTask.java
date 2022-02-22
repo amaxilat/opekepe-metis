@@ -2,8 +2,10 @@ package com.amaxilatis.metis.server.service;
 
 import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.server.rabbit.FileService;
-import com.amaxilatis.metis.util.Utils;
+import com.amaxilatis.metis.util.ImageCheckerUtils;
+import com.drew.imaging.ImageProcessingException;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.xml.sax.SAXException;
@@ -14,33 +16,35 @@ import java.util.List;
 
 @Slf4j
 @AllArgsConstructor
+@RequiredArgsConstructor
 public class ImageProcessingTask implements Runnable {
     
     private FileService fileService;
     private final String outFileName;
-    private String name;
+    private String filename;
     private List<Integer> tasks;
     
     public void run() {
         log.info(outFileName);
         long start = System.currentTimeMillis();
         try {
-            File file = new File(name);
-            log.info("parsing file {}", file);
-            final List<FileJobResult> results = Utils.parseFile(file, tasks);
+            final File imageFile = new File(filename);
+            log.info("parsing file {}", imageFile);
+            final List<FileJobResult> results = ImageCheckerUtils.parseFile(imageFile, tasks, fileService.getResultsLocation());
             
             final StringBuilder sb = new StringBuilder();
-            sb.append("\"").append(file.getName()).append("\"").append(",");
+            sb.append("\"").append(imageFile.getName()).append("\"").append(",");
             results.forEach(result -> sb.append(String.format("\"%s\"", result.getResult() ? "ΟΚ" : "ΛΑΘΟΣ")).append(","));
             results.forEach(result -> sb.append(String.format("\"%s\"", result.getNote())).append(","));
             
             fileService.append(outFileName, sb.toString());
             
-            //append2Excel(sheet, results);
-            log.info("parsed file [{}s] {} {}", ((System.currentTimeMillis() - start) / 1000), file, results);
-        } catch (IOException | TikaException | SAXException e) {
+            log.info("parsed file [{}s] {} {}", ((System.currentTimeMillis() - start) / 1000), imageFile, results);
+            log.info("processing complete {}", System.currentTimeMillis());
+        } catch (IOException | TikaException | SAXException | ImageProcessingException e) {
             log.error(e.getMessage(), e);
         }
     }
     
 }
+

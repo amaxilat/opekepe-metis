@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/base :: head"></head>
+<body>
+<nav th:replace="fragments/navbar :: navbar"></nav>
+
+<div class="container">
+
+    <div class="row">
+        <div class="col-md-12 mt-5" th:with="imageDirectoryHash=${imageDirectoryHash}, imageDirectoryName=${imageDir}">
+            <h1>Φάκελος: <span id="directory" th:text="${imageDir}"></span>
+
+                <div class="btn-group" role="group"
+                     aria-label="report actions">
+                    <button type="button" class="btn btn-primary"
+                            data-toggle="modal"
+                            th:attr="data-target='#modal-run-'+${imageDirectoryHash}">
+                        <i class="fas fa-search"></i>
+                    </button>
+
+                    <button type="button" class="btn btn-warning"
+                            data-toggle="modal"
+                            th:attr="data-target='#modal-clean-'+${imageDirectoryHash}">
+                        <i class="fas fa-eraser"></i>
+                    </button>
+
+                    <a class="btn btn-info disabled" th:href="'download?name='+${imageDir}">
+                        <i class="fas fa-file-export"></i>
+                    </a>
+                </div>
+            </h1>
+
+            <div th:replace="fragments/modals :: modal-run"></div>
+            <div th:replace="fragments/modals :: modal-clean"></div>
+
+        </div>
+        <div class="col-md-12 mt-5">
+            <h2>
+                <span class="col-md-6">Εικόνα:</span>
+                <select id="imagelist" class="selectpicker form-control col-md-6" data-live-search="true">
+                    <option th:each="image : ${images}"
+                            th:text="${image.name}" th:title="${image.name}" th:value="${image.hash}">
+                        image
+                    </option>
+                </select>
+                <div class="btn-group" role="group" aria-label="image actions">
+                    <a class="btn btn-info" id="image-download-button" target="_blank">
+                        <i class="fas fa-file-download"></i>
+                    </a>
+                    <a class="btn btn-info disabled"><i class="fas fa-file-export"></i></a>
+                </div>
+
+            </h2>
+
+
+        </div>
+        <div class="col-md-12 mt-5">
+            <h3>Αποτελέσματα Ελέγχων</h3>
+            <br/>
+            <div id="imageResultsBody">
+                <div class="media test-result" th:each="test : ${tests}" th:classappend="'test-result-'+${test.id}">
+                    <img th:src="@{/img/t1.png}" class="mr-3 result-value-true" alt="..." style="width: 50px">
+                    <img th:src="@{/img/f1.png}" class="mr-3 result-value-false" alt="..." style="width: 50px">
+                    <div class="media-body">
+                        <h4 class="mt-0">
+                            <span th:text="${test.name}">Έλεγχος</span>
+                            <span class="result-value-true">Σωστό</span>
+                            <span class="result-value-false">Λάθος</span>
+                        </h4>
+                        <p class="test-result-note">
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<th:block th:replace="fragments/base :: script"></th:block>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    const imageDirectoryHash = /*[[${imageDirectoryHash}]]*/ '';
+
+    /*]]>*/
+    function reloadFile() {
+        $('#image-download-button').attr('href', '/api/image/' + imageDirectoryHash + '/' + $("#imagelist").val() + '/download');
+        $.get("/api/image/" + imageDirectoryHash + "/" + $("#imagelist").val(), function (data) {
+            console.log(data)
+            $("#imageResultsBody .test-result").hide();
+            data.forEach(function (datum) {
+                $("#imageResultsBody .test-result-" + datum.task).show();
+                $("#imageName").text(`${datum.name}`);
+                if (datum.result) {
+                    $("#imageResultsBody .test-result-" + datum.task).find(".result-value-false").hide();
+                    $("#imageResultsBody .test-result-" + datum.task).find(".result-value-true").show();
+                } else {
+                    $("#imageResultsBody .test-result-" + datum.task).find(".result-value-true").hide();
+                    $("#imageResultsBody .test-result-" + datum.task).find(".result-value-false").show();
+                }
+                $("#imageResultsBody .test-result-" + datum.task).find(".test-result-note").text(datum.note);
+            });
+        });
+    }
+
+    $(document).ready(function () {
+        connect();
+        $('.selectpicker').selectpicker();
+        $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
+            reloadFile();
+        });
+        $('.selectpicker').trigger('change');
+    });
+</script>
+</body>
+</html>

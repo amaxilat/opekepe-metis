@@ -97,6 +97,7 @@ public class QueueReceiver {
         fileJob.getTasks().stream().map(integer -> String.format("ΕΛΕΓΧΟΣ %d", integer)).forEach(titles::add);
         fileJob.getTasks().stream().map(integer -> String.format("ΠΑΡΑΤΗΡΗΣΕΙΣ %d", integer)).forEach(titles::add);
         fileService.append(outFileName, titles);
+        log.info("processing start {}", System.currentTimeMillis());
         fileList.forEach(file -> imageProcessingService.processFile(outFileName, file.getPath(), fileJob.getTasks()));
     }
 }

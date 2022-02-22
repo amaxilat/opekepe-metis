@@ -13,7 +13,7 @@ spring:
     mode: HTML
     encoding: UTF-8
     enabled: true
-    #prefix: classpath:/templates/
+    #    prefix: classpath:/templates/
     prefix: file:src/main/resources/templates/
     suffix: .html
   web:
@@ -29,6 +29,7 @@ logging:
 
 metis:
   reportLocation: reports
+  resultsLocation: results
   filesLocation: "S:\\OPEKEPE\\"
   version: 0.3.1-SNAPSHOT
   processing:
