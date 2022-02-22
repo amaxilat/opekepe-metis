@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+@SuppressWarnings("SameReturnValue")
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -37,8 +38,9 @@ public class ReportController {
         return IOUtils.toByteArray(in);
     }
     
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @GetMapping(value = "/report/delete", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public String reportDelete(@RequestParam("hash") final String hash) throws IOException {
+    public String reportDelete(@RequestParam("hash") final String hash) {
         final String decodedName = fileService.getStringFromHash(hash);
         final String decodedNameXlsx = fileService.csv2xlsxName(decodedName);
         new File(props.getReportLocation() + "/" + decodedName).delete();

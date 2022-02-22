@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/base :: head"></head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top" th:fragment="navbar">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <img th:src="@{/img/metis.png}" width="30" height="30" class="d-inline-block align-top" alt=""/>
+            <span th:text="${appName}">AppName</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link">
+                        <span id="dot"
+                              style="height: 15px;  width: 15px;  background-color: #bbb;  border-radius: 50%;  display: inline-block;"></span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link">
+                        Θέσεις:
+                        &nbsp;
+                        <span id="pool-active" th:text="${pool.active}">0</span>
+                        /
+                        <span id="pool-max" th:text="${pool.max}">0</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link">
+                        Ουρά:
+                        &nbsp;
+                        <span id="pool-pending" th:text="${pool.pending}">0</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<th:block th:replace="fragments/base :: script"></th:block>
+
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head">
+    <meta charset="UTF-8"/>
+    <title th:text="${appName}">AppName</title>
+
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css} "/>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/file-tree.css}"/>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+          integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+    <link rel="stylesheet" th:href="@{/css/bootstrap-select.min.css}"/>
+
+</head>
+<body>
+<div th:fragment="modal-run" class="modal fade" th:id="'modal-run-'+${imageDirectoryHash}" tabindex="-1"
+     aria-labelledby="runModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="runModalLabel" th:text="${imageDirectoryName}">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" th:action="@{/run}">
+                <div class="modal-body">
+                    <input type="hidden" class="form-check-input" name="name" th:value="${imageDirectoryHash}"/>
+                    <div class="form-group form-check" th:each="test : ${tests}">
+                        <input type="checkbox" class="form-check-input" name="tasks"
+                               th:id="'check-'+${test.name}+'-'+${imageDirectoryHash}" th:value="${test.id}"
+                               th:checked="${test.enabled}" th:disabled="${!test.enabled}"/>
+                        <label class="form-check-label" th:text="${test.name}"
+                               th:attr="for='check-'+${test.name}+'-'+${imageDirectoryHash}">
+                            Έλεγχος
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"> Close</button>
+                    <button type="submit" class="btn btn-primary">Εκτέλεση</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div th:fragment="modal-clean" class="modal fade" th:id="'modal-clean-'+${imageDirectoryHash}" tabindex="-1"
+     aria-labelledby="cleanModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cleanModalLabel" th:text="${imageDirectoryName}">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="clean">
+                <div class="modal-body">
+                    Διαγραφή αποθηκευμένων αποτελεσμάτων;
+
+                    <input type="hidden" class="form-check-input" name="name" th:value="${imageDirectoryHash}">
+                    <div class="form-group form-check" th:each="test : ${tests}">
+                        <input type="checkbox" class="form-check-input" name="tasks"
+                               th:id="'clean-'+${test.name}+'-'+${imageDirectoryHash}" th:value="${test.id}"
+                               th:checked="${test.enabled}">
+                        <label class="form-check-label" th:text="${test.name}"
+                               th:attr="for='clean-'+${test.name}+'-'+${imageDirectoryHash}">
+                            Έλεγχος
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal"> Close</button>
+                    <button type="submit" class="btn btn-primary">Διαγραφή</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<th:block th:replace="fragments/base :: script"></th:block>
+</body>
+</html>

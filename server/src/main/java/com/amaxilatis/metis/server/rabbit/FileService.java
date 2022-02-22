@@ -1,10 +1,12 @@
 package com.amaxilatis.metis.server.rabbit;
 
 import com.adobe.internal.xmp.impl.Base64;
+import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.model.ImageFileInfo;
 import com.amaxilatis.metis.server.model.ReportFileInfo;
 import com.drew.lang.Charsets;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -31,12 +34,22 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import static com.amaxilatis.metis.util.FileUtils.getResultName;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileService {
     
     private final MetisProperties props;
+    
+    public String getResultsLocation() {
+        return props.getResultsLocation();
+    }
+    
+    public String getFilesLocation() {
+        return props.getFilesLocation();
+    }
     
     public void createTempReport(final String name) {
         writeToFile(name, "", false);
@@ -146,11 +159,56 @@ public class FileService {
         return imagesSet;
     }
     
+    public SortedSet<ImageFileInfo> listImages(final String directory) {
+        final SortedSet<ImageFileInfo> imagesSet = new TreeSet<>();
+        Arrays.stream(new File(props.getFilesLocation(), directory).listFiles()).filter(file -> file.getName().endsWith(".tif")).forEach(file -> imagesSet.add(ImageFileInfo.builder().name(file.getName()).hash(getStringHash(file.getName())).build()));
+        return imagesSet;
+    }
+    
     public String getStringHash(String name) {
         return Base64.encode(name).replaceAll("=", "-");
     }
     
     public String getStringFromHash(String hash) {
         return Base64.decode(hash.replaceAll("-", "="));
+    }
+    
+    public void clean(String directory, List<Integer> tasks) {
+        File filesDir = new File(props.getFilesLocation());
+        File filesSubDir = new File(filesDir, directory);
+        final List<File> fileList = new ArrayList<>();
+        Arrays.stream(Objects.requireNonNull(filesSubDir.listFiles())).filter(file -> file.getName().endsWith(".tif")).forEach(fileList::add);
+        for (final File file : fileList) {
+            cleanFileResults(directory, file);
+        }
+    }
+    
+    private void cleanFileResults(String directory, File file) {
+        File resultsDir = new File(props.getResultsLocation(), directory);
+        for (int task = 0; task < 10; task++) {
+            File f = new File(resultsDir, getResultName(file, task));
+            f.delete();
+        }
+    }
+    
+    public List<FileJobResult> getImageResults(String decodedImageDir, String decodedImage) {
+        File resultsDir = new File(props.getResultsLocation(), decodedImageDir);
+        File image = new File(resultsDir, decodedImage);
+        List<FileJobResult> results = new ArrayList<>();
+        for (int task = 0; task < 10; task++) {
+            File f = new File(resultsDir, getResultName(image, task));
+            if (f.exists()) {
+                try {
+                    results.add(parseResult(f));
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+        return results;
+    }
+    
+    private FileJobResult parseResult(File f) throws IOException {
+        return new ObjectMapper().readValue(f, FileJobResult.class);
     }
 }
