@@ -1,11 +1,11 @@
 spring:
   jmx:
     enabled: false
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: rabbituser
-    password: 6561YM4COS
+  #  rabbitmq:
+  #    host: localhost
+  #    port: 5672
+  #    username: rabbituser
+  #    password: 6561YM4COS
   application:
     name: Metis
   thymeleaf:
@@ -20,6 +20,15 @@ spring:
     resources:
       cache:
         period: 0
+  datasource:
+    url: jdbc:h2:file:./metis.db
+    username: sa
+    password: password
+    driverClassName: org.h2.Driver
+  jpa:
+    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
 
 logging:
   level:
@@ -30,6 +39,7 @@ logging:
 metis:
   reportLocation: reports
   resultsLocation: results
+  #  filesLocation: files
   filesLocation: "S:\\OPEKEPE\\"
   version: 0.3.1-SNAPSHOT
   processing:

@@ -1,4 +1,4 @@
-package com.amaxilatis.metis.server.rabbit;
+package com.amaxilatis.metis.server.service;
 
 import com.adobe.internal.xmp.impl.Base64;
 import com.amaxilatis.metis.model.FileJobResult;
@@ -12,6 +12,7 @@ import com.opencsv.exceptions.CsvException;
 import lombok.RequiredArgsConstructor;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -20,16 +21,23 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -137,40 +145,83 @@ public class FileService {
         cell.setCellValue(text);
     }
     
-    public SortedSet<ReportFileInfo> listReports() {
-        final List<File> reports = Arrays.stream(Objects.requireNonNull(new File(props.getReportLocation()).listFiles())).filter(file -> file.getName().endsWith(".csv")).collect(Collectors.toList());
-        final SortedSet<ReportFileInfo> reportSet = new TreeSet<>();
-        reports.forEach(report -> {
-            try {
-                final String[] parts = report.getName().replaceAll("\\.csv", "").split("-", 3);
-                
-                reportSet.add(ReportFileInfo.builder().directory(parts[1]).date(parts[2]).name(report.getName()).hash(getStringHash(report.getName())).path(report.toPath().toString()).size((double) Files.size(report.toPath())).build());
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            }
-        });
-        return reportSet;
+//    public SortedSet<ReportFileInfo> listReports() {
+//        final List<File> reports = Arrays.stream(Objects.requireNonNull(new File(props.getReportLocation()).listFiles())).filter(file -> file.getName().endsWith(".csv")).collect(Collectors.toList());
+//        final SortedSet<ReportFileInfo> reportSet = new TreeSet<>();
+//        reports.forEach(report -> {
+//            try {
+//                final String[] parts = report.getName().replaceAll("\\.csv", "").split("-", 3);
+//
+//                //                reportSet.add(ReportFileInfo.builder().directory(parts[1]).date(parts[2]).name(report.getName()).hash(getStringHash(report.getName())).path(report.toPath().toString()).size((double) Files.size(report.toPath())).build());
+//                reportSet.add(ReportFileInfo.builder()
+//                        .directory(parts[1])
+//                        .name(report.getName())
+//                        .hash(getStringHash(report.getName()))
+//                        .path(report.toPath().toString())
+//                        .size((double) Files.size(report.toPath()))
+//                        .build());
+//            } catch (IOException e) {
+//                log.error(e.getMessage(), e);
+//            }
+//        });
+//        return reportSet;
+//    }
+    
+    
+    Map<String, SortedSet<ImageFileInfo>> images = new HashMap<>();
+    SortedSet<ImageFileInfo> imagesDirs = new TreeSet<>();
+    
+    @PostConstruct
+    public void init() {
+        updateImageDirs();
     }
     
-    public SortedSet<ImageFileInfo> listImages() {
-        final SortedSet<ImageFileInfo> imagesSet = new TreeSet<>();
-        final List<File> files = Arrays.stream(Objects.requireNonNull(new File(props.getFilesLocation()).listFiles())).filter(File::isDirectory).collect(Collectors.toList());
-        files.forEach(file -> imagesSet.add(ImageFileInfo.builder().name(file.getName()).hash(getStringHash(file.getName())).count(Arrays.stream(file.listFiles()).filter(file1 -> file1.getName().endsWith(".tif")).count()).build()));
-        return imagesSet;
+    public void updateImageDirs() {
+        long start = System.currentTimeMillis();
+        imagesDirs.clear();
+        images.clear();
+        final File[] imageDirectoryList = new File(props.getFilesLocation()).listFiles(File::isDirectory);
+        if (imageDirectoryList != null) {
+            for (final File imagesDirectory : imageDirectoryList) {
+                final String imagesDirectoryName = imagesDirectory.getName();
+                images.put(imagesDirectoryName, new TreeSet<>());
+                final Set<ImageFileInfo> imageSet = new HashSet<>();
+                long count = 0;
+                final File[] filesList = imagesDirectory.listFiles(File::isFile);
+                if (filesList != null) {
+                    for (final File image : filesList) {
+                        if (image.getName().endsWith(".tif")) {
+                            count++;
+                            imageSet.add(ImageFileInfo.builder().name(image.getName()).hash(getStringHash(image.getName())).build());
+                        }
+                    }
+                }
+                if (count > 0) {
+                    images.get(imagesDirectoryName).addAll(imageSet);
+                    imagesDirs.add(ImageFileInfo.builder().name(imagesDirectoryName).hash(getStringHash(imagesDirectoryName)).count(count).build());
+                }
+            }
+        }
+        log.info("updateImageDirs took {}ms", (System.currentTimeMillis() - start));
+    }
+    
+    public SortedSet<ImageFileInfo> getImagesDirs() {
+        return imagesDirs;
     }
     
     public SortedSet<ImageFileInfo> listImages(final String directory) {
-        final SortedSet<ImageFileInfo> imagesSet = new TreeSet<>();
-        Arrays.stream(new File(props.getFilesLocation(), directory).listFiles()).filter(file -> file.getName().endsWith(".tif")).forEach(file -> imagesSet.add(ImageFileInfo.builder().name(file.getName()).hash(getStringHash(file.getName())).build()));
-        return imagesSet;
+        return images.get(directory);
     }
     
     public String getStringHash(String name) {
-        return Base64.encode(name).replaceAll("=", "-");
+        //return Base64.encode(name).replaceAll("=", "-");
+        //return DigestUtils.md5Hex(name);
+        return URLEncoder.encode(name, Charsets.UTF_8);
     }
     
     public String getStringFromHash(String hash) {
-        return Base64.decode(hash.replaceAll("-", "="));
+        //return Base64.decode(hash.replaceAll("-", "="));
+        return URLDecoder.decode(hash, Charsets.UTF_8);
     }
     
     public void clean(String directory, List<Integer> tasks) {

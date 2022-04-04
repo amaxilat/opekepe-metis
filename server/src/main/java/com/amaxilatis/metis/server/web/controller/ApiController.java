@@ -2,10 +2,9 @@ package com.amaxilatis.metis.server.web.controller;
 
 import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.server.model.ImageFileInfo;
-import com.amaxilatis.metis.server.model.ReportFileInfo;
-import com.amaxilatis.metis.server.rabbit.FileService;
+import com.amaxilatis.metis.server.model.PoolInfo;
+import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
-import com.amaxilatis.metis.server.service.PoolInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.IOUtils;
@@ -26,6 +25,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.SortedSet;
 
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.*;
+
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -35,33 +36,41 @@ public class ApiController {
     private final FileService fileService;
     
     @ResponseBody
-    @GetMapping(value = "/api/pool", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = API_POOL, produces = MediaType.APPLICATION_JSON_VALUE)
     public PoolInfo apiPool() {
         return imageProcessingService.getPoolInfo();
     }
     
     @ResponseBody
-    @GetMapping(value = "/api/report", produces = MediaType.APPLICATION_JSON_VALUE)
-    public SortedSet<ReportFileInfo> apiReports() {
-        return fileService.listReports();
+    @GetMapping(value = API_SCAN_IMAGES, produces = MediaType.APPLICATION_JSON_VALUE)
+    public SortedSet<ImageFileInfo> scanImages() {
+        fileService.updateImageDirs();
+        return apiImages();
     }
     
     @ResponseBody
-    @GetMapping(value = "/api/image", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = API_IMAGE, produces = MediaType.APPLICATION_JSON_VALUE)
     public SortedSet<ImageFileInfo> apiImages() {
-        return fileService.listImages();
+        return fileService.getImagesDirs();
     }
     
     @ResponseBody
-    @GetMapping(value = "/api/image/{imageDirectoryHash}/{imageHash}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<FileJobResult> apiImages(@PathVariable final String imageDirectoryHash, @PathVariable final String imageHash) {
+    @GetMapping(value = API_IMAGE_DIRECTORY, produces = MediaType.APPLICATION_JSON_VALUE)
+    public SortedSet<ImageFileInfo> apiImagesInDirectory(@PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash) {
+        final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
+        return fileService.listImages(decodedImageDir);
+    }
+    
+    @ResponseBody
+    @GetMapping(value = API_IMAGE_DIRECTORY_IMAGE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<FileJobResult> apiImages(@PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         return fileService.getImageResults(decodedImageDir, decodedImage);
     }
     
-    @GetMapping(value = "/api/image/{imageDirectoryHash}/{imageHash}/download", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<InputStreamResource> apiDownloadImage(final HttpServletResponse response, @PathVariable final String imageDirectoryHash, @PathVariable final String imageHash) throws IOException {
+    @GetMapping(value = API_IMAGE_DIRECTORY_IMAGE_DOWNLOAD, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<InputStreamResource> apiDownloadImage(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) throws IOException {
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final InputStream resource = new FileInputStream(new File(new File(fileService.getFilesLocation(), decodedImageDir), decodedImage));

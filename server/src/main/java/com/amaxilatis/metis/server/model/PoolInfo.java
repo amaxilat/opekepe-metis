@@ -1,4 +1,4 @@
-package com.amaxilatis.metis.server.service;
+package com.amaxilatis.metis.server.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

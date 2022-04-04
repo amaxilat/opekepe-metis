@@ -1,16 +1,6 @@
 <!DOCTYPE HTML>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:fragment="head">
-    <meta charset="UTF-8"/>
-    <title th:text="${appName}">AppName</title>
-
-    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css} "/>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/file-tree.css}"/>
-    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
-          integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
-    <link rel="stylesheet" th:href="@{/css/bootstrap-select.min.css}"/>
-
-</head>
+<head th:replace="fragments/base :: head"></head>
 <body>
 <div th:fragment="modal-run" class="modal fade" th:id="'modal-run-'+${imageDirectoryHash}" tabindex="-1"
      aria-labelledby="runModalLabel" aria-hidden="true">
@@ -22,7 +12,8 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form method="post" th:action="@{/run}">
+            <form method="post"
+                  th:action="${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).ACTION_RUN}">
                 <div class="modal-body">
                     <input type="hidden" class="form-check-input" name="name" th:value="${imageDirectoryHash}"/>
                     <div class="form-group form-check" th:each="test : ${tests}">
@@ -53,7 +44,8 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form method="post" action="clean">
+            <form method="post"
+                  th:action="${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).ACTION_CLEAN}">
                 <div class="modal-body">
                     Διαγραφή αποθηκευμένων αποτελεσμάτων;
 
@@ -76,6 +68,70 @@
         </div>
     </div>
 </div>
+<div th:fragment="modal-delete-report(modalId)" class="modal fade" th:id="${modalId}" tabindex="-1"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Διαγραφή&nbsp;Αναφοράς&nbsp;
+                    <span id="deleteReportId"></span></h5>
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="col-xl-12 col-md-12 mb-12">
+                    Είστε σίγουροι οτι θέλετε να διαγράψετε την παρακάτω
+                    αναφορά;
+                    <br/>
+                    <br/>
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1"
+                                         id="deleteReportName">
+                                        Report Name
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800"
+                                         id="deleteReportDirectory">
+                                        directory
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800"
+                                         id="deleteReportDate">
+                                        directory
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-file-contract fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <a type="button" class="btn btn-danger" onclick="deleteReportFromModal()">Διαγραφή</a>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const report_delete_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_REPORT_DELETE}]];
+
+        /*]]>*/
+        function deleteReportFromModal() {
+            let reportId = $($('#dataTable2 tbody tr.selected td')[0]).text();
+            $.get(report_delete_url.replace("{reportId}", reportId), function (result) {
+                location.reload();
+            })
+        }
+    </script>
+</div>
+
 <th:block th:replace="fragments/base :: script"></th:block>
 </body>
 </html>

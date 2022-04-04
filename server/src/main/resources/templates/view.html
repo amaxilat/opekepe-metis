@@ -2,116 +2,177 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/base :: head"></head>
 <body>
-<nav th:replace="fragments/navbar :: navbar"></nav>
 
-<div class="container">
+<!-- Page Wrapper -->
+<div id="wrapper">
 
-    <div class="row">
-        <div class="col-md-12 mt-5" th:with="imageDirectoryHash=${imageDirectoryHash}, imageDirectoryName=${imageDir}">
-            <h1>Φάκελος: <span id="directory" th:text="${imageDir}"></span>
+    <nav th:replace="fragments/navbar :: sidebar2"></nav>
 
-                <div class="btn-group" role="group"
-                     aria-label="report actions">
-                    <button type="button" class="btn btn-primary"
-                            data-toggle="modal"
-                            th:attr="data-target='#modal-run-'+${imageDirectoryHash}">
-                        <i class="fas fa-search"></i>
-                    </button>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
 
-                    <button type="button" class="btn btn-warning"
-                            data-toggle="modal"
-                            th:attr="data-target='#modal-clean-'+${imageDirectoryHash}">
-                        <i class="fas fa-eraser"></i>
-                    </button>
+        <!-- Main Content -->
+        <div id="content">
 
-                    <a class="btn btn-info disabled" th:href="'download?name='+${imageDir}">
-                        <i class="fas fa-file-export"></i>
-                    </a>
-                </div>
-            </h1>
+            <nav th:replace="fragments/navbar :: navbar2"></nav>
 
-            <div th:replace="fragments/modals :: modal-run"></div>
-            <div th:replace="fragments/modals :: modal-clean"></div>
+            <!-- Begin Page Content -->
+            <div class="container-fluid">
 
-        </div>
-        <div class="col-md-12 mt-5">
-            <h2>
-                <span class="col-md-6">Εικόνα:</span>
-                <select id="imagelist" class="selectpicker form-control col-md-6" data-live-search="true">
-                    <option th:each="image : ${images}"
-                            th:text="${image.name}" th:title="${image.name}" th:value="${image.hash}">
-                        image
-                    </option>
-                </select>
-                <div class="btn-group" role="group" aria-label="image actions">
-                    <a class="btn btn-info" id="image-download-button" target="_blank">
-                        <i class="fas fa-file-download"></i>
-                    </a>
-                    <a class="btn btn-info disabled"><i class="fas fa-file-export"></i></a>
+                <!-- Page Heading -->
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">Φάκελος: <span id="directory" th:text="${imageDir}"></span></h1>
+
+                    <div class="btn-group" role="group" aria-label="report actions">
+                        <button type="button"
+                                data-toggle="modal" th:attr="data-target='#modal-run-'+${imageDirectoryHash}"
+                                class="d-none d-sm-inline-block btn btn-sm btn-primary  shadow-sm">
+                            <span class="icon"><i class="fas fa-search fa-sm text-white-50"></i></span>
+                            <span class="text">Έλεγχος</span>
+                        </button>
+
+                        <button type="button"
+                                data-toggle="modal" th:attr="data-target='#modal-clean-'+${imageDirectoryHash}"
+                                class="d-none d-sm-inline-block btn btn-sm btn-warning  shadow-sm">
+                            <span class="icon"><i class="fas fa-eraser fa-sm text-white-50"></i></span>
+                            <span class="text">Καθαρισμός Αποτελεσμάτων</span>
+                        </button>
+
+                        <a th:href="'download?name='+${imageDir}"
+                           class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm  disabled">
+                            <span class="icon"><i class="fas fa-file-export fa-sm text-white-50"></i></span>
+                            <span class="text">Αναφορά</span>
+                        </a>
+                    </div>
+                    <div th:replace="fragments/modals :: modal-run"></div>
+                    <div th:replace="fragments/modals :: modal-clean"></div>
                 </div>
 
-            </h2>
+                <!-- Content Row -->
+                <div class="row">
+                    <!-- Earnings (Monthly) Card Example -->
+                    <div class="col-xl-12 col-md-12 mb-12">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary mb-1">
+                                            Εικόνα
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            <select id="imagelist" class="selectpicker form-control col-md-6"
+                                                    data-live-search="true">
+                                                <option th:each="image : ${images}"
+                                                        th:text="${image.name}" th:title="${image.name}"
+                                                        th:value="${image.hash}">
+                                                    image
+                                                </option>
+                                            </select>
 
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="btn-group" role="group" aria-label="image actions">
+                                            <a id="image-download-button" target="_blank"
+                                               class="btn btn-info ">
+                                                <span class="icon"><i class="fas fa-file-download"></i></span>
+                                                <span class="text">Κατέβασμα</span>
+                                            </a>
+                                            <a class="btn btn-info  disabled">
+                                                <span class="icon"><i class="fas fa-file-export"></i></span>
+                                                <span class="text">Αναφορά</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br/>
+                <!-- Content Row -->
+                <div class="row">
+                    <!-- Earnings (Monthly) Card Example -->
+                    <div class="col-xl-12 col-md-12 mb-12">
+                        <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary mb-1">
+                                            Αποτελέσματα Ελέγχων
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            <div id="imageResultsBody">
+                                                <div class="media test-result" th:each="test : ${tests}"
+                                                     th:classappend="'test-result-'+${test.id}">
+                                                    <img th:src="@{/img/t1.png}" class="mr-3 result-value-true"
+                                                         alt="..."
+                                                         style="width: 50px">
+                                                    <img th:src="@{/img/f1.png}" class="mr-3 result-value-false"
+                                                         alt="..."
+                                                         style="width: 50px">
+                                                    <div class="media-body">
+                                                        <h4 class="mt-0">
+                                                            <span th:text="${test.name}">Έλεγχος</span>
+                                                            <span class="result-value-true">Σωστό</span>
+                                                            <span class="result-value-false">Λάθος</span>
+                                                        </h4>
+                                                        <p class="test-result-note">
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
 
-        </div>
-        <div class="col-md-12 mt-5">
-            <h3>Αποτελέσματα Ελέγχων</h3>
-            <br/>
-            <div id="imageResultsBody">
-                <div class="media test-result" th:each="test : ${tests}" th:classappend="'test-result-'+${test.id}">
-                    <img th:src="@{/img/t1.png}" class="mr-3 result-value-true" alt="..." style="width: 50px">
-                    <img th:src="@{/img/f1.png}" class="mr-3 result-value-false" alt="..." style="width: 50px">
-                    <div class="media-body">
-                        <h4 class="mt-0">
-                            <span th:text="${test.name}">Έλεγχος</span>
-                            <span class="result-value-true">Σωστό</span>
-                            <span class="result-value-false">Λάθος</span>
-                        </h4>
-                        <p class="test-result-note">
-                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+            <th:block th:replace="fragments/base :: script"></th:block>
+
+            <script th:inline="javascript">
+                /*<![CDATA[*/
+                const image_download_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_IMAGE_DIRECTORY_IMAGE_DOWNLOAD}]];
+                const image_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_IMAGE_DIRECTORY_IMAGE}]];
+                const imageDirectoryHash = /*[[${imageDirectoryHash}]]*/ '';
+
+                /*]]>*/
+                function reloadFile() {
+                    $('#image-download-button').attr('href', image_download_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", $("#imagelist").val()));
+                    $.get(image_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", $("#imagelist").val()), function (data) {
+                        console.log(data)
+                        $("#imageResultsBody .test-result").hide();
+                        data.forEach(function (datum) {
+                            $("#imageResultsBody .test-result-" + datum.task).show();
+                            $("#imageName").text(`${datum.name}`);
+                            if (datum.result) {
+                                $("#imageResultsBody .test-result-" + datum.task).find(".result-value-false").hide();
+                                $("#imageResultsBody .test-result-" + datum.task).find(".result-value-true").show();
+                            } else {
+                                $("#imageResultsBody .test-result-" + datum.task).find(".result-value-true").hide();
+                                $("#imageResultsBody .test-result-" + datum.task).find(".result-value-false").show();
+                            }
+                            $("#imageResultsBody .test-result-" + datum.task).find(".test-result-note").text(datum.note);
+                        });
+                    });
+                }
+
+                $(document).ready(function () {
+                    connect();
+                    $('.selectpicker').selectpicker();
+                    $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
+                        reloadFile();
+                    });
+                    $('.selectpicker').trigger('change');
+                });
+            </script>
         </div>
     </div>
-
 </div>
-<th:block th:replace="fragments/base :: script"></th:block>
-
-<script th:inline="javascript">
-    /*<![CDATA[*/
-
-    const imageDirectoryHash = /*[[${imageDirectoryHash}]]*/ '';
-
-    /*]]>*/
-    function reloadFile() {
-        $('#image-download-button').attr('href', '/api/image/' + imageDirectoryHash + '/' + $("#imagelist").val() + '/download');
-        $.get("/api/image/" + imageDirectoryHash + "/" + $("#imagelist").val(), function (data) {
-            console.log(data)
-            $("#imageResultsBody .test-result").hide();
-            data.forEach(function (datum) {
-                $("#imageResultsBody .test-result-" + datum.task).show();
-                $("#imageName").text(`${datum.name}`);
-                if (datum.result) {
-                    $("#imageResultsBody .test-result-" + datum.task).find(".result-value-false").hide();
-                    $("#imageResultsBody .test-result-" + datum.task).find(".result-value-true").show();
-                } else {
-                    $("#imageResultsBody .test-result-" + datum.task).find(".result-value-true").hide();
-                    $("#imageResultsBody .test-result-" + datum.task).find(".result-value-false").show();
-                }
-                $("#imageResultsBody .test-result-" + datum.task).find(".test-result-note").text(datum.note);
-            });
-        });
-    }
-
-    $(document).ready(function () {
-        connect();
-        $('.selectpicker').selectpicker();
-        $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
-            reloadFile();
-        });
-        $('.selectpicker').trigger('change');
-    });
-</script>
 </body>
 </html>
