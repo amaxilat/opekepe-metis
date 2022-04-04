@@ -1,7 +1,7 @@
-package com.amaxilatis.metis.server.service;
+package com.amaxilatis.metis.server.model;
 
 import com.amaxilatis.metis.model.FileJobResult;
-import com.amaxilatis.metis.server.rabbit.FileService;
+import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.util.ImageCheckerUtils;
 import com.drew.imaging.ImageProcessingException;
 import lombok.AllArgsConstructor;

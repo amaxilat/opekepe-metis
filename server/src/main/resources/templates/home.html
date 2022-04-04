@@ -1,145 +1,135 @@
 <!DOCTYPE HTML>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/base :: head"></head>
-<body>
-<nav th:replace="fragments/navbar :: navbar"></nav>
+<body id="page-top">
 
-<div class="container">
+<!-- Page Wrapper -->
+<div id="wrapper">
 
-    <div class="row">
-        <div class="col-md-6 mt-5">
-            <div class="accordion" id="accordionFiles">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="mb-0">
-                            Φάκελοι
+    <nav th:replace="fragments/navbar :: sidebar2"></nav>
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+        <!-- Main Content -->
+        <div id="content">
+
+            <nav th:replace="fragments/navbar :: navbar2"></nav>
+
+            <!-- Begin Page Content -->
+            <div class="container-fluid">
+
+                <!-- Page Heading -->
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">Αναφορές</h1>
+                </div>
+
+                <!-- DataTales Example -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <div class="btn-group" role="group"
+                                 aria-label="report actions" style="float: right">
+                                <button type="button" class="btn btn-info" disabled
+                                        id="downloadButton">
+                                    <span class="icon"><i class="fas fa-file-export"></i></span>
+                                    <span class="text">Αναφορά</span>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm" disabled data-toggle="modal"
+                                        data-target='#modal-delete-report' id="deleteButton">
+                                    <span class="icon"><i class="fas fa-trash"></i></span>
+                                    <span class="text">Διαγραφή</span>
+                                </button>
+                            </div>
                         </h6>
                     </div>
-
-                    <div id="collapseFiles" class="collapse show" data-parent="#accordionFiles">
-                        <div class="card-body">
-                            <ul id="file-tree" class="file-tree">
-                                <th:block th:each="imageDirectory: ${imageDirectories}">
-                                    <li style="min-height: 35px">
-                                        <span class="folder-name">
-                                            <span th:text="${imageDirectory.name}+' ('+${imageDirectory.count} +' images)'"></span>
-                                            <div class="btn-group btn-group-sm close" role="group"
-                                                 aria-label="report actions">
-                                                <a type="button" class="btn btn-primary"
-                                                   th:href="'/view/'+${imageDirectory.hash}">
-                                                    <i class="fas fa-arrow-right"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-primary btn-sm"
-                                                        data-toggle="modal"
-                                                        th:attr="data-target='#modal-run-'+${imageDirectory.hash}">
-                                                    <i class="fas fa-search"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-warning btn-sm"
-                                                        data-toggle="modal"
-                                                        th:attr="data-target='#modal-clean-'+${imageDirectory.hash}">
-                                                    <i class="fas fa-eraser"></i>
-                                                </button>
-                                            </div>
-                                        </span>
-                                        <ul>
-                                        </ul>
-                                    </li>
-                                </th:block>
-                            </ul>
-                            <th:block th:each="imageDirectory: ${imageDirectories}"
-                                      th:with="imageDirectoryHash=${imageDirectory.hash}, imageDirectoryName=${imageDirectory.name}">
-                                <div th:replace="fragments/modals :: modal-run"></div>
-                                <div th:replace="fragments/modals :: modal-clean"></div>
-
-
-                            </th:block>
-                        </div>
+                    <div th:replace="fragments/modals :: modal-delete-report('modal-delete-report')"></div>
+                    <div class="card-body">
+                        <table id="dataTable2" class="table">
+                            <thead>
+                            <tr>
+                                <th>Α/Α</th>
+                                <th>Θέση Αρχείων</th>
+                                <th>Φάκελος</th>
+                                <th>Θέση Αναφοράς</th>
+                                <th>Ημερομηνία Έναρξης</th>
+                            </tr>
+                            </thead>
+                        </table>
                     </div>
                 </div>
             </div>
+            <!-- /.container-fluid -->
+
         </div>
-        <div class="col-md-6 mt-5">
-            <div class="accordion" id="accordionReports">
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="mb-0">
-                            Αναφορές
-                        </h6>
-                    </div>
+        <!-- End of Main Content -->
 
-                    <div id="collapseReports" class="collapse show" data-parent="#accordionReports">
-                        <div class="card-body">
-                            <ul id="reports-tree" class="file-tree">
-                                <th:block th:each="report: ${reports}">
-                                    <li style="min-height: 35px">
-                                        <span>
-                                            <span th:text="${report.directory}"></span>
-                                            <span class="badge badge-secondary" th:text="${report.date}"></span>
-                                            <div class="btn-group btn-group-sm close" role="group"
-                                                 aria-label="report actions">
-                                                <a type="button" class="btn btn-info"
-                                                   th:href="'download?name='+${report.name}">
-                                                    <i class="fas fa-file-export"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-danger btn-sm"
-                                                        data-toggle="modal"
-                                                        th:attr="data-target='#modal-delete-'+${report.hash}">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-
-                                            <div class="modal fade" th:id="'modal-delete-'+${report.hash}" tabindex="-1"
-                                                 aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="exampleModalLabel"
-                                                                th:text="${report.directory}">
-                                                                Modal title</h5>
-                                                            <button type="button" class="close" data-dismiss="modal"
-                                                                    aria-label="Close">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            Είστε σίγουροι οτι θέλετε να διαγράψετε την αναφορά<br/>
-                                                            <span class="text-muted"
-                                                                  th:text="${report.directory}"></span>
-                                                            &nbsp;
-                                                            <span class="text-muted" th:text="${report.date}"></span>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                    data-dismiss="modal">
-                                                                Close
-                                                            </button>
-                                                            <a type="button" class="btn btn-danger"
-                                                               th:href="'report/delete?hash='+${report.hash}">Διαγραφή
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </span>
-                                    </li>
-                                </th:block>
-                            </ul>
-                        </div>
-                    </div>
+        <!-- Footer -->
+        <footer class="sticky-footer bg-white">
+            <div class="container my-auto">
+                <div class="copyright text-center my-auto">
+                    <span>Copyright &copy; Metis 2021</span>
                 </div>
             </div>
-        </div>
+        </footer>
+        <!-- End of Footer -->
+
     </div>
+    <!-- End of Content Wrapper -->
 
 </div>
+<!-- End of Page Wrapper -->
+
 <th:block th:replace="fragments/base :: script"></th:block>
 
-<script type="text/javascript">
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const reports_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_REPORTS}]];
+    const report_download_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_REPORT_DOWNLOAD}]];
+    /*]]>*/
+
     window.onload = function () {
-        fileTree('file-tree');
-        fileTree('reports-tree');
         connect();
     };
+    $(document).ready(function () {
+        $('table#dataTable2').DataTable({
+            'ajax': reports_url,
+            serverSide: true,
+            responsive: true,
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/el.json'
+            },
+            columns: [{
+                data: 'id'
+            }, {
+                data: 'filesLocation'
+            }, {
+                data: 'path'
+            }, {
+                data: 'reportLocation'
+            }, {
+                data: 'date',
+                render: $.fn.dataTable.render.moment("YYYY-MM-DDTHH:mm:ss.SSSSZ", 'DD/MM/YYYY HH:mm')
+            }],
+            order: [4, "desc"]
+        });
+
+        $('#dataTable2 tbody').on('click', 'tr', function () {
+            $('#dataTable2 tbody tr').removeClass('selected');
+            $(this).toggleClass('selected');
+            $('#downloadButton').prop("disabled", false);
+            $('#deleteButton').prop("disabled", false);
+            $("#deleteReportId").text($($('#dataTable2 tbody tr.selected td')[0]).text());
+            $("#deleteReportName").text($($('#dataTable2 tbody tr.selected td')[2]).text());
+            $("#deleteReportDirectory").text($($('#dataTable2 tbody tr.selected td')[1]).text());
+            $("#deleteReportDate").text($($('#dataTable2 tbody tr.selected td')[4]).text());
+        });
+
+        $('#downloadButton').click(function () {
+            let reportId = $($('#dataTable2 tbody tr.selected td')[0]).text();
+            window.location = report_download_url.replace("{reportId}", reportId);
+        });
+    });
 </script>
 </body>
 </html>

@@ -1,8 +1,9 @@
 package com.amaxilatis.metis.server.service;
 
 import com.amaxilatis.metis.server.config.ProcessingProperties;
+import com.amaxilatis.metis.server.model.ImageProcessingTask;
+import com.amaxilatis.metis.server.model.PoolInfo;
 import com.amaxilatis.metis.server.model.TestDescription;
-import com.amaxilatis.metis.server.rabbit.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
