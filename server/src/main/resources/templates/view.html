@@ -60,8 +60,8 @@
                                             Εικόνα
                                         </div>
                                         <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            <select id="imagelist" class="selectpicker form-control col-md-6"
-                                                    data-live-search="true">
+                                            <select id="imagelist" class="custom-select col-md-6"
+                                                    onchange="reloadFile()">
                                                 <option th:each="image : ${images}"
                                                         th:text="${image.name}" th:title="${image.name}"
                                                         th:value="${image.hash}">
@@ -125,7 +125,8 @@
                                         </div>
                                     </div>
                                     <div class="col-auto">
-
+                                        <img src="" id="thmb"
+                                             style="width: 300px;height: 225px;object-fit: scale-down; border: 1px solid grey;">
                                     </div>
                                 </div>
                             </div>
@@ -139,11 +140,13 @@
                 /*<![CDATA[*/
                 const image_download_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_IMAGE_DIRECTORY_IMAGE_DOWNLOAD}]];
                 const image_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_IMAGE_DIRECTORY_IMAGE}]];
+                const thumbnail_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_THUMBNAIL_DIRECTORY_IMAGE}]];
                 const imageDirectoryHash = /*[[${imageDirectoryHash}]]*/ '';
 
                 /*]]>*/
                 function reloadFile() {
                     $('#image-download-button').attr('href', image_download_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", $("#imagelist").val()));
+                    $("#thmb").attr("src", "/img/loading.gif");
                     $.get(image_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", $("#imagelist").val()), function (data) {
                         console.log(data)
                         $("#imageResultsBody .test-result").hide();
@@ -158,21 +161,31 @@
                                 $("#imageResultsBody .test-result-" + datum.task).find(".result-value-false").show();
                             }
                             $("#imageResultsBody .test-result-" + datum.task).find(".test-result-note").text(datum.note);
+
+                            $("#thmb").attr("src", thumbnail_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", $("#imagelist").val()));
                         });
                     });
                 }
 
                 $(document).ready(function () {
                     connect();
-                    $('.selectpicker').selectpicker();
-                    $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
-                        reloadFile();
-                    });
-                    $('.selectpicker').trigger('change');
+                    reloadFile();
+                    // $('.selectpicker').selectpicker();
+                    // $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
+                    //     reloadFile();
+                    // });
+                    // $('.selectpicker').trigger('change');
                 });
             </script>
         </div>
+        <!-- End of Main Content -->
+
+        <!-- Footer -->
+        <div th:replace="fragments/base :: footer"></div>
+
     </div>
 </div>
+<th:block th:replace="fragments/base :: script"></th:block>
+
 </body>
 </html>

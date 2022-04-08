@@ -42,8 +42,25 @@
     <script th:src="@{/js/jquery.spring-friendly.min.js}"></script>
     <script th:src="@{/js/app.js}"></script>
     <script type="text/javascript">
-        $.fn.selectpicker.Constructor.BootstrapVersion = '4';
+        $.fn.selectpicker.Constructor.BootstrapVersion = '5';
     </script>
+</block>
+
+<block th:fragment="footer">
+    <footer class="sticky-footer bg-white">
+        <div class="container my-auto">
+            <div class="copyright text-center my-auto">
+                    <span>
+                        <span th:text="${bp.name}"></span>
+                        &nbsp;
+                        v<span th:text="${bp.version}"></span>
+                        &nbsp;
+                        Copyright &copy; 2022
+                    </span>
+            </div>
+        </div>
+    </footer>
+    <!-- End of Footer -->
 </block>
 </body>
 </html>

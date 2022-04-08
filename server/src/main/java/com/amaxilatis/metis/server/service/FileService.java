@@ -1,10 +1,8 @@
 package com.amaxilatis.metis.server.service;
 
-import com.adobe.internal.xmp.impl.Base64;
 import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.model.ImageFileInfo;
-import com.amaxilatis.metis.server.model.ReportFileInfo;
 import com.drew.lang.Charsets;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVReader;
@@ -12,13 +10,13 @@ import com.opencsv.exceptions.CsvException;
 import lombok.RequiredArgsConstructor;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -30,6 +28,7 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,7 +39,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import static com.amaxilatis.metis.util.FileUtils.getResultName;
 
@@ -145,27 +143,27 @@ public class FileService {
         cell.setCellValue(text);
     }
     
-//    public SortedSet<ReportFileInfo> listReports() {
-//        final List<File> reports = Arrays.stream(Objects.requireNonNull(new File(props.getReportLocation()).listFiles())).filter(file -> file.getName().endsWith(".csv")).collect(Collectors.toList());
-//        final SortedSet<ReportFileInfo> reportSet = new TreeSet<>();
-//        reports.forEach(report -> {
-//            try {
-//                final String[] parts = report.getName().replaceAll("\\.csv", "").split("-", 3);
-//
-//                //                reportSet.add(ReportFileInfo.builder().directory(parts[1]).date(parts[2]).name(report.getName()).hash(getStringHash(report.getName())).path(report.toPath().toString()).size((double) Files.size(report.toPath())).build());
-//                reportSet.add(ReportFileInfo.builder()
-//                        .directory(parts[1])
-//                        .name(report.getName())
-//                        .hash(getStringHash(report.getName()))
-//                        .path(report.toPath().toString())
-//                        .size((double) Files.size(report.toPath()))
-//                        .build());
-//            } catch (IOException e) {
-//                log.error(e.getMessage(), e);
-//            }
-//        });
-//        return reportSet;
-//    }
+    //    public SortedSet<ReportFileInfo> listReports() {
+    //        final List<File> reports = Arrays.stream(Objects.requireNonNull(new File(props.getReportLocation()).listFiles())).filter(file -> file.getName().endsWith(".csv")).collect(Collectors.toList());
+    //        final SortedSet<ReportFileInfo> reportSet = new TreeSet<>();
+    //        reports.forEach(report -> {
+    //            try {
+    //                final String[] parts = report.getName().replaceAll("\\.csv", "").split("-", 3);
+    //
+    //                //                reportSet.add(ReportFileInfo.builder().directory(parts[1]).date(parts[2]).name(report.getName()).hash(getStringHash(report.getName())).path(report.toPath().toString()).size((double) Files.size(report.toPath())).build());
+    //                reportSet.add(ReportFileInfo.builder()
+    //                        .directory(parts[1])
+    //                        .name(report.getName())
+    //                        .hash(getStringHash(report.getName()))
+    //                        .path(report.toPath().toString())
+    //                        .size((double) Files.size(report.toPath()))
+    //                        .build());
+    //            } catch (IOException e) {
+    //                log.error(e.getMessage(), e);
+    //            }
+    //        });
+    //        return reportSet;
+    //    }
     
     
     Map<String, SortedSet<ImageFileInfo>> images = new HashMap<>();
@@ -261,5 +259,15 @@ public class FileService {
     
     private FileJobResult parseResult(File f) throws IOException {
         return new ObjectMapper().readValue(f, FileJobResult.class);
+    }
+    
+    @Async
+    public void deleteFile(final String resultFile) {
+        try {
+            Thread.sleep(30000);
+            Files.deleteIfExists(Path.of(resultFile));
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+        }
     }
 }

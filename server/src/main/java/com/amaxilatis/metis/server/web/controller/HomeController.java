@@ -3,15 +3,15 @@ package com.amaxilatis.metis.server.web.controller;
 import com.amaxilatis.metis.model.FileJob;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.model.ImageFileInfo;
-import com.amaxilatis.metis.server.model.ReportFileInfo;
 import com.amaxilatis.metis.server.service.FileService;
-import com.amaxilatis.metis.server.service.JobService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
+import com.amaxilatis.metis.server.service.JobService;
 import com.amaxilatis.metis.server.service.ReportService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,7 +24,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.SortedSet;
 
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.*;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.ACTION_CLEAN;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.ACTION_RUN;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_HOME;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_IMAGE_DIRECTORY;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_SETTINGS;
 
 @SuppressWarnings({"SameReturnValue"})
 @Slf4j
@@ -32,27 +36,23 @@ import static com.amaxilatis.metis.server.web.controller.ApiRoutes.*;
 @RequiredArgsConstructor
 public class HomeController {
     
-    private final ReportService reportService;
     private final FileService fileService;
     private final JobService jobService;
     private final ImageProcessingService imageProcessingService;
-    //private final RabbitTemplate rabbitTemplate;
-    private final ObjectMapper mapper = new ObjectMapper();
     private final MetisProperties props;
-    
+    @Autowired
+    BuildProperties buildProperties;
     
     @Value("${spring.application.name}")
     String appName;
     
     @GetMapping(VIEW_HOME)
     public String homePage(Model model) {
-        final SortedSet<ReportFileInfo> reportSet = reportService.listReports();
         final SortedSet<ImageFileInfo> imageDirectories = fileService.getImagesDirs();
         model.addAttribute("pool", imageProcessingService.getPoolInfo());
-        model.addAttribute("reports", reportSet);
         model.addAttribute("imageDirectories", imageDirectories);
         model.addAttribute("tests", imageProcessingService.getTestDescriptions());
-        model.addAttribute("appName", appName);
+        model.addAttribute("bp", buildProperties);
         return "home";
     }
     
@@ -61,7 +61,7 @@ public class HomeController {
         model.addAttribute("pool", imageProcessingService.getPoolInfo());
         model.addAttribute("imageDirectories", fileService.getImagesDirs());
         model.addAttribute("metisProperties", props);
-        model.addAttribute("appName", appName);
+        model.addAttribute("bp", buildProperties);
         return "settings";
     }
     
@@ -77,7 +77,7 @@ public class HomeController {
         model.addAttribute("imageDir", decodedImageDir);
         model.addAttribute("imageDirectoryHash", imageDirectoryHash);
         model.addAttribute("tests", imageProcessingService.getTestDescriptions());
-        model.addAttribute("appName", appName);
+        model.addAttribute("bp", buildProperties);
         return "view";
     }
     
