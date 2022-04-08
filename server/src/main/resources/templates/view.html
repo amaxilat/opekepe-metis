@@ -28,21 +28,21 @@
                                 data-toggle="modal" th:attr="data-target='#modal-run-'+${imageDirectoryHash}"
                                 class="d-none d-sm-inline-block btn btn-sm btn-primary  shadow-sm">
                             <span class="icon"><i class="fas fa-search fa-sm text-white-50"></i></span>
-                            <span class="text">Έλεγχος</span>
+                            <span class="text">Έλεγχος Φακέλου</span>
                         </button>
 
                         <button type="button"
                                 data-toggle="modal" th:attr="data-target='#modal-clean-'+${imageDirectoryHash}"
-                                class="d-none d-sm-inline-block btn btn-sm btn-warning  shadow-sm">
+                                class="d-none d-sm-inline-block btn btn-sm btn-danger  shadow-sm">
                             <span class="icon"><i class="fas fa-eraser fa-sm text-white-50"></i></span>
-                            <span class="text">Καθαρισμός Αποτελεσμάτων</span>
+                            <span class="text">Διαγραφή Αποτελεσμάτων</span>
                         </button>
 
-                        <a th:href="'download?name='+${imageDir}"
-                           class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm  disabled">
-                            <span class="icon"><i class="fas fa-file-export fa-sm text-white-50"></i></span>
-                            <span class="text">Αναφορά</span>
-                        </a>
+                        <!--                        <a th:href="'download?name='+${imageDir}"-->
+                        <!--                           class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm  disabled">-->
+                        <!--                            <span class="icon"><i class="fas fa-file-export fa-sm text-white-50"></i></span>-->
+                        <!--                            <span class="text">Αναφορά</span>-->
+                        <!--                        </a>-->
                     </div>
                     <div th:replace="fragments/modals :: modal-run"></div>
                     <div th:replace="fragments/modals :: modal-clean"></div>
@@ -52,39 +52,36 @@
                 <div class="row">
                     <!-- Earnings (Monthly) Card Example -->
                     <div class="col-xl-12 col-md-12 mb-12">
-                        <div class="card border-left-primary shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary mb-1">
-                                            Εικόνα
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            <select id="imagelist" class="custom-select col-md-6"
-                                                    onchange="reloadFile()">
-                                                <option th:each="image : ${images}"
-                                                        th:text="${image.name}" th:title="${image.name}"
-                                                        th:value="${image.hash}">
-                                                    image
-                                                </option>
-                                            </select>
-
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <div class="btn-group" role="group" aria-label="image actions">
-                                            <a id="image-download-button" target="_blank"
-                                               class="btn btn-info ">
-                                                <span class="icon"><i class="fas fa-file-download"></i></span>
-                                                <span class="text">Κατέβασμα</span>
-                                            </a>
-                                            <a class="btn btn-info  disabled">
-                                                <span class="icon"><i class="fas fa-file-export"></i></span>
-                                                <span class="text">Αναφορά</span>
-                                            </a>
-                                        </div>
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Εικόνα</h6>
+                                <div class="col-auto">
+                                    <div class="btn-group" role="group" aria-label="image actions">
+                                        <a id="image-download-button" target="_blank"
+                                           class="btn btn-info ">
+                                            <span class="icon"><i class="fas fa-file-download"></i></span>
+                                            <span class="text">Λήψη Εικόνας</span>
+                                        </a>
+                                        <!--                                            <a class="btn btn-info  disabled">-->
+                                        <!--                                                <span class="icon"><i class="fas fa-file-export"></i></span>-->
+                                        <!--                                                <span class="text">Αναφορά</span>-->
+                                        <!--                                            </a>-->
                                     </div>
                                 </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="col mr-2">
+                                    <select id="imagelist" class="custom-select col-md-12"
+                                            onchange="reloadFile()">
+                                        <option th:each="image : ${images}"
+                                                th:text="${image.name}" th:title="${image.name}"
+                                                th:value="${image.hash}">
+                                            image
+                                        </option>
+                                    </select>
+
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -93,42 +90,54 @@
                 <!-- Content Row -->
                 <div class="row">
                     <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-12 col-md-12 mb-12">
-                        <div class="card border-left-info shadow h-100 py-2">
+                    <div class="col-xl-9 col-md-8 mb-8">
+                        <div class="card shadow mb-4">
+                            <!-- Card Header - Dropdown -->
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Αποτελέσματα Ελέγχων</h6>
+                            </div>
                             <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary mb-1">
-                                            Αποτελέσματα Ελέγχων
+                                <div id="imageResultsBody">
+                                    <div class="media test-result" th:each="test : ${tests}"
+                                         th:classappend="'test-result-'+${test.id}">
+                                        <img th:src="@{/img/t1.png}" class="mr-3 result-value-true"
+                                             alt="..."
+                                             style="width: 50px">
+                                        <img th:src="@{/img/f1.png}" class="mr-3 result-value-false"
+                                             alt="..."
+                                             style="width: 50px">
+                                        <div class="media-body">
+                                            <h4 class="mt-0">
+                                                <span th:text="${test.name}">Έλεγχος</span>
+                                                <span class="result-value-true">Σωστό</span>
+                                                <span class="result-value-false">Λάθος</span>
+                                            </h4>
+                                            <p class="test-result-note">
+                                            </p>
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            <div id="imageResultsBody">
-                                                <div class="media test-result" th:each="test : ${tests}"
-                                                     th:classappend="'test-result-'+${test.id}">
-                                                    <img th:src="@{/img/t1.png}" class="mr-3 result-value-true"
-                                                         alt="..."
-                                                         style="width: 50px">
-                                                    <img th:src="@{/img/f1.png}" class="mr-3 result-value-false"
-                                                         alt="..."
-                                                         style="width: 50px">
-                                                    <div class="media-body">
-                                                        <h4 class="mt-0">
-                                                            <span th:text="${test.name}">Έλεγχος</span>
-                                                            <span class="result-value-true">Σωστό</span>
-                                                            <span class="result-value-false">Λάθος</span>
-                                                        </h4>
-                                                        <p class="test-result-note">
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <img src="" id="thmb"
-                                             style="width: 300px;height: 225px;object-fit: scale-down; border: 1px solid grey;">
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-3 col-md-4 mb-4 text-center">
+                        <div class="card shadow mb-4">
+                            <!-- Card Header - Dropdown -->
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Μικρογραφία</h6>
+                                <div class="col-auto">
+                                    <div class="btn-group" role="group" aria-label="image actions">
+                                        <!--                                            <a class="btn btn-info  disabled">-->
+                                        <!--                                                <span class="icon"><i class="fas fa-file-export"></i></span>-->
+                                        <!--                                                <span class="text">Αναφορά</span>-->
+                                        <!--                                            </a>-->
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Card Body -->
+                            <div class="card-body">
+                                <img src="" id="thmb"
+                                     style="width: 100%;  border: 1px solid grey;">
                             </div>
                         </div>
                     </div>

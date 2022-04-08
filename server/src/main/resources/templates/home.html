@@ -23,39 +23,46 @@
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">Αναφορές</h1>
                 </div>
-
-                <!-- DataTales Example -->
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <div class="btn-group" role="group"
-                                 aria-label="report actions" style="float: right">
-                                <button type="button" class="btn btn-info" disabled
-                                        id="downloadButton">
-                                    <span class="icon"><i class="fas fa-file-export"></i></span>
-                                    <span class="text">Αναφορά</span>
-                                </button>
-                                <button type="button" class="btn btn-danger btn-sm" disabled data-toggle="modal"
-                                        data-target='#modal-delete-report' id="deleteButton">
-                                    <span class="icon"><i class="fas fa-trash"></i></span>
-                                    <span class="text">Διαγραφή</span>
-                                </button>
+                <!-- Content Row -->
+                <div class="row">
+                    <div class="col-xl-12 col-md-12 mb-12">
+                        <!-- DataTales Example -->
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">
+                                    Αναφορές
+                                </h6>
+                                <div class="col-auto">
+                                    <div class="btn-group" role="group"
+                                         aria-label="report actions" style="float: right">
+                                        <button type="button" class="btn btn-info" disabled
+                                                id="downloadButton">
+                                            <span class="icon"><i class="fas fa-file-export"></i></span>
+                                            <span class="text">Αναφορά</span>
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-sm" disabled data-toggle="modal"
+                                                data-target='#modal-delete-report' id="deleteButton">
+                                            <span class="icon"><i class="fas fa-trash"></i></span>
+                                            <span class="text">Διαγραφή</span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </h6>
-                    </div>
-                    <div th:replace="fragments/modals :: modal-delete-report('modal-delete-report')"></div>
-                    <div class="card-body">
-                        <table id="dataTable2" class="table">
-                            <thead>
-                            <tr>
-                                <th>Α/Α</th>
-                                <th>Θέση Αρχείων</th>
-                                <th>Φάκελος</th>
-                                <th>Θέση Αναφοράς</th>
-                                <th>Ημερομηνία Έναρξης</th>
-                            </tr>
-                            </thead>
-                        </table>
+                            <div th:replace="fragments/modals :: modal-delete-report('modal-delete-report')"></div>
+                            <div class="card-body">
+                                <table id="dataTable2" class="table">
+                                    <thead>
+                                    <tr>
+                                        <th>Α/Α</th>
+                                        <th>Θέση Αρχείων</th>
+                                        <th>Φάκελος</th>
+                                        <th>Θέση Αναφοράς</th>
+                                        <th>Ημερομηνία Έναρξης</th>
+                                    </tr>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

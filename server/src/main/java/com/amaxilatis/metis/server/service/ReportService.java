@@ -6,6 +6,8 @@ import com.amaxilatis.metis.server.db.model.Report;
 import com.amaxilatis.metis.server.db.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
+import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -32,5 +34,9 @@ public class ReportService {
         reportRepository.deleteById(reportId);
         new File(props.getReportLocation() + "/metis-" + reportId + ".csv").delete();
         new File(props.getReportLocation() + "/metis-" + reportId + ".xlsx").delete();
+    }
+    
+    public DataTablesOutput<Report> findAll(final DataTablesInput input) {
+        return reportRepository.findAll(input);
     }
 }

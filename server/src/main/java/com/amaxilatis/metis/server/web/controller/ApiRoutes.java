@@ -8,7 +8,7 @@ public interface ApiRoutes {
     String IMAGE_HASH = "imageHash";
     String REPORT_ID = "reportId";
     
-    String API_BASE = "/api";
+    String API_BASE = API_V1 + "/api";
     String API_POOL = API_BASE + "/pool";
     String API_SCAN_IMAGES = API_BASE + "/imageScan";
     String API_IMAGE = API_BASE + "/image";
