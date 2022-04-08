@@ -12,8 +12,11 @@ public interface ApiRoutes {
     String API_POOL = API_BASE + "/pool";
     String API_SCAN_IMAGES = API_BASE + "/imageScan";
     String API_IMAGE = API_BASE + "/image";
+    String API_THUMBNAIL = API_BASE + "/thumbnail";
     String API_IMAGE_DIRECTORY = API_IMAGE + "/{" + IMAGE_DIR_HASH + "}";
+    String API_THUMBNAIL_DIRECTORY = API_THUMBNAIL + "/{" + IMAGE_DIR_HASH + "}";
     String API_IMAGE_DIRECTORY_IMAGE = API_IMAGE_DIRECTORY + "/{" + IMAGE_HASH + "}";
+    String API_THUMBNAIL_DIRECTORY_IMAGE = API_THUMBNAIL_DIRECTORY + "/{" + IMAGE_HASH + "}";
     String API_IMAGE_DIRECTORY_IMAGE_DOWNLOAD = API_IMAGE_DIRECTORY_IMAGE + "/download";
     String API_REPORTS = API_BASE + "/reports";
     String API_REPORT = API_BASE + "/report";
