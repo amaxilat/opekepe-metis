@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.amaxilatis.metis</groupId>
         <artifactId>parent</artifactId>
-        <version>0.3.1-SNAPSHOT</version>
+        <version>0.3.6-SNAPSHOT</version>
         <!--<relativePath/>-->
     </parent>
 
     <artifactId>server</artifactId>
-    <version>0.3.1-SNAPSHOT</version>
+    <version>0.3.6-SNAPSHOT</version>
 
     <name>Metis Server</name>
     <description>Metis :: server</description>
@@ -30,11 +30,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <!--        <dependency>-->
-        <!--            <groupId>org.springframework.boot</groupId>-->
-        <!--            <artifactId>spring-boot-starter-amqp</artifactId>-->
-        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

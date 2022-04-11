@@ -5,7 +5,7 @@
 
     <groupId>com.amaxilatis.metis</groupId>
     <artifactId>parent</artifactId>
-    <version>0.3.1-SNAPSHOT</version>
+    <version>0.3.6-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>parent</name>
     <description>Metis satellite and aerial photography image validation</description>
@@ -13,7 +13,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <spring.boot.version>2.6.1</spring.boot.version>
+        <spring.boot.version>2.6.6</spring.boot.version>
         <maven.failsafe.plugin.version>2.22.2</maven.failsafe.plugin.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <git-commit-id-plugin.version>4.0.3</git-commit-id-plugin.version>
