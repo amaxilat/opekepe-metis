@@ -171,6 +171,13 @@ public class FileService {
     
     @PostConstruct
     public void init() {
+        
+        final File reports = new File(props.getReportLocation());
+        if (!reports.exists()) {
+            log.info("creating reports directory...");
+            boolean result = reports.mkdirs();
+            log.debug("created reports directory {}", result);
+        }
         updateImageDirs();
     }
     
