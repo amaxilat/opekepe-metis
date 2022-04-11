@@ -40,7 +40,7 @@ metis:
   reportLocation: reports
   resultsLocation: results
   #filesLocation: files
-  filesLocation: "S:\\OPEKEPE\\"
+  filesLocation: "O:\\"
   version: ^project.version^
   processing:
     threads: -1

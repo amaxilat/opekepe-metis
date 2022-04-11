@@ -117,17 +117,50 @@
                         </div>
                     </div>
                 </div>
+                <br/>
+                <!-- Content Row -->
+                <div class="row">
+                    <!-- Earnings (Monthly) Card Example -->
+                    <div class="col-xl-12 col-md-12 mb-12">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary mb-1">
+                                            Ρυθμίσεις Ελέγχων
+                                        </div>
+                                        <div class="media" th:each="test : ${tests}">
+                                            <a class="btn btn-circle mr-3"
+                                               th:classappend="${test.enabled ? 'btn-success' : 'btn-warning'}">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                            <div class="media-body">
+                                                <h4 class="mt-0"><span th:text="${test.name}">Έλεγχος</span></h4>
+                                                <p th:text="${test.description}">Some description</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="col-auto">
+                                    <!--<i class="fas fa-calendar fa-2x text-gray-300"></i>-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <!-- /.container-fluid -->
-
         </div>
-        <!-- End of Main Content -->
-
-        <!-- Footer -->
-        <div th:replace="fragments/base :: footer"></div>
+        <!-- /.container-fluid -->
 
     </div>
-    <!-- End of Content Wrapper -->
+    <!-- End of Main Content -->
+
+    <!-- Footer -->
+    <div th:replace="fragments/base :: footer"></div>
+
+</div>
+<!-- End of Content Wrapper -->
 
 </div>
 <!-- End of Page Wrapper -->

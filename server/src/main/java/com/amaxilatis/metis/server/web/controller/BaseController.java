@@ -38,7 +38,7 @@ public class BaseController {
         model.addAttribute("pool", imageProcessingService.getPoolInfo());
         model.addAttribute("imageDirectories", fileService.getImagesDirs());
         model.addAttribute("metisProperties", props);
-        model.addAttribute("tests", getImageProcessingService().getTestDescriptions());
+        model.addAttribute("tests", imageProcessingService.getTestDescriptions());
         model.addAttribute("bp", buildProperties);
     }
 }
