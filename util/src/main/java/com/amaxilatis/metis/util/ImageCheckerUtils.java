@@ -29,6 +29,7 @@ import static com.amaxilatis.metis.util.WorldFileUtils.getWorldFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.parseWorldFile;
 import static com.drew.metadata.exif.ExifDirectoryBase.TAG_BITS_PER_SAMPLE;
 import static com.drew.metadata.exif.ExifDirectoryBase.TAG_COMPRESSION;
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 
 @Slf4j
 public class ImageCheckerUtils {
@@ -46,7 +47,7 @@ public class ImageCheckerUtils {
     public static List<FileJobResult> parseFile(final File file, final List<Integer> tasks, final String resultsDir) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
         
-        if (file.getName().endsWith(".tif")) {
+        if (file.getName().endsWith(".tif") || file.getName().endsWith(".jpf")) {
             log.info("[{}] parsing...", file.getName());
             ImagePack image = new ImagePack(file);
             
@@ -425,11 +426,78 @@ public class ImageCheckerUtils {
      */
     public static FileJobResult testN8(final File file, final ImagePack image) throws IOException, ImageProcessingException {
         final ExifIFD0Directory directory = image.getIoMetadata().getFirstDirectoryOfType(ExifIFD0Directory.class);
-        String compressionExif = directory.getTagName(TAG_COMPRESSION);
-        log.debug("[N8] compressionExif: {}", compressionExif);
+        int compressionExifValue = Integer.parseInt(directory.getString(TAG_COMPRESSION));
+        log.info("[N8] compressionExifValue: {}", compressionExifValue);
         
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(8);
+        
+        if (file.getName().endsWith(".tif")) {
+            
+            resultBuilder.note("Συμπίεση: " + compressionExifValue);
+            resultBuilder.result(compressionExifValue == COMPRESSION_NONE
+                    || compressionExifValue == COMPRESSION_CCITT_RLE
+                    || compressionExifValue == COMPRESSION_CCITT_T_4
+                    || compressionExifValue == COMPRESSION_CCITT_T_6
+                    || compressionExifValue == COMPRESSION_LZW
+                    || compressionExifValue == COMPRESSION_ZLIB
+                    || compressionExifValue == COMPRESSION_PACKBITS
+                    || compressionExifValue == COMPRESSION_DEFLATE
+            );
+            return resultBuilder.build();
+        } else if (file.getName().endsWith(".jpf")) {
+        }
+        
         return resultBuilder.result(false).build();
+    
+//        1	= Uncompressed
+//        2	= CCITT 1D
+//        3	= T4/Group 3 Fax
+//        4	= T6/Group 4 Fax
+//        5	= LZW
+//        6	= JPEG (old-style)
+//        7	= JPEG
+//        8	= Adobe Deflate
+//        9	= JBIG B&W
+//        10	= JBIG Color
+//        99	= JPEG
+//        262	= Kodak 262
+//        32766	= Next
+//        32767	= Sony ARW Compressed
+//        32769	= Packed RAW
+//        32770	= Samsung SRW Compressed
+//        32771	= CCIRLEW
+//        32772	= Samsung SRW Compressed 2
+//        32773	= PackBits
+//        32809	= Thunderscan
+//        32867	= Kodak KDC Compressed
+//        32895	= IT8CTPAD
+//        32896	= IT8LW
+//        32897	= IT8MP
+//        32898	= IT8BL
+//        32908	= PixarFilm
+//        32909	= PixarLog
+//        32946	= Deflate
+//        32947	= DCS
+//        33003	= Aperio JPEG 2000 YCbCr
+//        33005	= Aperio JPEG 2000 RGB
+//        34661	= JBIG
+//        34676	= SGILog
+//        34677	= SGILog24
+//        34712	= JPEG 2000
+//        34713	= Nikon NEF Compressed
+//        34715	= JBIG2 TIFF FX
+//        34718	= Microsoft Document Imaging (MDI) Binary Level Codec
+//        34719	= Microsoft Document Imaging (MDI) Progressive Transform Codec
+//        34720	= Microsoft Document Imaging (MDI) Vector
+//        34887	= ESRI Lerc
+//        34892	= Lossy JPEG
+//        34925	= LZMA2
+//        34926	= Zstd
+//        34927	= WebP
+//        34933	= PNG
+//        34934	= JPEG XR
+//        65000	= Kodak DCR Compressed
+//        65535	= Pentax PEF Compressed
     }
     
     /**
