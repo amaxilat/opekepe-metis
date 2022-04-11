@@ -1,7 +1,7 @@
 package com.amaxilatis.metis.util.test;
 
-import com.amaxilatis.metis.util.ImageCheckerUtils;
 import com.amaxilatis.metis.model.FileJobResult;
+import com.amaxilatis.metis.util.ImageCheckerUtils;
 import com.drew.imaging.ImageProcessingException;
 import org.apache.tika.exception.TikaException;
 import org.junit.jupiter.api.Assertions;
@@ -22,6 +22,7 @@ public class ImageParsingTest {
     final File directory3T = new File("..\\dataset\\dataset3T\\");
     final File directory2F = new File("..\\dataset\\dataset2F\\");
     final File directory6F = new File("..\\dataset\\dataset6F\\");
+    final File directory8 = new File("..\\dataset\\dataset8\\");
     private static List<Integer> tasks;
     
     @BeforeAll
@@ -110,6 +111,25 @@ public class ImageParsingTest {
                 log.info(result.toString());
                 //Assertions.assertEquals(result.getTask(), tasks.get(0));
                 //Assertions.assertFalse(result.getResult());
+            }
+        } catch (IOException | TikaException | SAXException | ImageProcessingException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+    
+    @Test
+    void testN8_false() {
+        tasks.add(8);
+        try {
+            final List<FileJobResult> results = new ArrayList<>();
+            if (directory8.isDirectory()) {
+                results.addAll(ImageCheckerUtils.parseDir(directory8, tasks));
+            } else {
+                log.warn("Input not a directory");
+                results.addAll(ImageCheckerUtils.parseFile(directory8, tasks, null));
+            }
+            for (final FileJobResult result : results) {
+                log.info(result.toString());
             }
         } catch (IOException | TikaException | SAXException | ImageProcessingException e) {
             log.error(e.getMessage(), e);
