@@ -205,6 +205,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>com.amaxilatis.metis.server.MetisApplication</mainClass>
+                    <finalName>${project.name}</finalName>
                 </configuration>
                 <executions>
                     <execution>
