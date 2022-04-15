@@ -53,8 +53,9 @@
                     <span>
                         <span th:text="${bp.name}"></span>
                         &nbsp;
-                        v<span th:text="${bp.version}"></span>
-                        &nbsp;
+                        v<span th:text="${vp.buildVersion}"></span>
+                        -
+                        <span th:text="${vp.buildBranch}"></span>/<span th:text="${vp.buildCommit}"></span>
                         Copyright &copy; 2022
                     </span>
             </div>

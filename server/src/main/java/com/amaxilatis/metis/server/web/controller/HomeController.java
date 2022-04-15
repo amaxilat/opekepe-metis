@@ -1,6 +1,7 @@
 package com.amaxilatis.metis.server.web.controller;
 
 import com.amaxilatis.metis.model.FileJob;
+import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
@@ -29,8 +30,8 @@ import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_SETTINGS
 @Controller
 public class HomeController extends BaseController {
     
-    public HomeController(final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties) {
-        super(fileService, imageProcessingService, jobService, reportService, props, buildProperties);
+    public HomeController(final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties, final BuildVersionConfigurationProperties versionProperties) {
+        super(fileService, imageProcessingService, jobService, reportService, props, buildProperties, versionProperties);
     }
     
     @GetMapping(VIEW_HOME)

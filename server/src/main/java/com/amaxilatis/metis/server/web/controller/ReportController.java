@@ -1,14 +1,13 @@
 package com.amaxilatis.metis.server.web.controller;
 
+import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.db.model.Report;
 import com.amaxilatis.metis.server.service.FileService;
-import com.amaxilatis.metis.server.db.repository.ReportRepository;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
 import com.amaxilatis.metis.server.service.JobService;
 import com.amaxilatis.metis.server.service.ReportService;
 import com.amaxilatis.metis.server.util.FileUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.io.InputStreamResource;
@@ -34,8 +33,8 @@ import static com.amaxilatis.metis.server.web.controller.ApiRoutes.*;
 @SuppressWarnings("SameReturnValue")
 public class ReportController extends BaseController {
     
-    public ReportController(final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties) {
-        super(fileService, imageProcessingService, jobService, reportService, props, buildProperties);
+    public ReportController(final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties, final BuildVersionConfigurationProperties versionProperties) {
+        super(fileService, imageProcessingService, jobService, reportService, props, buildProperties, versionProperties);
     }
     
     @GetMapping(value = API_REPORTS, produces = MediaType.APPLICATION_JSON_VALUE)

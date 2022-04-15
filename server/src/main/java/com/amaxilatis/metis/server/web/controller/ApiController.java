@@ -1,6 +1,7 @@
 package com.amaxilatis.metis.server.web.controller;
 
 import com.amaxilatis.metis.model.FileJobResult;
+import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.model.ImageFileInfo;
 import com.amaxilatis.metis.server.model.PoolInfo;
@@ -9,13 +10,9 @@ import com.amaxilatis.metis.server.service.ImageProcessingService;
 import com.amaxilatis.metis.server.service.JobService;
 import com.amaxilatis.metis.server.service.ReportService;
 import com.amaxilatis.metis.server.util.FileUtils;
-import ij.ImagePlus;
-import ij.io.FileSaver;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -29,14 +26,22 @@ import java.io.IOException;
 import java.util.List;
 import java.util.SortedSet;
 
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.*;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE_DIRECTORY;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE_DIRECTORY_IMAGE;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE_DIRECTORY_IMAGE_DOWNLOAD;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_POOL;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_SCAN_IMAGES;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_THUMBNAIL_DIRECTORY_IMAGE;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.IMAGE_DIR_HASH;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.IMAGE_HASH;
 
 @Slf4j
 @Controller
 public class ApiController extends BaseController {
     
-    public ApiController(final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties) {
-        super(fileService, imageProcessingService, jobService, reportService, props, buildProperties);
+    public ApiController(final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties, final BuildVersionConfigurationProperties versionProperties) {
+        super(fileService, imageProcessingService, jobService, reportService, props, buildProperties, versionProperties);
     }
     
     @ResponseBody

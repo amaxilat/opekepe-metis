@@ -1,5 +1,6 @@
 package com.amaxilatis.metis.server.web.controller;
 
+import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
@@ -21,20 +22,23 @@ public class BaseController {
     protected final ReportService reportService;
     protected final MetisProperties props;
     protected final BuildProperties buildProperties;
+    protected final BuildVersionConfigurationProperties versionProperties;
     
-    public BaseController(final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties) {
+    public BaseController(final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties, final BuildVersionConfigurationProperties versionProperties) {
         this.fileService = fileService;
         this.imageProcessingService = imageProcessingService;
         this.jobService = jobService;
         this.reportService = reportService;
         this.props = props;
         this.buildProperties = buildProperties;
+        this.versionProperties = versionProperties;
     }
     
     @Value("${spring.application.name}")
     String appName;
     
     protected void prepareMode(final Model model) {
+        model.addAttribute("vp", versionProperties);
         model.addAttribute("pool", imageProcessingService.getPoolInfo());
         model.addAttribute("imageDirectories", fileService.getImagesDirs());
         model.addAttribute("metisProperties", props);

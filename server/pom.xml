@@ -13,7 +13,7 @@
     <artifactId>server</artifactId>
     <version>0.3.6-SNAPSHOT</version>
 
-    <name>Metis Server</name>
+    <name>metis-server</name>
     <description>Metis :: server</description>
 
     <properties>
@@ -195,6 +195,10 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
