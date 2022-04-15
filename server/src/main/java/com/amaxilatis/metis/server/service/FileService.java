@@ -3,10 +3,13 @@ package com.amaxilatis.metis.server.service;
 import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.model.ImageFileInfo;
+import com.amaxilatis.metis.server.util.FileUtils;
 import com.drew.lang.Charsets;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
+import ij.ImagePlus;
+import ij.io.FileSaver;
 import lombok.RequiredArgsConstructor;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +19,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -178,6 +183,12 @@ public class FileService {
             boolean result = reports.mkdirs();
             log.debug("created reports directory {}", result);
         }
+        final File thumbs = new File(props.getThumbnailLocation());
+        if (!thumbs.exists()) {
+            log.info("creating thumbnail directory...");
+            boolean result = thumbs.mkdirs();
+            log.debug("created thumbnail directory {}", result);
+        }
         updateImageDirs();
     }
     
@@ -185,19 +196,26 @@ public class FileService {
         long start = System.currentTimeMillis();
         imagesDirs.clear();
         images.clear();
-        final File[] imageDirectoryList = new File(props.getFilesLocation()).listFiles(File::isDirectory);
+        log.info("[updateImageDirs] filesLocation: {}", props.getFilesLocation());
+        File[] imageDirectoryList = new File(props.getFilesLocation()).listFiles(File::isDirectory);
+        log.info("[updateImageDirs] imageDirectoryList: {}", imageDirectoryList);
+        imageDirectoryList = new File(props.getFilesLocation()).listFiles();
+        log.info("[updateImageDirs] imageDirectoryList: {}", imageDirectoryList);
         if (imageDirectoryList != null) {
             for (final File imagesDirectory : imageDirectoryList) {
                 final String imagesDirectoryName = imagesDirectory.getName();
+                log.info("[updateImageDirs] imagesDirectory: {}", imagesDirectoryName);
                 images.put(imagesDirectoryName, new TreeSet<>());
                 final Set<ImageFileInfo> imageSet = new HashSet<>();
                 long count = 0;
                 final File[] filesList = imagesDirectory.listFiles(File::isFile);
                 if (filesList != null) {
                     for (final File image : filesList) {
-                        if (image.getName().endsWith(".tif")) {
+                        final String imageName = image.getName();
+                        if (imageName.endsWith(".tif")) {
+                            log.info("[updateImageDirs] imagesDirectory: {} image: {}", imagesDirectoryName, imageName);
                             count++;
-                            imageSet.add(ImageFileInfo.builder().name(image.getName()).hash(getStringHash(image.getName())).build());
+                            imageSet.add(ImageFileInfo.builder().name(imageName).hash(getStringHash(imageName)).build());
                         }
                     }
                 }
@@ -275,6 +293,23 @@ public class FileService {
             Files.deleteIfExists(Path.of(resultFile));
         } catch (Exception e) {
             log.warn(e.getMessage());
+        }
+    }
+    
+    public File getImageThumbnail(final String decodedImageDir, final String decodedImage) {
+        log.info("[thumb] " + props.getThumbnailLocation() + "/" + decodedImageDir + "/" + decodedImage);
+        final File thumbnailFile = new File(props.getThumbnailLocation() + "/" + decodedImage + ".jpg");
+        if (thumbnailFile.exists()) {
+            return thumbnailFile;
+        } else {
+            log.info("[thumb:1] " + thumbnailFile.getAbsolutePath());
+            final long start = System.currentTimeMillis();
+            final ImagePlus ip = FileUtils.makeThumbnail(new ImagePlus(props.getFilesLocation() + "/" + decodedImageDir + "/" + decodedImage), 150);
+            new FileSaver(ip).saveAsJpeg(thumbnailFile.getAbsolutePath());
+            log.info("[thumb:1] took:" + (System.currentTimeMillis() - start));
+            //thumbnailFile.deleteOnExit();
+            //fileService.deleteFile(thumbnailFile.getAbsolutePath());
+            return thumbnailFile;
         }
     }
 }

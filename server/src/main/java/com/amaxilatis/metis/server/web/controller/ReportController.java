@@ -10,7 +10,7 @@ import com.amaxilatis.metis.server.service.ReportService;
 import com.amaxilatis.metis.server.util.FileUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
 import org.springframework.http.MediaType;
@@ -50,12 +50,11 @@ public class ReportController extends BaseController {
     }
     
     @GetMapping(value = API_REPORT_DOWNLOAD, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<InputStreamResource> download(HttpServletResponse response, @PathVariable final Long reportId) throws IOException {
+    public ResponseEntity<Resource> download(HttpServletResponse response, @PathVariable final Long reportId) throws IOException {
         log.info("get:{}, reportId:{}", API_REPORT_DOWNLOAD, reportId);
         final String fullFileName = props.getReportLocation() + "/metis-" + reportId + ".csv";
         final String xlsxName = fileService.csv2xlsx(fullFileName);
-        FileUtils.sendFile(response, new File(xlsxName), xlsxName);
-        return ResponseEntity.ok().build();
+        return FileUtils.sendFile(response, new File(xlsxName), xlsxName);
     }
     
     @SuppressWarnings("ResultOfMethodCallIgnored")

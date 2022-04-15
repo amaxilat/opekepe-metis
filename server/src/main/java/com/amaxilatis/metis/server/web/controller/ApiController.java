@@ -84,33 +84,20 @@ public class ApiController extends BaseController {
     }
     
     @GetMapping(value = API_IMAGE_DIRECTORY_IMAGE_DOWNLOAD)
-    public ResponseEntity<InputStreamResource> apiDownloadImage(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) throws IOException {
+    public ResponseEntity<Resource> apiDownloadImage(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) throws IOException {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_IMAGE_DIRECTORY_IMAGE_DOWNLOAD, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
-        FileUtils.sendFile(response, new File(new File(fileService.getFilesLocation(), decodedImageDir), decodedImage), decodedImage);
-        return ResponseEntity.ok().build();
+        return FileUtils.sendFile(response, new File(new File(fileService.getFilesLocation(), decodedImageDir), decodedImage), decodedImage);
     }
     
     @GetMapping(value = API_THUMBNAIL_DIRECTORY_IMAGE)
-    public ResponseEntity<InputStreamResource> apiDownloadImageThumb(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) throws IOException {
+    public ResponseEntity<Resource> apiDownloadImageThumb(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) throws IOException {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_THUMBNAIL_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + decodedImage);
-        log.info("[thumb] " + fileService.getFilesLocation() + "/" + decodedImageDir + "/" + decodedImage);
-        final ImagePlus ip = FileUtils.makeThumbnail(new ImagePlus(fileService.getFilesLocation() + "/" + decodedImageDir + "/" + decodedImage), 300);
-        final File thumbnailFile = new File(props.getResultsLocation() + "/" + decodedImage + ".jpg");
-        if (thumbnailFile.exists()) {
-            FileUtils.sendFile(response, thumbnailFile, thumbnailFile.getName());
-        } else {
-            log.info("[thumb:1] " + thumbnailFile.getAbsolutePath());
-            new FileSaver(ip).saveAsJpeg(thumbnailFile.getAbsolutePath());
-            FileUtils.sendFile(response, thumbnailFile, thumbnailFile.getName());
-            thumbnailFile.deleteOnExit();
-            fileService.deleteFile(thumbnailFile.getAbsolutePath());
-        }
-        return ResponseEntity.ok().build();
+        final File thumbnailFile = fileService.getImageThumbnail(decodedImageDir, decodedImage);
+        return FileUtils.sendFile(response, thumbnailFile, thumbnailFile.getName());
     }
     
 }

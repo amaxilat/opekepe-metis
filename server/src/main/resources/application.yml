@@ -39,6 +39,7 @@ logging:
 metis:
   reportLocation: reports
   resultsLocation: results
+  thumbnailLocation: thumb
   #filesLocation: files
   filesLocation: "O:\\"
   version: ^project.version^
