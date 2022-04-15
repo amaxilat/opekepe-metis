@@ -2,4 +2,4 @@ spring:
   thymeleaf:
     prefix: classpath:/templates/
 metis:
-  filesLocation: files
+  filesLocation: "Z:\\"
