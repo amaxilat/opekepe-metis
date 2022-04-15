@@ -9,6 +9,7 @@ public class MetisProperties {
     
     private String reportLocation;
     private String filesLocation;
+    private String thumbnailLocation;
     private String resultsLocation;
     private String version;
     
