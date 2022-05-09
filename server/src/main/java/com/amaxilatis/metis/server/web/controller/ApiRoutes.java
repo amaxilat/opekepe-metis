@@ -29,4 +29,6 @@ public interface ApiRoutes {
     
     String ACTION_RUN = "/run";
     String ACTION_CLEAN = "/clean";
+    
+    String VIEW_LOGIN = "/login";
 }

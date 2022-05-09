@@ -77,7 +77,73 @@
             </a>
         </li>
 
+        <div class="topbar-divider d-none d-sm-block"></div>
+
+        <!-- Nav Item - User Information -->
+        <li class="nav-item dropdown no-arrow">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="mr-2 d-none d-lg-inline" style="color: #5a5c69; font-weight: bold" th:text="${u.username}"></span>
+                <div id="usernameIcon" class="img-profile rounded-circle" data-initials=""></div>
+                <script th:inline="javascript">
+                    /*<![CDATA[*/
+                    const username = [[${u.username}]];
+                    /*]]>*/
+
+                    $(document).ready(function () {
+                        let parts = username.split(" ");
+                        let initials = ""
+                        for (let i in parts) {
+                            initials += parts[i].charAt(0);
+                        }
+                        $("#usernameIcon").attr("data-initials", initials);
+                    });
+                </script>
+            </a>
+            <!-- Dropdown - User Information -->
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                 aria-labelledby="userDropdown">
+<!--                <a class="dropdown-item" href="#">-->
+<!--                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>-->
+<!--                    Profile-->
+<!--                </a>-->
+<!--                <a class="dropdown-item" href="#">-->
+<!--                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>-->
+<!--                    Settings-->
+<!--                </a>-->
+<!--                <a class="dropdown-item" href="#">-->
+<!--                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>-->
+<!--                    Activity Log-->
+<!--                </a>-->
+<!--                <div class="dropdown-divider"></div>-->
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                    <span>Αποσύνδεση</span>
+                </a>
+            </div>
+        </li>
+
     </ul>
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Αποσύνδεση;</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Επιλέξτε "Αποσύνδεση" για να τερματίσετε τη σύνδεσή σας στο σύστημα Metis.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Ακύρωση</button>
+                    <a class="btn btn-primary" href="do_logout">Αποσύνδεση</a>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </nav>
 <!-- End of Topbar -->
@@ -87,7 +153,7 @@
     <!-- Sidebar - Brand -->
     <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
         <div class="sidebar-brand-text mx-3">
-            <img th:src="@{/img/metis.png}" width="30" height="30" class="d-inline-block align-top" alt=""/>
+            <img th:src="@{/img/metis.png}" width="100" height="100" class="d-inline-block align-top" alt=""/>
             <span th:text="${appName}">AppName</span>
         </div>
     </a>

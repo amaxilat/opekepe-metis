@@ -11278,7 +11278,7 @@ a:focus {
 }
 
 .sidebar .sidebar-brand {
-    height: 4.375rem;
+    height: 7.375rem;
     text-decoration: none;
     font-size: 1rem;
     font-weight: 800;
@@ -11715,21 +11715,24 @@ a:focus {
 }
 
 .bg-login-image {
-    background: url("https://source.unsplash.com/K4mSJ7kc0As/600x800");
+    background: url("/img/metis.png");
     background-position: center;
-    background-size: cover;
+    background-size: 50%;
+    background-repeat: no-repeat;
 }
 
 .bg-register-image {
-    background: url("https://source.unsplash.com/Mv9hjnEUHR4/600x800");
+    background: url("/img/metis.png");
     background-position: center;
-    background-size: cover;
+    background-size: 50%;
+    background-repeat: no-repeat;
 }
 
 .bg-password-image {
-    background: url("https://source.unsplash.com/oWTW-jNGl9I/600x800");
+    background: url("/img/metis.png");
     background-position: center;
-    background-size: cover;
+    background-size: 50%;
+    background-repeat: no-repeat;
 }
 
 form.user .custom-checkbox.small label {
@@ -12132,4 +12135,20 @@ footer.sticky-footer .copyright {
 
 body.sidebar-toggled footer.sticky-footer {
     width: 100%;
+}
+
+[data-initials]:before {
+    background: #4e73df;
+    color: white;
+    opacity: 1;
+    content: attr(data-initials);
+    display: inline-block;
+    font-weight: bold;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 0.5em;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
 }
