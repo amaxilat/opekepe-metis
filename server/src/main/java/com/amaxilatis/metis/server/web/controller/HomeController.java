@@ -10,6 +10,9 @@ import com.amaxilatis.metis.server.service.ReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +26,7 @@ import static com.amaxilatis.metis.server.web.controller.ApiRoutes.ACTION_CLEAN;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.ACTION_RUN;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_HOME;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_IMAGE_DIRECTORY;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_LOGIN;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_SETTINGS;
 
 @SuppressWarnings({"SameReturnValue"})
@@ -32,6 +36,16 @@ public class HomeController extends BaseController {
     
     public HomeController(final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties, final BuildVersionConfigurationProperties versionProperties) {
         super(fileService, imageProcessingService, jobService, reportService, props, buildProperties, versionProperties);
+    }
+    
+    @GetMapping(VIEW_LOGIN)
+    public String login(final Model model) {
+        log.info("get:{}", VIEW_LOGIN);
+        if (!(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)) {
+            return "redirect:/";
+        }
+        prepareMode(model);
+        return "login";
     }
     
     @GetMapping(VIEW_HOME)

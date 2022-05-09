@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
 
 @Slf4j
@@ -38,6 +39,7 @@ public class BaseController {
     String appName;
     
     protected void prepareMode(final Model model) {
+        model.addAttribute("u", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         model.addAttribute("vp", versionProperties);
         model.addAttribute("pool", imageProcessingService.getPoolInfo());
         model.addAttribute("imageDirectories", fileService.getImagesDirs());
