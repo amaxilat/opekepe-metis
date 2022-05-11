@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,12 +24,7 @@ import java.nio.file.Paths;
 public class FileUtils {
     
     
-    public static ResponseEntity<Resource> sendFile(final HttpServletResponse response, final File file, final String decodedImage) throws IOException {
-        //        final InputStream resource = new FileInputStream(file);
-        //        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + decodedImage);
-        //        IOUtils.copy(resource, response.getOutputStream());
-        //        response.flushBuffer();
-        //        log.info("[sendFile] done");
+    public static ResponseEntity<Resource> sendFile(final HttpServletResponse response, final File file, final String decodedImage) {
         final Path path = Paths.get(file.getPath());
         Resource resource = null;
         try {

@@ -42,10 +42,8 @@ public class BaseController {
     @Value("${spring.application.name}")
     String appName;
     
-    protected void prepareMode(final Model model) {
-        if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof String) {
-            //
-        } else {
+    protected void prepareModel(final Model model) {
+        if (!(SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof String)) {
             log.info("{}", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
             User u = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             model.addAttribute("u", userService.getBySpringUser(u));
