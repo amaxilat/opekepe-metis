@@ -1,9 +1,11 @@
 package com.amaxilatis.metis.server.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -11,23 +13,30 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+
+import javax.sql.DataSource;
 
 @Configuration
 @Order(-1)
 @EnableGlobalMethodSecurity(securedEnabled = true)
 public class SpringSecurityWebAppConfig extends WebSecurityConfigurerAdapter {
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
+    @Autowired
+    private DataSource dataSource;
+    @Autowired
+    private SimpleAuthenticationSuccessHandler successHandler;
     
-    @Bean
-    @Override
-    public UserDetailsService userDetailsService() {
-        UserDetails user = User.withDefaultPasswordEncoder().username("user").password("password").roles("USER").build();
-        return new InMemoryUserDetailsManager(user);
+    @Autowired
+    public void configAuthentication(AuthenticationManagerBuilder auth) throws Exception {
+        auth.jdbcAuthentication()
+                //encoder
+                .passwordEncoder(new BCryptPasswordEncoder())
+                //datasource
+                .dataSource(dataSource)
+                //select user
+                .usersByUsernameQuery("select username, password, enabled from user where username=?")
+                //authorities
+                .authoritiesByUsernameQuery("select username, role from user where username=?");
     }
     
     @Override
@@ -47,6 +56,7 @@ public class SpringSecurityWebAppConfig extends WebSecurityConfigurerAdapter {
                 .passwordParameter("password")
                 .loginProcessingUrl("/login")
                 .defaultSuccessUrl("/")
+                .successHandler(successHandler)
                 .failureUrl("/login")
                 .and()
                 //logout

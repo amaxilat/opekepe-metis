@@ -87,7 +87,7 @@
                 <div id="usernameIcon" class="img-profile rounded-circle" data-initials=""></div>
                 <script th:inline="javascript">
                     /*<![CDATA[*/
-                    const username = [[${u.username}]];
+                    const username = [[${u.name}]];
                     /*]]>*/
 
                     $(document).ready(function () {
@@ -101,12 +101,11 @@
                 </script>
             </a>
             <!-- Dropdown - User Information -->
-            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                 aria-labelledby="userDropdown">
-<!--                <a class="dropdown-item" href="#">-->
-<!--                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>-->
-<!--                    Profile-->
-<!--                </a>-->
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                <span class="dropdown-item disabled">
+                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                    <span th:text="${u.name}"></span>
+                </span>
 <!--                <a class="dropdown-item" href="#">-->
 <!--                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>-->
 <!--                    Settings-->
@@ -116,6 +115,10 @@
 <!--                    Activity Log-->
 <!--                </a>-->
 <!--                <div class="dropdown-divider"></div>-->
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#changePasswordModal">
+                    <i class="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i>
+                    <span>Αλλαγή Κωδικού</span>
+                </a>
                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                     <span>Αποσύνδεση</span>
@@ -126,12 +129,12 @@
     </ul>
 
     <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel"
          aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Αποσύνδεση;</h5>
+                    <h5 class="modal-title" id="logoutModalLabel">Αποσύνδεση;</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
@@ -144,6 +147,55 @@
             </div>
         </div>
     </div>
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordModalLabel">Αλλαγή Κωδικού Πρόσβασης</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <form class="form-horizontal" method="post" action="/change-password">
+                    <div class="modal-body">
+                        <div class="col-xl-12 col-md-12 mb-12">
+                            <input class="form-control" name="username" type="hidden" th:value="${u.username}"/>
+                            <div class="form-group">
+                                <label for="oldPassword">Τρέχων Κωδικός Πρόσβασης</label>
+                                <input class="form-control" name="oldPassword" type="password" id="oldPassword" required/>
+                            </div>
+                            <div class="form-group">
+                                <label for="newPassword">Νέος Κωδικός Πρόσβασης</label>
+                                <input class="form-control" name="newPassword" type="password" id="newPassword" required/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <input type="submit" class="btn btn-info" value="Αλλαγή"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        $(document).ready(function () {
+            if (getUrlParameter('successMessage')) {
+                toastr.options.positionClass='toast-top-full-width';
+                toastr.success(getUrlParameter('successMessage'));
+            }
+        });
+        $(document).ready(function () {
+            toastr.options.positionClass='toast-top-full-width';
+            if (getUrlParameter('errorMessage')) {
+                toastr.error(getUrlParameter('errorMessage'));
+            }
+        });
+    </script>
 
 </nav>
 <!-- End of Topbar -->
@@ -161,7 +213,7 @@
     <!-- Divider -->
     <hr class="sidebar-divider my-0">
 
-    <!-- Nav Item - Dashboard -->
+    <!-- Nav Item - Reports -->
     <li class="nav-item" th:classappend="${#request.requestURI=='/' ? 'active':''}">
         <a class="nav-link" href="/">
             <i class="fas fa-file-contract"></i>
@@ -214,11 +266,19 @@
     <!-- Divider -->
     <hr class="sidebar-divider my-0">
 
-    <!-- Nav Item - Dashboard -->
+    <!-- Nav Item - Settings -->
     <li class="nav-item" th:classappend="${#request.requestURI=='/settings' ? 'active':''}">
         <a class="nav-link" href="/settings">
             <i class="fas fa-cogs"></i>
             <span>Ρυθμίσεις</span>
+        </a>
+    </li>
+
+    <!-- Nav Item - Users -->
+    <li class="nav-item" th:classappend="${#request.requestURI=='/users' ? 'active':''}">
+        <a class="nav-link" href="/users">
+            <i class="fas fa-users"></i>
+            <span>Χρήστες</span>
         </a>
     </li>
 

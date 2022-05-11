@@ -7,6 +7,7 @@ public interface ApiRoutes {
     String IMAGE_DIR_HASH = "imageDirectoryHash";
     String IMAGE_HASH = "imageHash";
     String REPORT_ID = "reportId";
+    String USERNAME = "username";
     
     String API_BASE = API_V1 + "/api";
     String API_POOL = API_BASE + "/pool";
@@ -22,13 +23,19 @@ public interface ApiRoutes {
     String API_REPORT = API_BASE + "/report";
     String API_REPORT_DOWNLOAD = API_REPORT + "/{" + REPORT_ID + "}/download";
     String API_REPORT_DELETE = API_REPORT + "/{" + REPORT_ID + "}/delete";
+    String API_USERS = API_BASE + "/users";
+    String API_USER = API_BASE + "/user";
+    String API_USER_DELETE = API_USER + "/{" + USERNAME + "}/delete";
     
     String VIEW_HOME = "/";
     String VIEW_SETTINGS = "/settings";
     String VIEW_IMAGE_DIRECTORY = "/view/{" + IMAGE_DIR_HASH + "}";
+    String VIEW_USERS = "/users";
+    String VIEW_USERS_ADD = "/users";
     
     String ACTION_RUN = "/run";
     String ACTION_CLEAN = "/clean";
+    String ACTION_CHANGE_PASSWORD = "/change-password";
     
     String VIEW_LOGIN = "/login";
 }
