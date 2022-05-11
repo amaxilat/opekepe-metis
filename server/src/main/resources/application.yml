@@ -1,5 +1,12 @@
 server:
-  port: 80
+  ssl:
+    #key-store: classpath:metis.p12
+    key-store: file:metis.p12
+    key-store-password: password
+    key-store-type: pkcs12
+    key-alias: metis
+    key-password: password
+  port: 443
   http2:
     enabled: true
   compression:
