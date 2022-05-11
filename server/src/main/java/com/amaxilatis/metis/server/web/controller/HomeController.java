@@ -50,7 +50,7 @@ public class HomeController extends BaseController {
         if (!(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)) {
             return "redirect:/";
         }
-        prepareMode(model);
+        prepareModel(model);
         HttpSession session = request.getSession(false);
         String loginError = null;
         if (session != null) {
@@ -66,21 +66,21 @@ public class HomeController extends BaseController {
     @GetMapping(VIEW_HOME)
     public String homePage(final Model model) {
         log.info("get:{}", VIEW_HOME);
-        prepareMode(model);
+        prepareModel(model);
         return "home";
     }
     
     @GetMapping(VIEW_SETTINGS)
     public String settingsPage(final Model model) {
         log.info("get:{}", VIEW_SETTINGS);
-        prepareMode(model);
+        prepareModel(model);
         return "settings";
     }
     
     @GetMapping(VIEW_USERS)
     public String usersPage(final Model model) {
         log.info("get:{}", VIEW_USERS);
-        prepareMode(model);
+        prepareModel(model);
         return "users";
     }
     
@@ -99,7 +99,7 @@ public class HomeController extends BaseController {
     @GetMapping(VIEW_IMAGE_DIRECTORY)
     public String homePage(final Model model, @PathVariable("imageDirectoryHash") final String imageDirectoryHash) {
         log.info("get:{}, imageDirectoryHash:{}", VIEW_IMAGE_DIRECTORY, imageDirectoryHash);
-        prepareMode(model);
+        prepareModel(model);
         final String decodedImageDir = getFileService().getStringFromHash(imageDirectoryHash);
         model.addAttribute("imageDir", decodedImageDir);
         model.addAttribute("imageDirectoryHash", imageDirectoryHash);

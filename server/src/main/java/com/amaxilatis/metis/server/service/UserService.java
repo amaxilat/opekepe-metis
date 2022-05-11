@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class UserService {
     
     private final UserRepository userRepository;
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     
     public UserDTO getByUsername(final String username) {
         final User u = userRepository.findByUsername(username);

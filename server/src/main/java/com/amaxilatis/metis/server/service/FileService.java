@@ -19,8 +19,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -148,31 +146,8 @@ public class FileService {
         cell.setCellValue(text);
     }
     
-    //    public SortedSet<ReportFileInfo> listReports() {
-    //        final List<File> reports = Arrays.stream(Objects.requireNonNull(new File(props.getReportLocation()).listFiles())).filter(file -> file.getName().endsWith(".csv")).collect(Collectors.toList());
-    //        final SortedSet<ReportFileInfo> reportSet = new TreeSet<>();
-    //        reports.forEach(report -> {
-    //            try {
-    //                final String[] parts = report.getName().replaceAll("\\.csv", "").split("-", 3);
-    //
-    //                //                reportSet.add(ReportFileInfo.builder().directory(parts[1]).date(parts[2]).name(report.getName()).hash(getStringHash(report.getName())).path(report.toPath().toString()).size((double) Files.size(report.toPath())).build());
-    //                reportSet.add(ReportFileInfo.builder()
-    //                        .directory(parts[1])
-    //                        .name(report.getName())
-    //                        .hash(getStringHash(report.getName()))
-    //                        .path(report.toPath().toString())
-    //                        .size((double) Files.size(report.toPath()))
-    //                        .build());
-    //            } catch (IOException e) {
-    //                log.error(e.getMessage(), e);
-    //            }
-    //        });
-    //        return reportSet;
-    //    }
-    
-    
-    Map<String, SortedSet<ImageFileInfo>> images = new HashMap<>();
-    SortedSet<ImageFileInfo> imagesDirs = new TreeSet<>();
+    final Map<String, SortedSet<ImageFileInfo>> images = new HashMap<>();
+    final SortedSet<ImageFileInfo> imagesDirs = new TreeSet<>();
     
     @PostConstruct
     public void init() {

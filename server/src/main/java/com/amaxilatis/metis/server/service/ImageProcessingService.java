@@ -1,12 +1,10 @@
 package com.amaxilatis.metis.server.service;
 
-import com.amaxilatis.metis.server.config.ProcessingProperties;
 import com.amaxilatis.metis.server.model.ImageProcessingTask;
 import com.amaxilatis.metis.server.model.PoolInfo;
 import com.amaxilatis.metis.server.model.TestDescription;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Bean;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;

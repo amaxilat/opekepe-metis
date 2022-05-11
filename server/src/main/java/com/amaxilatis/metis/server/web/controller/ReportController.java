@@ -58,7 +58,6 @@ public class ReportController extends BaseController {
         return FileUtils.sendFile(response, new File(xlsxName), xlsxName);
     }
     
-    @SuppressWarnings("ResultOfMethodCallIgnored")
     @GetMapping(value = API_REPORT_DELETE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public String reportDelete(@PathVariable final Long reportId) {
         log.info("get:{}, reportId:{}", API_REPORT_DELETE, reportId);
