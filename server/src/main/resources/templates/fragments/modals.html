@@ -132,6 +132,115 @@
     </script>
 </div>
 
+<div th:fragment="modal-add-user(modalId)" class="modal fade" th:id="${modalId}" tabindex="-1"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Προσθήκη&nbsp;Νέου Χρήστη&nbsp;</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form class="form-horizontal" method="post" action="/users">
+                <div class="modal-body">
+                    <div class="col-xl-12 col-md-12 mb-12">
+                        <div class="form-group">
+                            <label for="addUserUsername">Username</label>
+                            <input class="form-control" name="username" type="text" id="addUserUsername" required/>
+                        </div>
+                        <div class="form-group">
+                            <label for="addUserPassword">Κωδικός Πρόσβασης</label>
+                            <input class="form-control" name="password" type="password" id="addUserPassword" required/>
+                        </div>
+                        <div class="form-group">
+                            <label for="addUserName">Όνομα</label>
+                            <input class="form-control" name="name" type="text" id="addUserName" required/>
+                        </div>
+                        <div class="form-group">
+                            <label for="addUserEnabled">Ενεργός</label>
+                            <input class="form-control" name="enabled" type="checkbox" id="addUserEnabled"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="addUserRole">Ρόλος</label>
+                            <select class="form-control" name="role" id="addUserRole" required>
+                                <option>ADMIN</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <input type="submit" class="btn btn-danger" value="Προσθήκη"/>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:fragment="modal-delete-user(modalId)" class="modal fade" th:id="${modalId}" tabindex="-1"
+     aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Διαγραφή&nbsp;Χρήστη&nbsp;
+                    <span id="deleteUserUsername"></span></h5>
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="col-xl-12 col-md-12 mb-12">
+                    Είστε σίγουροι οτι θέλετε να διαγράψετε τον παρακάτω χρήστη;
+                    <br/>
+                    <br/>
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1"
+                                         id="deleteUserName">
+                                        Name
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800"
+                                         id="deleteUserRole">
+                                        Role
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800"
+                                         id="deleteUserEnabled">
+                                        Enabled
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-user fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <a type="button" class="btn btn-danger" onclick="deleteUserFromModal()">Διαγραφή</a>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const report_delete_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_USER_DELETE}]];
+
+        /*]]>*/
+        function deleteUserFromModal() {
+            let username = $($('#dataTable2 tbody tr.selected td')[0]).text();
+            $.get(report_delete_url.replace("{username}", username), function (result) {
+                location.reload();
+            })
+        }
+    </script>
+</div>
+
 <th:block th:replace="fragments/base :: script"></th:block>
 </body>
 </html>

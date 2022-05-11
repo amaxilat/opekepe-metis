@@ -6,17 +6,20 @@ import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
 import com.amaxilatis.metis.server.service.JobService;
 import com.amaxilatis.metis.server.service.ReportService;
+import com.amaxilatis.metis.server.service.UserService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.ui.Model;
 
 @Slf4j
 @Getter
 public class BaseController {
     
+    protected final UserService userService;
     protected final FileService fileService;
     protected final ImageProcessingService imageProcessingService;
     protected final JobService jobService;
@@ -25,7 +28,8 @@ public class BaseController {
     protected final BuildProperties buildProperties;
     protected final BuildVersionConfigurationProperties versionProperties;
     
-    public BaseController(final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties, final BuildVersionConfigurationProperties versionProperties) {
+    public BaseController(final UserService userService, final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties, final BuildVersionConfigurationProperties versionProperties) {
+        this.userService = userService;
         this.fileService = fileService;
         this.imageProcessingService = imageProcessingService;
         this.jobService = jobService;
@@ -39,7 +43,13 @@ public class BaseController {
     String appName;
     
     protected void prepareMode(final Model model) {
-        model.addAttribute("u", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof String) {
+            //
+        } else {
+            log.info("{}", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+            User u = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            model.addAttribute("u", userService.getBySpringUser(u));
+        }
         model.addAttribute("vp", versionProperties);
         model.addAttribute("pool", imageProcessingService.getPoolInfo());
         model.addAttribute("imageDirectories", fileService.getImagesDirs());

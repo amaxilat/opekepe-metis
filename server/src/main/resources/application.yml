@@ -1,4 +1,5 @@
 server:
+  port: 80
   http2:
     enabled: true
   compression:
@@ -28,15 +29,21 @@ spring:
     resources:
       cache:
         period: 0
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    locations: classpath:db/migration
+    table: flyway_schema_history
   datasource:
-    url: jdbc:h2:file:./metis.db
+    url: jdbc:h2:file:./metis.db;AUTO_SERVER=TRUE
     username: sa
     password: password
     driverClassName: org.h2.Driver
   jpa:
     spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
 
 logging:
   level:
