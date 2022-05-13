@@ -18,7 +18,6 @@ public interface ApiRoutes {
     String API_THUMBNAIL_DIRECTORY = API_THUMBNAIL + "/{" + IMAGE_DIR_HASH + "}";
     String API_IMAGE_DIRECTORY_IMAGE = API_IMAGE_DIRECTORY + "/{" + IMAGE_HASH + "}";
     String API_THUMBNAIL_DIRECTORY_IMAGE = API_THUMBNAIL_DIRECTORY + "/{" + IMAGE_HASH + "}";
-    String API_IMAGE_DIRECTORY_IMAGE_DOWNLOAD = API_IMAGE_DIRECTORY_IMAGE + "/download";
     String API_REPORTS = API_BASE + "/reports";
     String API_REPORT = API_BASE + "/report";
     String API_REPORT_DOWNLOAD = API_REPORT + "/{" + REPORT_ID + "}/download";

@@ -57,11 +57,6 @@
                                 <h6 class="m-0 font-weight-bold text-primary">Εικόνα</h6>
                                 <div class="col-auto">
                                     <div class="btn-group" role="group" aria-label="image actions">
-                                        <a id="image-download-button" target="_blank"
-                                           class="btn btn-info ">
-                                            <span class="icon"><i class="fas fa-file-download"></i></span>
-                                            <span class="text">Λήψη Εικόνας</span>
-                                        </a>
                                         <!--                                            <a class="btn btn-info  disabled">-->
                                         <!--                                                <span class="icon"><i class="fas fa-file-export"></i></span>-->
                                         <!--                                                <span class="text">Αναφορά</span>-->
@@ -146,14 +141,12 @@
 
             <script th:inline="javascript">
                 /*<![CDATA[*/
-                const image_download_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_IMAGE_DIRECTORY_IMAGE_DOWNLOAD}]];
                 const image_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_IMAGE_DIRECTORY_IMAGE}]];
                 const thumbnail_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_THUMBNAIL_DIRECTORY_IMAGE}]];
                 const imageDirectoryHash = /*[[${imageDirectoryHash}]]*/ '';
 
                 /*]]>*/
                 function reloadFile() {
-                    $('#image-download-button').attr('href', image_download_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", $("#imagelist").val()));
                     $("#thmb").attr("src", "/img/loading.gif");
                     $.get(image_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", $("#imagelist").val()), function (data) {
                         console.log(data)
