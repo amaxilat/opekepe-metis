@@ -1,0 +1,41 @@
+= METIS - Εφαρμογή Για Το Μαζικό Έλεγχο Ορθοφωτοχαρτών
+:author: ΦΩΤΟΠΟ ΑΝΩΝΥΜΟΣ ΕΤΑΙΡΕΙΑ ΜΕΛΕΤΩΝ ΑΝΑΠΤΥΞΗΣ & ΓΕΩΓΡΑΦΙΚΩΝ ΣΥΣΤΗΜΑΤΩΝ ΠΛΗΡΟΦΟΡΙΩΝ
+:revnumber: 0.3.7
+:description: Ο οδηγός αυτός περιγράφει τη παραμετροποίηση / διαχείριση της εφαρμογής Metis για τον μαζικό έλεγχο ορθοφωτοχαρτών από τον διαχειριστή του συστήματος.
+:doctype: book
+:sectanchors:
+:sectlinks:
+:toc: left
+:sectnums:
+:appendix-caption: Παράρτημα
+:appendix-refsig: {appendix-caption}
+:caution-caption: Προσοχή
+:chapter-signifier: Κεφάλαιο
+:chapter-refsig: {chapter-signifier}
+:example-caption: Παράδειγμα
+:figure-caption: Εικόνα
+:important-caption: Σημαντικό
+:last-update-label: Τελευταία ενημέρωση
+ifdef::listing-caption[:listing-caption: Καταχώρηση]
+ifdef::manname-title[:manname-title: Ονομα]
+:note-caption: Σημείωση
+:part-signifier: Μέρος
+:part-refsig: {part-signifier}
+ifdef::preface-title[:preface-title: Πρόλογος]
+:section-refsig: Ενότητα
+:table-caption: Πίνακας
+:tip-caption: Υπόδειξη
+:toc-title: Πίνακας Περιεχομένων
+:untitled-label: Χωρίς τίτλο
+:version-label: Έκδοση
+:warning-caption: Προειδοποίηση
+
+{description}
+
+== Εκτέλεση Εφαρμογής
+
+tbd
+
+=== Windows Service
+
+tbd
