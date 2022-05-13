@@ -31,7 +31,6 @@ import java.util.SortedSet;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE_DIRECTORY;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE_DIRECTORY_IMAGE;
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE_DIRECTORY_IMAGE_DOWNLOAD;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_POOL;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_SCAN_IMAGES;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_THUMBNAIL_DIRECTORY_IMAGE;
@@ -85,14 +84,6 @@ public class ApiController extends BaseController {
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         return fileService.getImageResults(decodedImageDir, decodedImage);
-    }
-    
-    @GetMapping(value = API_IMAGE_DIRECTORY_IMAGE_DOWNLOAD)
-    public ResponseEntity<Resource> apiDownloadImage(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) throws IOException {
-        log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_IMAGE_DIRECTORY_IMAGE_DOWNLOAD, imageDirectoryHash, imageHash);
-        final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
-        final String decodedImage = fileService.getStringFromHash(imageHash);
-        return FileUtils.sendFile(response, new File(new File(fileService.getFilesLocation(), decodedImageDir), decodedImage), decodedImage);
     }
     
     @GetMapping(value = API_THUMBNAIL_DIRECTORY_IMAGE)
