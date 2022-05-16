@@ -248,7 +248,7 @@ public class ImageCheckerUtils {
         StringBuilder note = new StringBuilder();
         note.append("WorldFile: ");
         note.append(worldConditionRes.getNote());
-        note.append(" Exif: ");
+        note.append(" | Exif: ");
         for (final String metadataName : image.getMetadata().names()) {
             log.debug("metadataName: " + metadataName);
             if (metadataName.contains("0x830e")) {
@@ -281,13 +281,10 @@ public class ImageCheckerUtils {
         
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(2);
         
-        final StringBuilder note = new StringBuilder("");
-        
         final ExifIFD0Directory directory = image.getIoMetadata().getFirstDirectoryOfType(ExifIFD0Directory.class);
         final String metadataValue = directory.getString(TAG_BITS_PER_SAMPLE).replaceAll("[^0-9 ]", "");
         log.info("[N2] bitPerSample {}", metadataValue);
         final String[] bitsCounts = metadataValue.split(" ");
-        note.append("Exif bitsPerSample: ").append(metadataValue);
         boolean metadataTest = true;
         for (final String bitsCount : bitsCounts) {
             int bitsCountInt = Integer.parseInt(bitsCount);
@@ -301,11 +298,9 @@ public class ImageCheckerUtils {
         final int pixelSize = jImage.getColorModel().getPixelSize() / jImage.getColorModel().getNumComponents();
         log.debug("[N2] bitPerPixel: {}", pixelSize);
         
-        note.append(", Κανάλια: ").append(jImage.getColorModel().getNumComponents());
-        note.append(", PixelSize: ").append(jImage.getColorModel().getPixelSize());
-        note.append(", Size/Κανάλι: ").append(pixelSize);
+        final String note = String.format("%d Κανάλια, Μέγεθος Pixel: %d bit, Μέγεθος/Κανάλι: %d bit | Exif Μέγεθος Pixels: %s bit", jImage.getColorModel().getNumComponents(), jImage.getColorModel().getPixelSize(), pixelSize, metadataValue);
         
-        resultBuilder.note(note.toString()).result(metadataTest && (pixelSize >= N2_BIT_SIZE));
+        resultBuilder.note(note).result(metadataTest && (pixelSize >= N2_BIT_SIZE));
         
         return resultBuilder.build();
     }
@@ -322,15 +317,12 @@ public class ImageCheckerUtils {
         
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(3);
         
-        StringBuilder note = new StringBuilder("");
         log.debug("[N3] colorModelComponents: {}", jImage.getColorModel().getNumComponents());
         log.debug("[N3] colorModelColorComponents: {}", jImage.getColorModel().getNumColorComponents());
         log.debug("[N3] colorModelHasAlpha: {}", jImage.getColorModel().hasAlpha());
-        note.append("Κανάλια: ").append(jImage.getColorModel().getNumComponents()).append(", ");
-        note.append("Χρώματα: ").append(jImage.getColorModel().getNumColorComponents()).append(", ");
-        note.append("Alpha: ").append(jImage.getColorModel().hasAlpha()).append(", ");
+        final String note = String.format("%d Κανάλια, %d Χρώματα, Alpha: %s", jImage.getColorModel().getNumComponents(), jImage.getColorModel().getNumColorComponents(), jImage.getColorModel().hasAlpha() ? "Ναι" : "Όχι");
         boolean result = jImage.getColorModel().getNumComponents() == N3_SAMPLES_PER_PIXEL && jImage.getColorModel().getNumColorComponents() == N3_SAMPLES_PER_PIXEL - 1 && jImage.getColorModel().hasAlpha();
-        resultBuilder.result(result).note(note.toString()).build();
+        resultBuilder.result(result).note(note).build();
         
         return resultBuilder.build();
     }
