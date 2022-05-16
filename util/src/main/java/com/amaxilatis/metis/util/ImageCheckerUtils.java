@@ -261,7 +261,7 @@ public class ImageCheckerUtils {
                 if (doublePixelSize0 > N1_PIXEL_SIZE || doublePixelSize1 > N1_PIXEL_SIZE) {
                     metadataRes = false;
                 }
-                note.append(String.format("Μεγέθη Χ: %.2f, Y: %.2f",doublePixelSize0,doublePixelSize1));
+                note.append(String.format("Μεγέθη Χ: %f, Y: %f",doublePixelSize0,doublePixelSize1));
                 log.info("[N1] file:{}, n1:{} exif", file.getName(), metadataRes);
                 resultBuilder.note(note.toString());
             }

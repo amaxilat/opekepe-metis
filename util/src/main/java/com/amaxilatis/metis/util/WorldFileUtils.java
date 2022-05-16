@@ -31,7 +31,7 @@ public class WorldFileUtils {
     }
     
     private static String getWorldFileNote(final WorldFile worldFile) {
-        return String.format("Μεγέθη Χ: %.2f, Y: %.2f, Περιστροφή Χ: %.2f, Y: %.2f, Κέντρα Χ: %f, Y:%f", worldFile.getXPixelSize(), worldFile.getYPixelSize(), worldFile.getXRotation(), worldFile.getYRotation(), worldFile.getXCenter(), worldFile.getYCenter());
+        return String.format("Μεγέθη Χ: %f, Y: %f, Περιστροφή Χ: %.2f, Y: %.2f, Κέντρα Χ: %f, Y:%f", worldFile.getXPixelSize(), worldFile.getYPixelSize(), worldFile.getXRotation(), worldFile.getYRotation(), worldFile.getXCenter(), worldFile.getYCenter());
     }
     
     public static File getWorldFile(final File file) {
