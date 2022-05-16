@@ -433,16 +433,8 @@ public class ImageCheckerUtils {
         
         if (file.getName().endsWith(".tif")) {
             
-            resultBuilder.note("Συμπίεση: " + compressionExifValue);
-            resultBuilder.result(compressionExifValue == COMPRESSION_NONE
-                    || compressionExifValue == COMPRESSION_CCITT_RLE
-                    || compressionExifValue == COMPRESSION_CCITT_T_4
-                    || compressionExifValue == COMPRESSION_CCITT_T_6
-                    || compressionExifValue == COMPRESSION_LZW
-                    || compressionExifValue == COMPRESSION_ZLIB
-                    || compressionExifValue == COMPRESSION_PACKBITS
-                    || compressionExifValue == COMPRESSION_DEFLATE
-            );
+            resultBuilder.note("Συμπίεση: " + CompressionUtils.toText(compressionExifValue));
+            resultBuilder.result(CompressionUtils.isLossless(compressionExifValue));
             return resultBuilder.build();
         } else if (file.getName().endsWith(".jpf")) {
         }
