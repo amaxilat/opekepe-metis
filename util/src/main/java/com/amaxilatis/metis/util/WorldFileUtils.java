@@ -2,8 +2,6 @@ package com.amaxilatis.metis.util;
 
 import com.amaxilatis.metis.model.WorldFile;
 import com.amaxilatis.metis.model.WorldFileResult;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
@@ -19,8 +17,21 @@ public class WorldFileUtils {
     public static WorldFileResult evaluateWorldFile(final WorldFile worldFile) {
         final int xCenterDecimal = ((int) (worldFile.getXCenter() * 100) % 100);
         final int yCenterDecimal = ((int) (worldFile.getYCenter() * 100) % 100);
-        final String note = String.format("%.1f,%.1f,%.1f,%.1f,%d,%d", worldFile.getXPixelSize(), worldFile.getXRotation(), worldFile.getYRotation(), worldFile.getYPixelSize(), xCenterDecimal, yCenterDecimal);
-        return new WorldFileResult(note, worldFile.getXPixelSize() == 0.5 && worldFile.getXRotation() == 0 && worldFile.getYRotation() == 0 && worldFile.getYPixelSize() == -0.5 && xCenterDecimal == 25 && yCenterDecimal == 75);
+        final String note = getWorldFileNote(worldFile);
+        boolean checkResult =
+                // pixel size
+                worldFile.getXPixelSize() == 0.5 && worldFile.getYPixelSize() == -0.5
+                        // pixel size equality
+                        && Math.abs(worldFile.getXPixelSize()) == Math.abs(worldFile.getYPixelSize())
+                        // rotation
+                        && worldFile.getXRotation() == 0 && worldFile.getYRotation() == 0
+                        // decimals
+                        && xCenterDecimal == 25 && yCenterDecimal == 75;
+        return new WorldFileResult(note, checkResult);
+    }
+    
+    private static String getWorldFileNote(final WorldFile worldFile) {
+        return String.format("Μεγέθη Χ: %.2f, Y: %.2f, Περιστροφή Χ: %.2f, Y: %.2f, Κέντρα Χ: %f, Y:%f", worldFile.getXPixelSize(), worldFile.getYPixelSize(), worldFile.getXRotation(), worldFile.getYRotation(), worldFile.getXCenter(), worldFile.getYCenter());
     }
     
     public static File getWorldFile(final File file) {
