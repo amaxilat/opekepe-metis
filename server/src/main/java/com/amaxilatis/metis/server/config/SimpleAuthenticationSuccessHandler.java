@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -22,29 +24,27 @@ public class SimpleAuthenticationSuccessHandler implements AuthenticationSuccess
     @Override
     public void onAuthenticationSuccess(HttpServletRequest arg0, HttpServletResponse arg1, Authentication authentication) {
         
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        authorities.forEach(authority -> {
-            if (authority.getAuthority().equals("USER")) {
-                try {
-                    redirectStrategy.sendRedirect(arg0, arg1, "/");
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            } else if (authority.getAuthority().equals("ADMIN")) {
-                try {
-                    redirectStrategy.sendRedirect(arg0, arg1, "/");
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            } else {
-                try {
-                    redirectStrategy.sendRedirect(arg0, arg1, "/");
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-        });
+        final Set<String> authoritiesSet = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
         
+        if (authoritiesSet.contains("ADMIN")) {
+            try {
+                redirectStrategy.sendRedirect(arg0, arg1, "/");
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        } else if (authoritiesSet.contains("USER")) {
+            try {
+                redirectStrategy.sendRedirect(arg0, arg1, "/");
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        } else {
+            try {
+                redirectStrategy.sendRedirect(arg0, arg1, "/");
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
     }
     
 }
