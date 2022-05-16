@@ -246,9 +246,9 @@ public class ImageCheckerUtils {
         
         log.info("[N1] file:{}, n1:{} world", file.getName(), worldConditionRes.isOk());
         StringBuilder note = new StringBuilder();
-        note.append("world: ");
+        note.append("WorldFile: ");
         note.append(worldConditionRes.getNote());
-        note.append(" exif: ");
+        note.append(" Exif: ");
         for (final String metadataName : image.getMetadata().names()) {
             log.debug("metadataName: " + metadataName);
             if (metadataName.contains("0x830e")) {
@@ -261,9 +261,7 @@ public class ImageCheckerUtils {
                 if (doublePixelSize0 > N1_PIXEL_SIZE || doublePixelSize1 > N1_PIXEL_SIZE) {
                     metadataRes = false;
                 }
-                note.append(doublePixelSize0);
-                note.append(",");
-                note.append(doublePixelSize1);
+                note.append(String.format("Μεγέθη Χ: %.2f, Y: %.2f",doublePixelSize0,doublePixelSize1));
                 log.info("[N1] file:{}, n1:{} exif", file.getName(), metadataRes);
                 resultBuilder.note(note.toString());
             }
