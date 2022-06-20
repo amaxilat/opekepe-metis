@@ -122,17 +122,26 @@
                                 <h6 class="m-0 font-weight-bold text-primary">Μικρογραφία</h6>
                                 <div class="col-auto">
                                     <div class="btn-group" role="group" aria-label="image actions">
-                                        <!--                                            <a class="btn btn-info  disabled">-->
-                                        <!--                                                <span class="icon"><i class="fas fa-file-export"></i></span>-->
-                                        <!--                                                <span class="text">Αναφορά</span>-->
-                                        <!--                                            </a>-->
                                     </div>
                                 </div>
                             </div>
                             <!-- Card Body -->
                             <div class="card-body">
-                                <img src="" id="thmb"
-                                     style="width: 100%;  border: 1px solid grey;">
+                                <img src="" id="thmb" style="width: 100%;  border: 1px solid grey;">
+                            </div>
+                        </div>
+                        <div class="card shadow mb-4">
+                            <!-- Card Header - Dropdown -->
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Ιστόγραμμα</h6>
+                                <div class="col-auto">
+                                    <div class="btn-group" role="group" aria-label="image actions">
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Card Body -->
+                            <div class="card-body">
+                                <img src="" id="hist" class="zoomable" style="width: 100%;  border: 1px solid grey;">
                             </div>
                         </div>
                     </div>
@@ -143,11 +152,13 @@
                 /*<![CDATA[*/
                 const image_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_IMAGE_DIRECTORY_IMAGE}]];
                 const thumbnail_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_THUMBNAIL_DIRECTORY_IMAGE}]];
+                const histogram_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_HISTOGRAM_DIRECTORY_IMAGE}]];
                 const imageDirectoryHash = /*[[${imageDirectoryHash}]]*/ '';
 
                 /*]]>*/
                 function reloadFile() {
                     $("#thmb").attr("src", "/img/loading.gif");
+                    $("#hist").attr("src", "/img/loading.gif");
                     $.get(image_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", $("#imagelist").val()), function (data) {
                         console.log(data)
                         $("#imageResultsBody .test-result").hide();
@@ -164,6 +175,7 @@
                             $("#imageResultsBody .test-result-" + datum.task).find(".test-result-note").text(datum.note);
 
                             $("#thmb").attr("src", thumbnail_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", $("#imagelist").val()));
+                            $("#hist").attr("src", histogram_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", $("#imagelist").val()));
                         });
                     });
                 }
@@ -171,6 +183,7 @@
                 $(document).ready(function () {
                     connect();
                     reloadFile();
+                    Zoom(".zoomable");
                     // $('.selectpicker').selectpicker();
                     // $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
                     //     reloadFile();

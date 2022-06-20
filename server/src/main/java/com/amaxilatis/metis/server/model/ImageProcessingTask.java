@@ -30,7 +30,7 @@ public class ImageProcessingTask implements Runnable {
         try {
             final File imageFile = new File(filename);
             log.info("parsing file {}", imageFile);
-            final List<FileJobResult> results = ImageCheckerUtils.parseFile(imageFile, tasks, fileService.getResultsLocation());
+            final List<FileJobResult> results = ImageCheckerUtils.parseFile(imageFile, tasks, fileService.getResultsLocation(), fileService.getHistogramLocation());
             
             final StringBuilder sb = new StringBuilder();
             sb.append("\"").append(imageFile.getName()).append("\"").append(",");

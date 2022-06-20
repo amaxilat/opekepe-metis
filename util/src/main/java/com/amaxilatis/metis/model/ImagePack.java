@@ -36,7 +36,7 @@ public class ImagePack {
     @Getter
     private final ParseContext context;
     @Getter
-    private Histogram histogram;
+    private HistogramsHelper histogram;
     @Getter
     private boolean loaded;
     private boolean histogramLoaded;
@@ -94,7 +94,7 @@ public class ImagePack {
     public void loadHistogram() throws IOException {
         if (!histogramLoaded) {
             final BufferedImage jImage = ImageIO.read(file);
-            this.histogram = new Histogram();
+            this.histogram = new HistogramsHelper();
             final int components = jImage.getColorModel().getNumComponents();
             final int width = jImage.getWidth();
             final int height = jImage.getHeight();

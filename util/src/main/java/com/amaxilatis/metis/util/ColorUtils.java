@@ -9,6 +9,19 @@ public class ColorUtils {
         RED, GREEN, BLUE, NIR, LUM, COLORS
     }
     
+    
+    /**
+     * Get the brightness value of a pixel
+     *
+     * @param red   the pixels red value
+     * @param green the pixels green value
+     * @param blue  the pixels blue value
+     * @return the calculated brightness value
+     */
+    public static double getBrightness(final double red, final double green, final double blue) {
+        return getBrightness((int) red, (int) green, (int) blue);
+    }
+    
     /**
      * Get the brightness value of a pixel
      *

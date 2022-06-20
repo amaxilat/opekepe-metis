@@ -29,7 +29,6 @@ import static com.amaxilatis.metis.util.WorldFileUtils.getWorldFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.parseWorldFile;
 import static com.drew.metadata.exif.ExifDirectoryBase.TAG_BITS_PER_SAMPLE;
 import static com.drew.metadata.exif.ExifDirectoryBase.TAG_COMPRESSION;
-import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 
 @Slf4j
 public class ImageCheckerUtils {
@@ -39,12 +38,12 @@ public class ImageCheckerUtils {
     public static List<FileJobResult> parseDir(final File directory, final List<Integer> tasks) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
         for (final File file : Objects.requireNonNull(directory.listFiles())) {
-            results.addAll(parseFile(file, tasks, null));
+            results.addAll(parseFile(file, tasks, null, null));
         }
         return results;
     }
     
-    public static List<FileJobResult> parseFile(final File file, final List<Integer> tasks, final String resultsDir) throws IOException, TikaException, SAXException, ImageProcessingException {
+    public static List<FileJobResult> parseFile(final File file, final List<Integer> tasks, final String resultsDir, final String histogramDir) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
         
         if (file.getName().endsWith(".tif") || file.getName().endsWith(".jpf")) {
@@ -155,7 +154,7 @@ public class ImageCheckerUtils {
                         result = mapper.readValue(resultFile, FileJobResult.class);
                     } else {
                         log.info("running test 6 for {}", file);
-                        result = ImageCheckerUtils.testN6(file, image);
+                        result = ImageCheckerUtils.testN6(file, image, histogramDir);
                         if (resultsDir != null) {
                             mapper.writeValue(resultFile, result);
                         }
@@ -261,7 +260,7 @@ public class ImageCheckerUtils {
                 if (doublePixelSize0 > N1_PIXEL_SIZE || doublePixelSize1 > N1_PIXEL_SIZE) {
                     metadataRes = false;
                 }
-                note.append(String.format("Μεγέθη Χ: %f, Y: %f",doublePixelSize0,doublePixelSize1));
+                note.append(String.format("Μεγέθη Χ: %f, Y: %f", doublePixelSize0, doublePixelSize1));
                 log.info("[N1] file:{}, n1:{} exif", file.getName(), metadataRes);
                 resultBuilder.note(note.toString());
             }
@@ -359,8 +358,8 @@ public class ImageCheckerUtils {
         long totalItemsInBottom = bottom.stream().mapToLong(histogramBin -> histogramBin.getValuesCount()).sum();
         double topClipping = (totalItemsInTop / pixelsCount) * 100;
         double bottomClipping = (totalItemsInBottom / pixelsCount) * 100;
-        log.info("top[{} - {}]: {}", totalItemsInTop, (totalItemsInTop / pixelsCount) * 100, top);
-        log.info("bottom[{} - {}]: {}", totalItemsInBottom, (totalItemsInBottom / pixelsCount) * 100, bottom);
+        log.info("[N5] top[{} - {}]: {}", totalItemsInTop, (totalItemsInTop / pixelsCount) * 100, top);
+        log.info("[N5] bottom[{} - {}]: {}", totalItemsInBottom, (totalItemsInBottom / pixelsCount) * 100, bottom);
         
         boolean result = topClipping < 0.5 && bottomClipping < 0.5;
         
@@ -376,18 +375,31 @@ public class ImageCheckerUtils {
      * @param file
      * @return
      */
-    public static FileJobResult testN6(final File file, final ImagePack image) throws IOException {
+    public static FileJobResult testN6(final File file, final ImagePack image,final String histogramDir) throws IOException {
         image.loadHistogram();
         
         int histMinLimit = (int) (128 * 0.85);
         int histMaxLimit = (int) (128 * 1.15);
-        log.info("brightness: {}< mean:{} <{} std: {}", histMinLimit, image.getHistogram().getMean(ColorUtils.LAYERS.LUM), histMaxLimit, image.getHistogram().getStandardDeviation(ColorUtils.LAYERS.LUM));
-        final int majorBinCenterBr = image.getHistogram().majorBin(ColorUtils.LAYERS.LUM);
-        log.info("histogramBr center: {}", majorBinCenterBr);
-        boolean result = histMinLimit < majorBinCenterBr && majorBinCenterBr < histMaxLimit;
+        log.info("[N6] brightness: {}< mean:{} <{} std: {}", histMinLimit, image.getHistogram().getMean(ColorUtils.LAYERS.LUM), histMaxLimit, image.getHistogram().getStandardDeviation(ColorUtils.LAYERS.LUM));
+        final int majorBinCenterLum = image.getHistogram().majorBin(ColorUtils.LAYERS.LUM);
+        log.info("[N6] histogramBr center: {}", majorBinCenterLum);
+        
+        final int majorBinCenterR = image.getHistogram().majorBin(ColorUtils.LAYERS.RED);
+        log.info("[N6] histogramR center: {}", majorBinCenterR);
+        final int majorBinCenterG = image.getHistogram().majorBin(ColorUtils.LAYERS.GREEN);
+        log.info("[N6] histogramG center: {}", majorBinCenterG);
+        final int majorBinCenterB = image.getHistogram().majorBin(ColorUtils.LAYERS.RED);
+        log.info("[N6] histogramB center: {}", majorBinCenterB);
+    
+        if (histogramDir != null) {
+            String histogramFileName = file.getName() + ".png";
+            image.getHistogram().saveHistogramImage(new File(histogramDir, histogramFileName));
+        }
+        
+        boolean result = histMinLimit < majorBinCenterLum && majorBinCenterLum < histMaxLimit;
         
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(6);
-        resultBuilder.note(String.format("Κέντρο: %d, όρια: [%d,%d]", majorBinCenterBr, histMinLimit, histMaxLimit));
+        resultBuilder.note(String.format("Κέντρο: %d, όρια: [%d,%d], χρώματα: [%d,%d,%d]", majorBinCenterLum, histMinLimit, histMaxLimit, majorBinCenterR, majorBinCenterG, majorBinCenterB));
         return resultBuilder.result(result).build();
     }
     
@@ -430,56 +442,56 @@ public class ImageCheckerUtils {
         }
         
         return resultBuilder.result(false).build();
-    
-//        1	= Uncompressed
-//        2	= CCITT 1D
-//        3	= T4/Group 3 Fax
-//        4	= T6/Group 4 Fax
-//        5	= LZW
-//        6	= JPEG (old-style)
-//        7	= JPEG
-//        8	= Adobe Deflate
-//        9	= JBIG B&W
-//        10	= JBIG Color
-//        99	= JPEG
-//        262	= Kodak 262
-//        32766	= Next
-//        32767	= Sony ARW Compressed
-//        32769	= Packed RAW
-//        32770	= Samsung SRW Compressed
-//        32771	= CCIRLEW
-//        32772	= Samsung SRW Compressed 2
-//        32773	= PackBits
-//        32809	= Thunderscan
-//        32867	= Kodak KDC Compressed
-//        32895	= IT8CTPAD
-//        32896	= IT8LW
-//        32897	= IT8MP
-//        32898	= IT8BL
-//        32908	= PixarFilm
-//        32909	= PixarLog
-//        32946	= Deflate
-//        32947	= DCS
-//        33003	= Aperio JPEG 2000 YCbCr
-//        33005	= Aperio JPEG 2000 RGB
-//        34661	= JBIG
-//        34676	= SGILog
-//        34677	= SGILog24
-//        34712	= JPEG 2000
-//        34713	= Nikon NEF Compressed
-//        34715	= JBIG2 TIFF FX
-//        34718	= Microsoft Document Imaging (MDI) Binary Level Codec
-//        34719	= Microsoft Document Imaging (MDI) Progressive Transform Codec
-//        34720	= Microsoft Document Imaging (MDI) Vector
-//        34887	= ESRI Lerc
-//        34892	= Lossy JPEG
-//        34925	= LZMA2
-//        34926	= Zstd
-//        34927	= WebP
-//        34933	= PNG
-//        34934	= JPEG XR
-//        65000	= Kodak DCR Compressed
-//        65535	= Pentax PEF Compressed
+        
+        //        1	= Uncompressed
+        //        2	= CCITT 1D
+        //        3	= T4/Group 3 Fax
+        //        4	= T6/Group 4 Fax
+        //        5	= LZW
+        //        6	= JPEG (old-style)
+        //        7	= JPEG
+        //        8	= Adobe Deflate
+        //        9	= JBIG B&W
+        //        10	= JBIG Color
+        //        99	= JPEG
+        //        262	= Kodak 262
+        //        32766	= Next
+        //        32767	= Sony ARW Compressed
+        //        32769	= Packed RAW
+        //        32770	= Samsung SRW Compressed
+        //        32771	= CCIRLEW
+        //        32772	= Samsung SRW Compressed 2
+        //        32773	= PackBits
+        //        32809	= Thunderscan
+        //        32867	= Kodak KDC Compressed
+        //        32895	= IT8CTPAD
+        //        32896	= IT8LW
+        //        32897	= IT8MP
+        //        32898	= IT8BL
+        //        32908	= PixarFilm
+        //        32909	= PixarLog
+        //        32946	= Deflate
+        //        32947	= DCS
+        //        33003	= Aperio JPEG 2000 YCbCr
+        //        33005	= Aperio JPEG 2000 RGB
+        //        34661	= JBIG
+        //        34676	= SGILog
+        //        34677	= SGILog24
+        //        34712	= JPEG 2000
+        //        34713	= Nikon NEF Compressed
+        //        34715	= JBIG2 TIFF FX
+        //        34718	= Microsoft Document Imaging (MDI) Binary Level Codec
+        //        34719	= Microsoft Document Imaging (MDI) Progressive Transform Codec
+        //        34720	= Microsoft Document Imaging (MDI) Vector
+        //        34887	= ESRI Lerc
+        //        34892	= Lossy JPEG
+        //        34925	= LZMA2
+        //        34926	= Zstd
+        //        34927	= WebP
+        //        34933	= PNG
+        //        34934	= JPEG XR
+        //        65000	= Kodak DCR Compressed
+        //        65535	= Pentax PEF Compressed
     }
     
     /**

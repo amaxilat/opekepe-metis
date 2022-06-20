@@ -185,14 +185,14 @@
     <script th:inline="javascript">
         $(document).ready(function () {
             if (getUrlParameter('successMessage')) {
-                toastr.options.positionClass='toast-top-full-width';
-                toastr.success(getUrlParameter('successMessage'));
+                toastr.options.positionClass = 'toast-top-full-width';
+                toastr.success(translate(getUrlParameter('successMessage')));
             }
         });
         $(document).ready(function () {
-            toastr.options.positionClass='toast-top-full-width';
+            toastr.options.positionClass = 'toast-top-full-width';
             if (getUrlParameter('errorMessage')) {
-                toastr.error(getUrlParameter('errorMessage'));
+                toastr.error(translate(getUrlParameter('errorMessage')));
             }
         });
     </script>

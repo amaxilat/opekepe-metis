@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.SortedSet;
 
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_HISTOGRAM_DIRECTORY_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE_DIRECTORY;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE_DIRECTORY_IMAGE;
@@ -93,6 +94,14 @@ public class ApiController extends BaseController {
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File thumbnailFile = fileService.getImageThumbnail(decodedImageDir, decodedImage);
         return FileUtils.sendFile(response, thumbnailFile, thumbnailFile.getName());
+    }
+    @GetMapping(value = API_HISTOGRAM_DIRECTORY_IMAGE)
+    public ResponseEntity<Resource> apiDownloadImageHistogram(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) throws IOException {
+        log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_HISTOGRAM_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
+        final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
+        final String decodedImage = fileService.getStringFromHash(imageHash);
+        final File histogramFile = fileService.getImageHistogram(decodedImageDir, decodedImage);
+        return FileUtils.sendFile(response, histogramFile, histogramFile.getName());
     }
     
     @ResponseBody
