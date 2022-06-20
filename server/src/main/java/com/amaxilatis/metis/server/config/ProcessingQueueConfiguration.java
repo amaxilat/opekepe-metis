@@ -18,8 +18,10 @@ public class ProcessingQueueConfiguration {
         final ThreadPoolTaskExecutor tp = new ThreadPoolTaskExecutor();
         if (processingProperties.getThreads() == -1) {
             tp.setCorePoolSize(getCpuCountBasedThreads());
+            tp.setMaxPoolSize(getCpuCountBasedThreads());
         } else {
             tp.setCorePoolSize(processingProperties.getThreads());
+            tp.setMaxPoolSize(processingProperties.getThreads());
         }
         tp.initialize();
         return tp;

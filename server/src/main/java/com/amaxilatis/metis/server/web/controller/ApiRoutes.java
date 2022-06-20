@@ -14,10 +14,13 @@ public interface ApiRoutes {
     String API_SCAN_IMAGES = API_BASE + "/imageScan";
     String API_IMAGE = API_BASE + "/image";
     String API_THUMBNAIL = API_BASE + "/thumbnail";
+    String API_HISTOGRAM = API_BASE + "/histogram";
     String API_IMAGE_DIRECTORY = API_IMAGE + "/{" + IMAGE_DIR_HASH + "}";
     String API_THUMBNAIL_DIRECTORY = API_THUMBNAIL + "/{" + IMAGE_DIR_HASH + "}";
+    String API_HISTOGRAM_DIRECTORY = API_HISTOGRAM + "/{" + IMAGE_DIR_HASH + "}";
     String API_IMAGE_DIRECTORY_IMAGE = API_IMAGE_DIRECTORY + "/{" + IMAGE_HASH + "}";
     String API_THUMBNAIL_DIRECTORY_IMAGE = API_THUMBNAIL_DIRECTORY + "/{" + IMAGE_HASH + "}";
+    String API_HISTOGRAM_DIRECTORY_IMAGE = API_HISTOGRAM_DIRECTORY + "/{" + IMAGE_HASH + "}";
     String API_REPORTS = API_BASE + "/reports";
     String API_REPORT = API_BASE + "/report";
     String API_REPORT_DOWNLOAD = API_REPORT + "/{" + REPORT_ID + "}/download";

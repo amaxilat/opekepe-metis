@@ -1,12 +1,10 @@
 package com.amaxilatis.metis.server.util;
 
-import ij.ImagePlus;
 import ij.process.ByteProcessor;
-import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.MedianCut;
-import ij.process.ShortProcessor;
 import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,24 +35,18 @@ public class FileUtils {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_OCTET_STREAM).header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + decodedImage + "\"").body(resource);
     }
     
-    public static ImagePlus makeThumbnail(final ImagePlus imp, final int thumbnailWidth) {
-        if (imp == null) {
-            return null;
-        }
-        ImageProcessor ip = imp.getProcessor();
-        final int width = ip.getWidth();
-        final int height = ip.getHeight();
-        if (imp.getType() == ImagePlus.COLOR_256)
-            ip = ip.convertToRGB();
-        ip.smooth();
-        ip.setInterpolate(true);
-        ImageProcessor ip2 = ip.resize(thumbnailWidth, thumbnailWidth * height / width);
-        ip.reset();
-        if (ip2 instanceof ShortProcessor || ip2 instanceof FloatProcessor)
-            ip2 = ip2.convertToByte(true);
-        ip2 = reduceColors(ip2, 256);
-        return new ImagePlus("Thumbnail", ip2);
+    public static void makeThumbnail(final File input, final File output, final int width, final int height) throws IOException {
+        Thumbnails.of(input).size(width, height).toFile(output);
     }
+    
+    
+    public static void makeThumbnailAspose(final String input, final File output, final int width, final int height) throws IOException {
+        try (com.aspose.imaging.Image image = com.aspose.imaging.Image.load(input)) {
+            image.resize(width, height);
+            image.save(new FileOutputStream(output));
+        }
+    }
+    
     
     private static ImageProcessor reduceColors(ImageProcessor ip, final int nColors) {
         if (ip instanceof ByteProcessor && nColors == 256) {

@@ -8,8 +8,6 @@ import com.drew.lang.Charsets;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
-import ij.ImagePlus;
-import ij.io.FileSaver;
 import lombok.RequiredArgsConstructor;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +18,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -42,6 +41,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.amaxilatis.metis.util.FileUtils.getResultName;
 
@@ -52,8 +53,13 @@ public class FileService {
     
     private final MetisProperties props;
     
+    ExecutorService tpe = Executors.newFixedThreadPool(1);
+    
     public String getResultsLocation() {
         return props.getResultsLocation();
+    }
+    public String getHistogramLocation() {
+        return props.getHistogramLocation();
     }
     
     public String getFilesLocation() {
@@ -164,6 +170,12 @@ public class FileService {
             boolean result = thumbs.mkdirs();
             log.debug("created thumbnail directory {}", result);
         }
+        final File hists = new File(props.getHistogramLocation());
+        if (!hists.exists()) {
+            log.info("creating histogram directory...");
+            boolean result = hists.mkdirs();
+            log.debug("created histogram directory {}", result);
+        }
         updateImageDirs();
     }
     
@@ -179,7 +191,7 @@ public class FileService {
         if (imageDirectoryList != null) {
             for (final File imagesDirectory : imageDirectoryList) {
                 final String imagesDirectoryName = imagesDirectory.getName();
-                log.info("[updateImageDirs] imagesDirectory: {}", imagesDirectoryName);
+                log.trace("[updateImageDirs] imagesDirectory: {}", imagesDirectoryName);
                 images.put(imagesDirectoryName, new TreeSet<>());
                 final Set<ImageFileInfo> imageSet = new HashSet<>();
                 long count = 0;
@@ -188,7 +200,8 @@ public class FileService {
                     for (final File image : filesList) {
                         final String imageName = image.getName();
                         if (imageName.endsWith(".tif")) {
-                            log.info("[updateImageDirs] imagesDirectory: {} image: {}", imagesDirectoryName, imageName);
+                            tpe.execute(() -> getImageThumbnail(imagesDirectoryName, imageName));
+                            log.trace("[updateImageDirs] imagesDirectory: {} image: {}", imagesDirectoryName, imageName);
                             count++;
                             imageSet.add(ImageFileInfo.builder().name(imageName).hash(getStringHash(imageName)).build());
                         }
@@ -201,6 +214,20 @@ public class FileService {
             }
         }
         log.info("updateImageDirs took {}ms", (System.currentTimeMillis() - start));
+    }
+    
+    
+    @Scheduled(fixedRate = 600000L)
+    public void runAllImages() {
+        for (Map.Entry<String, SortedSet<ImageFileInfo>> stringSortedSetEntry : images.entrySet()) {
+            for (ImageFileInfo imageFileInfo : stringSortedSetEntry.getValue()) {
+                final File thumbnailFile = new File(props.getThumbnailLocation() + "/" + imageFileInfo.getName() + ".jpg");
+                if (!thumbnailFile.exists()) {
+                    log.info("test::::{}", imageFileInfo);
+                    tpe.execute(() -> getImageThumbnail(stringSortedSetEntry.getKey(), imageFileInfo.getName()));
+                }
+            }
+        }
     }
     
     public SortedSet<ImageFileInfo> getImagesDirs() {
@@ -272,19 +299,30 @@ public class FileService {
     }
     
     public File getImageThumbnail(final String decodedImageDir, final String decodedImage) {
-        log.info("[thumb] " + props.getThumbnailLocation() + "/" + decodedImageDir + "/" + decodedImage);
+        log.debug("[thumb] " + props.getThumbnailLocation() + "/" + decodedImageDir + "/" + decodedImage);
         final File thumbnailFile = new File(props.getThumbnailLocation() + "/" + decodedImage + ".jpg");
         if (thumbnailFile.exists()) {
             return thumbnailFile;
         } else {
-            log.info("[thumb:1] " + thumbnailFile.getAbsolutePath());
-            final long start = System.currentTimeMillis();
-            final ImagePlus ip = FileUtils.makeThumbnail(new ImagePlus(props.getFilesLocation() + "/" + decodedImageDir + "/" + decodedImage), 150);
-            new FileSaver(ip).saveAsJpeg(thumbnailFile.getAbsolutePath());
-            log.info("[thumb:1] took:" + (System.currentTimeMillis() - start));
-            //thumbnailFile.deleteOnExit();
-            //fileService.deleteFile(thumbnailFile.getAbsolutePath());
-            return thumbnailFile;
+            log.debug("[thumb:1] " + thumbnailFile.getAbsolutePath());
+            long start = System.currentTimeMillis();
+            try {
+                FileUtils.makeThumbnail(new File(props.getFilesLocation() + "/" + decodedImageDir + "/" + decodedImage), thumbnailFile, 150, 113);
+                log.info("[thumb:1] took:" + (System.currentTimeMillis() - start));
+                return thumbnailFile;
+            } catch (IOException e) {
+                return null;
+            }
+        }
+    }
+    
+    public File getImageHistogram(final String decodedImageDir, final String decodedImage) {
+        log.debug("[hist] " + props.getHistogramLocation() + "/" + decodedImage);
+        final File histogramFile = new File(props.getHistogramLocation() + "/" + decodedImage + ".png");
+        if (histogramFile.exists()) {
+            return histogramFile;
+        } else {
+            return null;
         }
     }
 }

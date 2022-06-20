@@ -62,6 +62,7 @@ metis:
   reportLocation: reports
   resultsLocation: results
   thumbnailLocation: thumb
+  histogramLocation: hist
   #filesLocation: files
   filesLocation: "O:\\"
   version: ^project.version^

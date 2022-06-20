@@ -36,3 +36,16 @@ function updatePoolInfo(message) {
     $("#pool-max").text(message.max);
     $("#pool-pending").text(message.pending);
 }
+
+function translate(message){
+    switch (message){
+        case 'check-started':
+            break
+        case 'files-cleaned':
+            break
+        case 'password-changed':
+            break
+        case 'password-not-changed':
+            break
+    }
+}
