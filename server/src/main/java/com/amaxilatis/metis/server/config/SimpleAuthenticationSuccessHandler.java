@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,7 +24,7 @@ public class SimpleAuthenticationSuccessHandler implements AuthenticationSuccess
     public void onAuthenticationSuccess(HttpServletRequest arg0, HttpServletResponse arg1, Authentication authentication) {
         
         final Set<String> authoritiesSet = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
-        
+        log.info("authoritiesSet:{}", authoritiesSet);
         if (authoritiesSet.contains("ADMIN")) {
             try {
                 redirectStrategy.sendRedirect(arg0, arg1, "/");

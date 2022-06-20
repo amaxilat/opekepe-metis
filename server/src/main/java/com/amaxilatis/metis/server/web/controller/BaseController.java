@@ -2,6 +2,7 @@ package com.amaxilatis.metis.server.web.controller;
 
 import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
+import com.amaxilatis.metis.server.model.UserDTO;
 import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
 import com.amaxilatis.metis.server.service.JobService;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
 import org.springframework.ui.Model;
 
 @Slf4j
@@ -44,9 +46,15 @@ public class BaseController {
     
     protected void prepareModel(final Model model) {
         if (!(SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof String)) {
-            log.info("{}", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-            User u = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            model.addAttribute("u", userService.getBySpringUser(u));
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            log.info("{}",principal);
+            if (principal instanceof User){
+                final User u = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                model.addAttribute("u", userService.getBySpringUser(u));
+            }else if (principal instanceof LdapUserDetailsImpl){
+                final LdapUserDetailsImpl u = (LdapUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                model.addAttribute("u", UserDTO.fromUser(u));
+            }
         }
         model.addAttribute("vp", versionProperties);
         model.addAttribute("pool", imageProcessingService.getPoolInfo());

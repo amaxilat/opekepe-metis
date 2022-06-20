@@ -2,35 +2,54 @@ package com.amaxilatis.metis.server.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.sql.DataSource;
 
 @Configuration
-@Order(-1)
-@EnableGlobalMethodSecurity(securedEnabled = true)
+@EnableWebSecurity
 public class SpringSecurityWebAppConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private DataSource dataSource;
     @Autowired
     private SimpleAuthenticationSuccessHandler successHandler;
+    @Autowired
+    PasswordEncoder encoder;
     
     @Autowired
-    public void configAuthentication(AuthenticationManagerBuilder auth) throws Exception {
-        auth.jdbcAuthentication()
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+//        auth //inmemmory details
+//                .inMemoryAuthentication()
+//                .passwordEncoder(encoder)
+//                .withUser("test")
+//                .password(encoder.encode("user"))
+//                .roles("ADMIN");
+        auth //ldap details
+                .ldapAuthentication()
+                .rolePrefix("LDAP_")
+                .userDnPatterns("uid={0},ou=people")
+                .groupSearchBase("ou=groups")
+                .contextSource()
+                .url("ldap://localhost:8389/dc=springframework,dc=org")
+                .and()
+                .passwordCompare()
+                .passwordEncoder(encoder)
+                .passwordAttribute("userPassword");
+        auth //jdbc details
+                .jdbcAuthentication()
                 //encoder
-                .passwordEncoder(new BCryptPasswordEncoder())
+                .passwordEncoder(encoder)
                 //datasource
                 .dataSource(dataSource)
                 //select user
                 .usersByUsernameQuery("select username, password, enabled from user where username=?")
                 //authorities
-                .authoritiesByUsernameQuery("select username, role from user where username=?");
+                .authoritiesByUsernameQuery("select username, role from user where username=?")
+                .rolePrefix("JDBC_");
     }
     
     @Override
