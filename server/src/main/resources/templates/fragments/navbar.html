@@ -83,7 +83,8 @@
         <li class="nav-item dropdown no-arrow">
             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <span class="mr-2 d-none d-lg-inline" style="color: #5a5c69; font-weight: bold" th:text="${u.username}"></span>
+                <span class="mr-2 d-none d-lg-inline" style="color: #5a5c69; font-weight: bold"
+                      th:text="${u.username}"></span>
                 <div id="usernameIcon" class="img-profile rounded-circle" data-initials=""></div>
                 <script th:inline="javascript">
                     /*<![CDATA[*/
@@ -106,15 +107,6 @@
                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                     <span th:text="${u.name}"></span>
                 </span>
-<!--                <a class="dropdown-item" href="#">-->
-<!--                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>-->
-<!--                    Settings-->
-<!--                </a>-->
-<!--                <a class="dropdown-item" href="#">-->
-<!--                    <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>-->
-<!--                    Activity Log-->
-<!--                </a>-->
-<!--                <div class="dropdown-divider"></div>-->
                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#changePasswordModal">
                     <i class="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i>
                     <span>Αλλαγή Κωδικού</span>
@@ -149,7 +141,8 @@
     </div>
 
     <!-- Logout Modal-->
-    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel"
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog"
+         aria-labelledby="changePasswordModalLabel"
          aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -165,11 +158,13 @@
                             <input class="form-control" name="username" type="hidden" th:value="${u.username}"/>
                             <div class="form-group">
                                 <label for="oldPassword">Τρέχων Κωδικός Πρόσβασης</label>
-                                <input class="form-control" name="oldPassword" type="password" id="oldPassword" required/>
+                                <input class="form-control" name="oldPassword" type="password" id="oldPassword"
+                                       required/>
                             </div>
                             <div class="form-group">
                                 <label for="newPassword">Νέος Κωδικός Πρόσβασης</label>
-                                <input class="form-control" name="newPassword" type="password" id="newPassword" required/>
+                                <input class="form-control" name="newPassword" type="password" id="newPassword"
+                                       required/>
                             </div>
                         </div>
                     </div>
@@ -239,8 +234,9 @@
                     <a class="collapse-item"
                        th:classappend="${imageDir !=null && imageDirectory.name==imageDir}?'active':''"
                        th:href="'/view/'+${imageDirectory.hash}"
-                       th:text="${imageDirectory.name}">DirName</a>
-
+                       th:text="${imageDirectory.name}" style="overflow: hidden" th:title="${imageDirectory.name}">
+                        DirName
+                    </a>
                 </th:block>
             </div>
         </div>
