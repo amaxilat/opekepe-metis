@@ -15,12 +15,16 @@ public interface ApiRoutes {
     String API_IMAGE = API_BASE + "/image";
     String API_THUMBNAIL = API_BASE + "/thumbnail";
     String API_HISTOGRAM = API_BASE + "/histogram";
+    String API_CLOUDCOVER = API_BASE + "/cloudcover";
     String API_IMAGE_DIRECTORY = API_IMAGE + "/{" + IMAGE_DIR_HASH + "}";
     String API_THUMBNAIL_DIRECTORY = API_THUMBNAIL + "/{" + IMAGE_DIR_HASH + "}";
     String API_HISTOGRAM_DIRECTORY = API_HISTOGRAM + "/{" + IMAGE_DIR_HASH + "}";
+    String API_CLOUDCOVER_DIRECTORY = API_CLOUDCOVER + "/{" + IMAGE_DIR_HASH + "}";
     String API_IMAGE_DIRECTORY_IMAGE = API_IMAGE_DIRECTORY + "/{" + IMAGE_HASH + "}";
     String API_THUMBNAIL_DIRECTORY_IMAGE = API_THUMBNAIL_DIRECTORY + "/{" + IMAGE_HASH + "}";
     String API_HISTOGRAM_DIRECTORY_IMAGE = API_HISTOGRAM_DIRECTORY + "/{" + IMAGE_HASH + "}";
+    
+    String API_CLOUDCOVER_DIRECTORY_IMAGE = API_CLOUDCOVER_DIRECTORY + "/{" + IMAGE_HASH + "}";
     String API_REPORTS = API_BASE + "/reports";
     String API_REPORT = API_BASE + "/report";
     String API_REPORT_DOWNLOAD = API_REPORT + "/{" + REPORT_ID + "}/download";
@@ -31,7 +35,7 @@ public interface ApiRoutes {
     
     String VIEW_HOME = "/";
     String VIEW_SETTINGS = "/settings";
-    String VIEW_IMAGE_DIRECTORY = "/view/{" + IMAGE_DIR_HASH + "}";
+    String VIEW_IMAGE_DIRECTORY = "/view";
     String VIEW_USERS = "/users";
     String VIEW_USERS_ADD = "/users";
     

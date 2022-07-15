@@ -97,13 +97,14 @@ public class HomeController extends BaseController {
     }
     
     @GetMapping(VIEW_IMAGE_DIRECTORY)
-    public String homePage(final Model model, @PathVariable("imageDirectoryHash") final String imageDirectoryHash) {
+    public String homePage(final Model model, @RequestParam("dir") final String imageDirectoryHash, @RequestParam(value = "file", required = false) final String file) {
         log.info("get:{}, imageDirectoryHash:{}", VIEW_IMAGE_DIRECTORY, imageDirectoryHash);
         prepareModel(model);
         final String decodedImageDir = getFileService().getStringFromHash(imageDirectoryHash);
         model.addAttribute("imageDir", decodedImageDir);
         model.addAttribute("imageDirectoryHash", imageDirectoryHash);
         model.addAttribute("images", getFileService().listImages(decodedImageDir));
+        model.addAttribute("file", file);
         return "view";
     }
     

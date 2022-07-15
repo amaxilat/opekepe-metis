@@ -48,7 +48,7 @@ public class ImageCheckerUtils {
         
         if (file.getName().endsWith(".tif") || file.getName().endsWith(".jpf")) {
             log.info("[{}] parsing...", file.getName());
-            ImagePack image = new ImagePack(file);
+            ImagePack image = new ImagePack(file, histogramDir);
             
             if (tasks.contains(1)) {
                 try {
@@ -332,12 +332,17 @@ public class ImageCheckerUtils {
      * @param file
      * @return
      */
-    public static FileJobResult testN4(final File file, final ImagePack image) throws TikaException, IOException, SAXException {
-        image.loadImage();
+    public static FileJobResult testN4(final File file, final ImagePack image) throws IOException {
         image.loadHistogram();
-        
+        double percentage = ((double) image.getCloudPixels() / (double) image.getValidPixels()) * 100;
+    
+        boolean result = percentage < 5;
+    
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(4);
-        return resultBuilder.result(false).build();
+    
+        resultBuilder.note(String.format("Εικονοστοιχεία με Συννεφα %d, Συνολικά Εικονοστοιχεία %d, Ποσοστό: %.2f", image.getCloudPixels(), image.getValidPixels(), percentage));
+    
+        return resultBuilder.result(result).build();
     }
     
     /**
@@ -399,7 +404,7 @@ public class ImageCheckerUtils {
         boolean result = histMinLimit < majorBinCenterLum && majorBinCenterLum < histMaxLimit;
         
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(6);
-        resultBuilder.note(String.format("Κέντρο: %d, όρια: [%d,%d], χρώματα: [%d,%d,%d]", majorBinCenterLum, histMinLimit, histMaxLimit, majorBinCenterR, majorBinCenterG, majorBinCenterB));
+        resultBuilder.note(String.format("Κέντρο Ιστογράμματος: %d, όρια +/-15%%: [%d,%d], Κέντρα Ιστογράμματος Χρωμάτων: [R:%d,G:%d,B:%d]", majorBinCenterLum, histMinLimit, histMaxLimit, majorBinCenterR, majorBinCenterG, majorBinCenterB));
         return resultBuilder.result(result).build();
     }
     

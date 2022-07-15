@@ -121,7 +121,8 @@ public class HistogramsHelper {
      * @return the bottom 5 bins and their contents
      */
     public Set<HistogramBin> getBottom5Bins(final ColorUtils.LAYERS layer) {
-        return bins.get(layer).getBottom5Bins();
+        //return bins.get(layer).getBottom5Bins();
+        return bins.get(layer).getFirstBins(5);
     }
     
     /**
@@ -131,7 +132,8 @@ public class HistogramsHelper {
      * @return the bottom 5 bins and their contents
      */
     public Set<HistogramBin> getTop5Bins(final ColorUtils.LAYERS layer) {
-        return bins.get(layer).getTop5Bins();
+        //return bins.get(layer).getTop5Bins();
+        return bins.get(layer).getLastBins(5);
     }
     
     

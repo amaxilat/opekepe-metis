@@ -325,4 +325,14 @@ public class FileService {
             return null;
         }
     }
+    
+    public File getImageCloudCover(final String decodedImageDir, final String decodedImage) {
+        log.debug("[cloudcover] " + props.getHistogramLocation() + "/" + decodedImage);
+        final File cloudCoverFile = new File(props.getHistogramLocation() + "/" + decodedImage + ".mask.png");
+        if (cloudCoverFile.exists()) {
+            return cloudCoverFile;
+        } else {
+            return null;
+        }
+    }
 }
