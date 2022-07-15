@@ -410,13 +410,20 @@ public class ImageCheckerUtils {
      * @param file
      * @return
      */
-    public static FileJobResult testN7(final File file, final ImagePack image) throws TikaException, IOException, SAXException {
-        if (!image.isLoaded()) {
-            image.loadImage();
-        }
+    public static FileJobResult testN7(final File file, final ImagePack image) throws IOException {
+        image.loadHistogram();
+        double mean = image.getDnValuesStatistics().getMean();
+        double std = image.getDnValuesStatistics().getStandardDeviation();
+        double coefficientOfVariation = std / mean;
+        double variance = image.getDnValuesStatistics().getVariance();
+    
+        boolean result = coefficientOfVariation > 0.1 && coefficientOfVariation < 0.2;
         
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(7);
-        return resultBuilder.result(false).build();
+    
+        resultBuilder.note(String.format("Μέση Τιμή: %.2f, Τυπική Απόκλιση: %.2f, Διασπορά: %.2f, Συντελεστής Διακύμανσης: %.2f", mean, std, variance, coefficientOfVariation));
+    
+        return resultBuilder.result(result).build();
     }
     
     /**
