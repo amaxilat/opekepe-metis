@@ -233,7 +233,7 @@
                 <th:block th:each="imageDirectory: ${imageDirectories}">
                     <a class="collapse-item"
                        th:classappend="${imageDir !=null && imageDirectory.name==imageDir}?'active':''"
-                       th:href="'/view/'+${imageDirectory.hash}"
+                       th:href="'/view?dir='+${imageDirectory.hash}"
                        th:text="${imageDirectory.name}" style="overflow: hidden" th:title="${imageDirectory.name}">
                         DirName
                     </a>

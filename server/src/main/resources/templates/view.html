@@ -51,101 +51,119 @@
                 <!-- Content Row -->
                 <div class="row">
                     <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-12 col-md-12 col-sm-12 mb-12">
+                    <div class="col-xxl-12 col-xl-12 col-md-12 col-sm-12 mb-12">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                 <h6 class="m-0 font-weight-bold text-primary">Εικόνα</h6>
-                                <div class="col-auto">
-                                    <div class="btn-group" role="group" aria-label="image actions">
-                                        <!--                                            <a class="btn btn-info  disabled">-->
-                                        <!--                                                <span class="icon"><i class="fas fa-file-export"></i></span>-->
-                                        <!--                                                <span class="text">Αναφορά</span>-->
-                                        <!--                                            </a>-->
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body">
                                 <div class="col mr-2">
                                     <select id="imagelist" class="custom-select col-md-12"
-                                            onchange="reloadFile()">
+                                            onchange="loadFile()">
                                         <option th:each="image : ${images}"
                                                 th:text="${image.name}" th:title="${image.name}"
-                                                th:value="${image.hash}">
+                                                th:value="${image.hash}" th:selected="${image.hash==file}">
                                             image
                                         </option>
                                     </select>
-
                                 </div>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <br/>
-                <!-- Content Row -->
-                <div class="row">
-                    <div class="col-xl-9 col-md-12 col-sm-12 mb-8">
-                        <div class="card shadow mb-4">
-                            <!-- Card Header - Dropdown -->
-                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-primary">Αποτελέσματα Ελέγχων</h6>
                             </div>
                             <div class="card-body">
-                                <div id="imageResultsBody">
-                                    <div class="media test-result" th:each="test : ${tests}"
-                                         th:classappend="'test-result-'+${test.id}">
-                                        <img th:src="@{/img/t1.png}" class="mr-3 result-value-true"
-                                             alt="..."
-                                             style="width: 50px">
-                                        <img th:src="@{/img/f1.png}" class="mr-3 result-value-false"
-                                             alt="..."
-                                             style="width: 50px">
-                                        <div class="media-body">
-                                            <h4 class="mt-0">
-                                                <span th:text="${test.name}">Έλεγχος</span>
-                                                <span class="result-value-true">Σωστό</span>
-                                                <span class="result-value-false">Λάθος</span>
-                                            </h4>
-                                            <p class="test-result-note">
-                                            </p>
+                                <!-- Content Row -->
+                                <div class="row">
+                                    <div class="col-xxl-8 col-xl-8 col-lg-12 col-md-12 col-sm-12 mb-8">
+                                        <div class="card shadow mb-4">
+                                            <!-- Card Header - Dropdown -->
+                                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                                <h6 class="m-0 font-weight-bold text-primary">Αποτελέσματα Ελέγχων</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="imageResultsBody">
+                                                    <div class="media test-result" th:each="test : ${tests}"
+                                                         th:classappend="'test-result-'+${test.id}">
+                                                        <img th:src="@{/img/t1.png}" class="mr-3 result-value-true"
+                                                             alt="..."
+                                                             style="width: 50px">
+                                                        <img th:src="@{/img/f1.png}" class="mr-3 result-value-false"
+                                                             alt="..."
+                                                             style="width: 50px">
+                                                        <div class="media-body">
+                                                            <h4 class="mt-0">
+                                                                <span th:text="${test.name}">Έλεγχος</span>
+                                                                <span class="result-value-true">Σωστό</span>
+                                                                <span class="result-value-false">Λάθος</span>
+                                                            </h4>
+                                                            <p class="test-result-note">
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-xxl-4 col-xl-4 col-lg-12 col-md-12 col-sm-12 mb-8 text-center">
+                                        <div class="row">
+                                            <div class="col-xxl-6 col-xl-12 col-lg-6 col-md-12 col-sm-12">
+                                                <div class="card shadow mb-4">
+                                                    <!-- Card Header - Dropdown -->
+                                                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                                        <h6 class="m-0 font-weight-bold text-primary">Μικρογραφία</h6>
+                                                        <div class="col-auto">
+                                                            <div class="btn-group" role="group"
+                                                                 aria-label="image actions">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Card Body -->
+                                                    <div class="card-body">
+                                                        <img src="" id="thmb"
+                                                             style="width: 100%; max-width: 300px;  border: 1px solid grey;">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-xxl-6 col-xl-12 col-lg-6 col-md-12 col-sm-12">
+                                                <div class="card shadow mb-4">
+                                                    <!-- Card Header - Dropdown -->
+                                                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                                        <h6 class="m-0 font-weight-bold text-primary">Ιστόγραμμα</h6>
+                                                        <div class="col-auto">
+                                                            <div class="btn-group" role="group"
+                                                                 aria-label="image actions">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Card Body -->
+                                                    <div class="card-body">
+                                                        <img src="" id="hist" class="zoomable"
+                                                             style="width: 100%; max-width: 300px; border: 1px solid grey;">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-xxl-6 col-xl-12 col-lg-6 col-md-12 col-sm-12">
+                                                <div class="card shadow mb-4">
+                                                    <!-- Card Header - Dropdown -->
+                                                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                                        <h6 class="m-0 font-weight-bold text-primary">Νεφοκάλυψη</h6>
+                                                        <div class="col-auto">
+                                                            <div class="btn-group" role="group"
+                                                                 aria-label="image actions">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Card Body -->
+                                                    <div class="card-body">
+                                                        <img src="" id="cloudcover" class="zoomable"
+                                                             style="width: 100%;max-width: 300px;  border: 1px solid grey;">
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xl-3 col-md-12 col-sm-12 mb-8 text-center">
-                        <div class="card shadow mb-4">
-                            <!-- Card Header - Dropdown -->
-                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-primary">Μικρογραφία</h6>
-                                <div class="col-auto">
-                                    <div class="btn-group" role="group" aria-label="image actions">
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Card Body -->
-                            <div class="card-body">
-                                <img src="" id="thmb" style="width: 100%;  border: 1px solid grey;">
-                            </div>
-                        </div>
-                        <div class="card shadow mb-4">
-                            <!-- Card Header - Dropdown -->
-                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-primary">Ιστόγραμμα</h6>
-                                <div class="col-auto">
-                                    <div class="btn-group" role="group" aria-label="image actions">
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Card Body -->
-                            <div class="card-body">
-                                <img src="" id="hist" class="zoomable"
-                                     style="width: 100%;  border: 1px solid grey;">
-                            </div>
-                        </div>
-                    </div>
                 </div>
+                <br/>
+
             </div>
 
             <script th:inline="javascript">
@@ -153,13 +171,20 @@
                 const image_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_IMAGE_DIRECTORY_IMAGE}]];
                 const thumbnail_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_THUMBNAIL_DIRECTORY_IMAGE}]];
                 const histogram_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_HISTOGRAM_DIRECTORY_IMAGE}]];
+                const cloudcover_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_CLOUDCOVER_DIRECTORY_IMAGE}]];
                 const imageDirectoryHash = /*[[${imageDirectoryHash}]]*/ '';
 
                 /*]]>*/
+                function loadFile() {
+                    window.location = window.location.origin + window.location.pathname + "?dir=" + getUrlParameter("dir") + "&file=" + $("#imagelist").val();
+                }
+
                 function reloadFile() {
                     $("#thmb").attr("src", "/img/loading.gif");
                     $("#hist").attr("src", "/img/loading.gif");
-                    $.get(image_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", $("#imagelist").val()), function (data) {
+                    $("#cloudcover").attr("src", "/img/loading.gif");
+                    const selected_image = $("#imagelist").val();
+                    $.get(image_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image), function (data) {
                         console.log(data)
                         $("#imageResultsBody .test-result").hide();
                         data.forEach(function (datum) {
@@ -174,8 +199,9 @@
                             }
                             $("#imageResultsBody .test-result-" + datum.task).find(".test-result-note").text(datum.note);
 
-                            $("#thmb").attr("src", thumbnail_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", $("#imagelist").val()));
-                            $("#hist").attr("src", histogram_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", $("#imagelist").val()));
+                            $("#thmb").attr("src", thumbnail_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
+                            $("#hist").attr("src", histogram_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
+                            $("#cloudcover").attr("src", cloudcover_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
                         });
                     });
                 }
