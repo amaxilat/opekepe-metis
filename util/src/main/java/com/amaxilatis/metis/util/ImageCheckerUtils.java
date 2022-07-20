@@ -393,7 +393,7 @@ public class ImageCheckerUtils {
         log.info("[N6] histogramR center: {}", majorBinCenterR);
         final int majorBinCenterG = image.getHistogram().majorBin(ColorUtils.LAYERS.GREEN);
         log.info("[N6] histogramG center: {}", majorBinCenterG);
-        final int majorBinCenterB = image.getHistogram().majorBin(ColorUtils.LAYERS.RED);
+        final int majorBinCenterB = image.getHistogram().majorBin(ColorUtils.LAYERS.BLUE);
         log.info("[N6] histogramB center: {}", majorBinCenterB);
     
         if (histogramDir != null) {
