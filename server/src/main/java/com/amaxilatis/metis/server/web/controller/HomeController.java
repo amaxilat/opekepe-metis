@@ -114,7 +114,7 @@ public class HomeController extends BaseController {
         final String decodedName = getFileService().getStringFromHash(name);
         final FileJob job = FileJob.builder().name(decodedName).tasks(tasks).build();
         getJobService().startJob(job);
-        return "redirect:/?successMessage=check-started";
+        return String.format("redirect:/view?dir=%s&successMessage=check-started", decodedName);
     }
     
     @PostMapping(value = ACTION_CLEAN, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -122,7 +122,7 @@ public class HomeController extends BaseController {
         log.info("post:{}, name:{}, tasks:{}", ACTION_CLEAN, name, tasks);
         final String decodedName = getFileService().getStringFromHash(name);
         getFileService().clean(decodedName, tasks);
-        return "redirect:/?successMessage=files-cleaned";
+        return String.format("redirect:/view?dir=%s&successMessage=files-cleaned", decodedName);
     }
     
     @PostMapping(value = ACTION_CHANGE_PASSWORD)
