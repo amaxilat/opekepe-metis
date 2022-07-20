@@ -43,6 +43,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import static com.amaxilatis.metis.util.FileUtils.getResultName;
 
@@ -176,42 +177,40 @@ public class FileService {
             boolean result = hists.mkdirs();
             log.debug("created histogram directory {}", result);
         }
-        updateImageDirs();
+        updateImageDirs(true);
     }
     
-    public void updateImageDirs() {
+    public void updateImageDirs(final boolean generateThumbnails) {
         long start = System.currentTimeMillis();
         imagesDirs.clear();
         images.clear();
-        log.info("[updateImageDirs] filesLocation: {}", props.getFilesLocation());
+        log.debug("[updateImageDirs] filesLocation: {}", props.getFilesLocation());
         File[] imageDirectoryList = new File(props.getFilesLocation()).listFiles(File::isDirectory);
-        log.info("[updateImageDirs] imageDirectoryList: {}", imageDirectoryList);
-        imageDirectoryList = new File(props.getFilesLocation()).listFiles();
-        log.info("[updateImageDirs] imageDirectoryList: {}", imageDirectoryList);
+        log.debug("[updateImageDirs] imageDirectoryList: {}", Arrays.toString(imageDirectoryList));
         if (imageDirectoryList != null) {
-            for (final File imagesDirectory : imageDirectoryList) {
+            Arrays.stream(imageDirectoryList).forEach(imagesDirectory -> {
                 final String imagesDirectoryName = imagesDirectory.getName();
                 log.trace("[updateImageDirs] imagesDirectory: {}", imagesDirectoryName);
                 images.put(imagesDirectoryName, new TreeSet<>());
-                final Set<ImageFileInfo> imageSet = new HashSet<>();
-                long count = 0;
-                final File[] filesList = imagesDirectory.listFiles(File::isFile);
+                final File[] filesList = imagesDirectory.listFiles((dir, name) -> StringUtils.endsWithAny(name.toLowerCase(), ".tif", "jpf"));
                 if (filesList != null) {
-                    for (final File image : filesList) {
+                    final Set<ImageFileInfo> imageSet = Arrays.stream(filesList).map(image -> {
                         final String imageName = image.getName();
-                        if (imageName.endsWith(".tif")) {
+                        if (generateThumbnails) {
                             tpe.execute(() -> getImageThumbnail(imagesDirectoryName, imageName));
-                            log.trace("[updateImageDirs] imagesDirectory: {} image: {}", imagesDirectoryName, imageName);
-                            count++;
-                            imageSet.add(ImageFileInfo.builder().name(imageName).hash(getStringHash(imageName)).build());
                         }
+                        log.trace("[updateImageDirs] imagesDirectory: {} image: {}", imagesDirectoryName, imageName);
+                        return ImageFileInfo.builder().name(imageName).hash(getStringHash(imageName)).build();
+                    }).collect(Collectors.toSet());
+                    log.info("imagedir: {} size: {}", imagesDirectoryName, imageSet.size());
+                    if (!imageSet.isEmpty()) {
+                        images.get(imagesDirectoryName).addAll(imageSet);
+                        imagesDirs.add(ImageFileInfo.builder().name(imagesDirectoryName).hash(getStringHash(imagesDirectoryName)).count(imageSet.size()).build());
+                    } else {
+                    
                     }
                 }
-                if (count > 0) {
-                    images.get(imagesDirectoryName).addAll(imageSet);
-                    imagesDirs.add(ImageFileInfo.builder().name(imagesDirectoryName).hash(getStringHash(imagesDirectoryName)).count(count).build());
-                }
-            }
+            });
         }
         log.info("updateImageDirs took {}ms", (System.currentTimeMillis() - start));
     }
