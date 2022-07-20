@@ -7,6 +7,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -30,22 +31,28 @@ public class Histogram {
         this.data[(int) value] += 1L;
     }
     
-    public HistogramBin getMajorBin() {
-        final SortedSet<HistogramBin> bins = new TreeSet<>((o1, o2) -> (int) (o2.getValuesCount() - o1.getValuesCount()));
+    private SortedSet<HistogramBin> getSortedBins(final Comparator<HistogramBin> comparator) {
+        final SortedSet<HistogramBin> bins = new TreeSet<>(comparator);
         for (int i = 1; i < data.length; i++) {
             bins.add(new HistogramBin(i, data[i]));
         }
-//        for (HistogramBin bin : bins) {
-//            log.info("Bins: " + bin.getBinIndex() + " size " + bin.getValuesCount());
-//        }
-        return bins.first();
+        return bins;
+    }
+    
+    private SortedSet<HistogramBin> getBinsByDescendingContentsSize() {
+        return getSortedBins((o1, o2) -> (int) (o2.getValuesCount() - o1.getValuesCount()));
+    }
+    
+    private SortedSet<HistogramBin> getBinsByAscendingContentsSize() {
+        return getSortedBins((o1, o2) -> (int) (o1.getValuesCount() - o2.getValuesCount()));
+    }
+    
+    public HistogramBin getMajorBin() {
+        return getBinsByDescendingContentsSize().first();
     }
     
     public Set<HistogramBin> getTop5Bins() {
-        final SortedSet<HistogramBin> bins = new TreeSet<>((o1, o2) -> (int) (o2.getValuesCount() - o1.getValuesCount()));
-        for (int i = 1; i < data.length; i++) {
-            bins.add(new HistogramBin(i, data[i]));
-        }
+        final SortedSet<HistogramBin> bins = getBinsByDescendingContentsSize();
         final Set<HistogramBin> topBins = new HashSet<>();
         Iterator<HistogramBin> it = bins.iterator();
         for (int i = 0; i < 5; i++) {
@@ -53,6 +60,7 @@ public class Histogram {
         }
         return topBins;
     }
+    
     public Set<HistogramBin> getFirstBins(int count) {
         final SortedSet<HistogramBin> firstBins = new TreeSet<>((o1, o2) -> (int) (o2.getValuesCount() - o1.getValuesCount()));
         for (int i = 0; i < count; i++) {
@@ -62,10 +70,7 @@ public class Histogram {
     }
     
     public Set<HistogramBin> getBottom5Bins() {
-        final SortedSet<HistogramBin> bins = new TreeSet<>((o1, o2) -> (int) (o1.getValuesCount() - o2.getValuesCount()));
-        for (int i = 1; i < data.length; i++) {
-            bins.add(new HistogramBin(i, data[i]));
-        }
+        final SortedSet<HistogramBin> bins = getBinsByAscendingContentsSize();
         final Set<HistogramBin> botBins = new HashSet<>();
         Iterator<HistogramBin> it = bins.iterator();
         for (int i = 0; i < 5; i++) {
