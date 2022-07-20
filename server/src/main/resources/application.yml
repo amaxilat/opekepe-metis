@@ -1,6 +1,5 @@
 server:
   ssl:
-    #key-store: classpath:metis.p12
     key-store: file:metis.p12
     key-store-password: password
     key-store-type: pkcs12
@@ -17,20 +16,14 @@ server:
 spring:
   jmx:
     enabled: false
-  #  rabbitmq:
-  #    host: localhost
-  #    port: 5672
-  #    username: rabbituser
-  #    password: 6561YM4COS
   application:
     name: Metis
   thymeleaf:
-    cache: false
+    cache: true
     mode: HTML
     encoding: UTF-8
     enabled: true
-    #prefix: classpath:/templates/
-    prefix: file:src/main/resources/templates/
+    prefix: classpath:/templates/
     suffix: .html
   web:
     resources:
@@ -67,8 +60,7 @@ metis:
   resultsLocation: results
   thumbnailLocation: thumb
   histogramLocation: hist
-  #filesLocation: files
-  filesLocation: "O:\\"
+  filesLocation: files
   version: ^project.version^
   processing:
     threads: -1
