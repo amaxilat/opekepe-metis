@@ -60,7 +60,7 @@ public class ApiController extends BaseController {
     @GetMapping(value = API_SCAN_IMAGES, produces = MediaType.APPLICATION_JSON_VALUE)
     public SortedSet<ImageFileInfo> scanImages() {
         log.info("get:{}", API_SCAN_IMAGES);
-        fileService.updateImageDirs();
+        fileService.updateImageDirs(true);
         return apiImages();
     }
     
@@ -94,7 +94,7 @@ public class ApiController extends BaseController {
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File thumbnailFile = fileService.getImageThumbnail(decodedImageDir, decodedImage);
-        return FileUtils.sendFile(response, thumbnailFile, thumbnailFile.getName());
+        return thumbnailFile != null ? FileUtils.sendFile(response, thumbnailFile, thumbnailFile.getName()) : null;
     }
     @GetMapping(value = API_HISTOGRAM_DIRECTORY_IMAGE)
     public ResponseEntity<Resource> apiDownloadImageHistogram(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) throws IOException {
@@ -102,7 +102,7 @@ public class ApiController extends BaseController {
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File histogramFile = fileService.getImageHistogram(decodedImageDir, decodedImage);
-        return FileUtils.sendFile(response, histogramFile, histogramFile.getName());
+        return histogramFile != null ? FileUtils.sendFile(response, histogramFile, histogramFile.getName()) : null;
     }
     
     @GetMapping(value = API_CLOUDCOVER_DIRECTORY_IMAGE)
@@ -111,7 +111,7 @@ public class ApiController extends BaseController {
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File cloudCoverFile = fileService.getImageCloudCover(decodedImageDir, decodedImage);
-        return FileUtils.sendFile(response, cloudCoverFile, cloudCoverFile.getName());
+        return cloudCoverFile != null ? FileUtils.sendFile(response, cloudCoverFile, cloudCoverFile.getName()) : null;
     }
     
     @ResponseBody
