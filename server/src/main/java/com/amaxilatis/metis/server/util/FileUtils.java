@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
@@ -37,14 +36,6 @@ public class FileUtils {
     
     public static void makeThumbnail(final File input, final File output, final int width, final int height) throws IOException {
         Thumbnails.of(input).size(width, height).toFile(output);
-    }
-    
-    
-    public static void makeThumbnailAspose(final String input, final File output, final int width, final int height) throws IOException {
-        try (com.aspose.imaging.Image image = com.aspose.imaging.Image.load(input)) {
-            image.resize(width, height);
-            image.save(new FileOutputStream(output));
-        }
     }
     
     
