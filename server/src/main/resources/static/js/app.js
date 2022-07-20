@@ -37,12 +37,12 @@ function updatePoolInfo(message) {
     $("#pool-pending").text(message.pending);
 }
 
-function translate(message){
-    switch (message){
+function translate(message) {
+    switch (message) {
         case 'check-started':
-            break
+            return 'Ο έλεγχος ξεκίνησε...';
         case 'files-cleaned':
-            break
+            return 'Τα αποτελέσματα εκκαθαρίστηκαν.';
         case 'password-changed':
             break
         case 'password-not-changed':
