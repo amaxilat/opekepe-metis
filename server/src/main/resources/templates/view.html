@@ -114,7 +114,7 @@
                                                     </div>
                                                     <!-- Card Body -->
                                                     <div class="card-body">
-                                                        <img src="" id="thmb"
+                                                        <img src="" id="image-thumbnail" class="zoomable"
                                                              style="width: 100%; max-width: 300px;  border: 1px solid grey;">
                                                     </div>
                                                 </div>
@@ -132,7 +132,7 @@
                                                     </div>
                                                     <!-- Card Body -->
                                                     <div class="card-body">
-                                                        <img src="" id="hist" class="zoomable"
+                                                        <img src="" id="image-histogram" class="zoomable"
                                                              style="width: 100%; max-width: 300px; border: 1px solid grey;">
                                                     </div>
                                                 </div>
@@ -150,7 +150,7 @@
                                                     </div>
                                                     <!-- Card Body -->
                                                     <div class="card-body">
-                                                        <img src="" id="cloudcover" class="zoomable"
+                                                        <img src="" id="image-cloudcover" class="zoomable"
                                                              style="width: 100%;max-width: 300px;  border: 1px solid grey;">
                                                     </div>
                                                 </div>
@@ -180,29 +180,27 @@
                 }
 
                 function reloadFile() {
-                    $("#thmb").attr("src", "/img/loading.gif");
-                    $("#hist").attr("src", "/img/loading.gif");
-                    $("#cloudcover").attr("src", "/img/loading.gif");
+                    $("#image-thumbnail").attr("src", "/img/loading.gif");
+                    $("#image-histogram").attr("src", "/img/loading.gif");
+                    $("#image-cloudcover").attr("src", "/img/loading.gif");
                     const selected_image = $("#imagelist").val();
                     $.get(image_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image), function (data) {
-                        console.log(data)
                         $("#imageResultsBody .test-result").hide();
-                        data.forEach(function (datum) {
-                            $("#imageResultsBody .test-result-" + datum.task).show();
-                            $("#imageName").text(`${datum.name}`);
-                            if (datum.result) {
-                                $("#imageResultsBody .test-result-" + datum.task).find(".result-value-false").hide();
-                                $("#imageResultsBody .test-result-" + datum.task).find(".result-value-true").show();
+                        data.forEach(function (task) {
+                            $("#imageResultsBody .test-result-" + task.task).show();
+                            $("#imageName").text(`${task.name}`);
+                            if (task.result) {
+                                $("#imageResultsBody .test-result-" + task.task).find(".result-value-false").hide();
+                                $("#imageResultsBody .test-result-" + task.task).find(".result-value-true").show();
                             } else {
-                                $("#imageResultsBody .test-result-" + datum.task).find(".result-value-true").hide();
-                                $("#imageResultsBody .test-result-" + datum.task).find(".result-value-false").show();
+                                $("#imageResultsBody .test-result-" + task.task).find(".result-value-true").hide();
+                                $("#imageResultsBody .test-result-" + task.task).find(".result-value-false").show();
                             }
-                            $("#imageResultsBody .test-result-" + datum.task).find(".test-result-note").text(datum.note);
-
-                            $("#thmb").attr("src", thumbnail_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
-                            $("#hist").attr("src", histogram_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
-                            $("#cloudcover").attr("src", cloudcover_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
+                            $("#imageResultsBody .test-result-" + task.task).find(".test-result-note").text(task.note);
+                            $("#image-histogram").attr("src", histogram_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
+                            $("#image-cloudcover").attr("src", cloudcover_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
                         });
+                        $("#image-thumbnail").attr("src", thumbnail_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
                     });
                 }
 
@@ -210,11 +208,6 @@
                     connect();
                     reloadFile();
                     Zoom(".zoomable");
-                    // $('.selectpicker').selectpicker();
-                    // $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
-                    //     reloadFile();
-                    // });
-                    // $('.selectpicker').trigger('change');
                 });
             </script>
         </div>
