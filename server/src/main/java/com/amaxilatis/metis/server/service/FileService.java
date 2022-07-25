@@ -305,7 +305,7 @@ public class FileService {
      * @return the full  path to the image's file.
      */
     String getImageFilename(final String dir, final String name) {
-        return FileNameUtils.getImageFilename(props.getHistogramLocation(), dir, name);
+        return FileNameUtils.getImageFilename(props.getFilesLocation(), dir, name);
     }
     
     /**
@@ -316,7 +316,7 @@ public class FileService {
      * @return the full  path to the image's thumbnail file.
      */
     String getImageThumbnailFilename(final String dir, final String name) {
-        return FileNameUtils.getImageThumbnailFilename(props.getHistogramLocation(), dir, name);
+        return FileNameUtils.getImageThumbnailFilename(props.getThumbnailLocation(), dir, name);
     }
     
     /**
@@ -349,8 +349,8 @@ public class FileService {
      * @return the file containing the thumbnail of the image.
      */
     public File getImageThumbnail(final String directory, final String name) {
-        log.debug("[thumb] " + props.getThumbnailLocation() + "/" + directory + "/" + name);
         final File thumbnailFile = new File(getImageThumbnailFilename(directory, name));
+        log.debug("[thumb] " + thumbnailFile.getAbsolutePath());
         //check if directory exists
         if (!thumbnailFile.getParentFile().exists()) {
             thumbnailFile.getParentFile().mkdir();
@@ -379,8 +379,8 @@ public class FileService {
      * @return the file containing the histogram of the image.
      */
     public File getImageHistogram(final String directory, final String name) {
-        log.debug("[hist] " + props.getHistogramLocation() + "/" + name);
         final File histogramFile = new File(getImageHistogramFilename(directory, name));
+        log.debug("[hist] " + histogramFile.getAbsolutePath());
         //check if directory exists
         if (!histogramFile.getParentFile().exists()) {
             histogramFile.getParentFile().mkdir();
@@ -401,8 +401,8 @@ public class FileService {
      * @return the file containing the cloud coverage mask of the image.
      */
     public File getImageCloudCover(final String directory, final String name) {
-        log.debug("[cloudcover] " + props.getHistogramLocation() + "/" + name);
         final File cloudCoverFile = new File(getImageCloudCoverFilename(directory, name));
+        log.debug("[cloudcover] " + cloudCoverFile.getAbsolutePath());
         //check if directory exists
         if (!cloudCoverFile.getParentFile().exists()) {
             cloudCoverFile.getParentFile().mkdir();
