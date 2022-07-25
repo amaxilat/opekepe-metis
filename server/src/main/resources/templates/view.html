@@ -22,7 +22,6 @@
                 <!-- Page Heading -->
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">Φάκελος: <span id="directory" th:text="${imageDir}"></span></h1>
-
                     <div class="btn-group" role="group" aria-label="report actions">
                         <button type="button"
                                 data-toggle="modal" th:attr="data-target='#modal-run-'+${imageDirectoryHash}"
@@ -30,19 +29,12 @@
                             <span class="icon"><i class="fas fa-search fa-sm text-white-50"></i></span>
                             <span class="text">Έλεγχος Φακέλου</span>
                         </button>
-
                         <button type="button"
                                 data-toggle="modal" th:attr="data-target='#modal-clean-'+${imageDirectoryHash}"
                                 class="d-none d-sm-inline-block btn btn-sm btn-danger  shadow-sm">
                             <span class="icon"><i class="fas fa-eraser fa-sm text-white-50"></i></span>
                             <span class="text">Διαγραφή Αποτελεσμάτων</span>
                         </button>
-
-                        <!--                        <a th:href="'download?name='+${imageDir}"-->
-                        <!--                           class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm  disabled">-->
-                        <!--                            <span class="icon"><i class="fas fa-file-export fa-sm text-white-50"></i></span>-->
-                        <!--                            <span class="text">Αναφορά</span>-->
-                        <!--                        </a>-->
                     </div>
                     <div th:replace="fragments/modals :: modal-run"></div>
                     <div th:replace="fragments/modals :: modal-clean"></div>
@@ -50,7 +42,6 @@
 
                 <!-- Content Row -->
                 <div class="row">
-                    <!-- Earnings (Monthly) Card Example -->
                     <div class="col-xxl-12 col-xl-12 col-md-12 col-sm-12 mb-12">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
@@ -67,11 +58,9 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <!-- Content Row -->
                                 <div class="row">
                                     <div class="col-xxl-8 col-xl-8 col-lg-12 col-md-12 col-sm-12 mb-8">
                                         <div class="card shadow mb-4">
-                                            <!-- Card Header - Dropdown -->
                                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                                 <h6 class="m-0 font-weight-bold text-primary">Αποτελέσματα Ελέγχων</h6>
                                             </div>
@@ -103,7 +92,6 @@
                                         <div class="row">
                                             <div class="col-xxl-6 col-xl-12 col-lg-6 col-md-12 col-sm-12">
                                                 <div class="card shadow mb-4">
-                                                    <!-- Card Header - Dropdown -->
                                                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                                         <h6 class="m-0 font-weight-bold text-primary">Μικρογραφία</h6>
                                                         <div class="col-auto">
@@ -112,16 +100,13 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <!-- Card Body -->
                                                     <div class="card-body">
-                                                        <img src="" id="image-thumbnail" class="zoomable"
-                                                             style="width: 100%; max-width: 300px;  border: 1px solid grey;">
+                                                        <img src="" id="image-thumbnail" class="zoomable geothumb">
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-xxl-6 col-xl-12 col-lg-6 col-md-12 col-sm-12">
                                                 <div class="card shadow mb-4">
-                                                    <!-- Card Header - Dropdown -->
                                                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                                         <h6 class="m-0 font-weight-bold text-primary">Ιστόγραμμα</h6>
                                                         <div class="col-auto">
@@ -130,16 +115,13 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <!-- Card Body -->
                                                     <div class="card-body">
-                                                        <img src="" id="image-histogram" class="zoomable"
-                                                             style="width: 100%; max-width: 300px; border: 1px solid grey;">
+                                                        <img src="" id="image-histogram" class="zoomable geothumb">
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="col-xxl-6 col-xl-12 col-lg-6 col-md-12 col-sm-12">
                                                 <div class="card shadow mb-4">
-                                                    <!-- Card Header - Dropdown -->
                                                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                                         <h6 class="m-0 font-weight-bold text-primary">Νεφοκάλυψη</h6>
                                                         <div class="col-auto">
@@ -148,10 +130,8 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <!-- Card Body -->
                                                     <div class="card-body">
-                                                        <img src="" id="image-cloudcover" class="zoomable"
-                                                             style="width: 100%;max-width: 300px;  border: 1px solid grey;">
+                                                        <img src="" id="image-cloudcover" class="zoomable geothumb">
                                                     </div>
                                                 </div>
                                             </div>
