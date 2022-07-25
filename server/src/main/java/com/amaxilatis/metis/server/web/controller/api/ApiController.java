@@ -1,4 +1,4 @@
-package com.amaxilatis.metis.server.web.controller;
+package com.amaxilatis.metis.server.web.controller.api;
 
 import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
@@ -12,6 +12,7 @@ import com.amaxilatis.metis.server.service.JobService;
 import com.amaxilatis.metis.server.service.ReportService;
 import com.amaxilatis.metis.server.service.UserService;
 import com.amaxilatis.metis.server.util.FileUtils;
+import com.amaxilatis.metis.server.web.controller.BaseController;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.io.Resource;
