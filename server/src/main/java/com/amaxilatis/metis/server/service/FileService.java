@@ -306,7 +306,7 @@ public class FileService {
             log.debug("[thumb:1] " + thumbnailFile.getAbsolutePath());
             long start = System.currentTimeMillis();
             try {
-                FileUtils.makeThumbnail(new File(props.getFilesLocation() + "/" + decodedImageDir + "/" + decodedImage), thumbnailFile, 300, 226);
+                FileUtils.makeThumbnail(new File(props.getFilesLocation() + "/" + decodedImageDir + "/" + decodedImage), thumbnailFile, 450, 339);
                 log.info("[thumb:1] took:" + (System.currentTimeMillis() - start));
                 return thumbnailFile;
             } catch (IOException e) {
