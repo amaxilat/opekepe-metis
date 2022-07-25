@@ -4,6 +4,7 @@ import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.model.ImageFileInfo;
 import com.amaxilatis.metis.server.util.FileUtils;
+import com.amaxilatis.metis.util.FileNameUtils;
 import com.drew.lang.Charsets;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVReader;
@@ -34,7 +35,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,8 +44,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-
-import static com.amaxilatis.metis.util.FileUtils.getResultName;
 
 @Slf4j
 @Service
@@ -59,6 +57,7 @@ public class FileService {
     public String getResultsLocation() {
         return props.getResultsLocation();
     }
+    
     public String getHistogramLocation() {
         return props.getHistogramLocation();
     }
@@ -261,7 +260,7 @@ public class FileService {
     private void cleanFileResults(String directory, File file) {
         File resultsDir = new File(props.getResultsLocation(), directory);
         for (int task = 0; task < 10; task++) {
-            File f = new File(resultsDir, getResultName(file, task));
+            File f = new File(resultsDir, FileNameUtils.getResultName(file, task));
             f.delete();
         }
     }
@@ -271,7 +270,7 @@ public class FileService {
         File image = new File(resultsDir, decodedImage);
         List<FileJobResult> results = new ArrayList<>();
         for (int task = 0; task < 10; task++) {
-            File f = new File(resultsDir, getResultName(image, task));
+            File f = new File(resultsDir, FileNameUtils.getResultName(image, task));
             if (f.exists()) {
                 try {
                     results.add(parseResult(f));
@@ -297,16 +296,73 @@ public class FileService {
         }
     }
     
-    public File getImageThumbnail(final String decodedImageDir, final String decodedImage) {
-        log.debug("[thumb] " + props.getThumbnailLocation() + "/" + decodedImageDir + "/" + decodedImage);
-        final File thumbnailFile = new File(props.getThumbnailLocation() + "/" + decodedImage + ".jpg");
+    
+    /**
+     * Returns the full path to the image's file.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's file.
+     */
+    String getImageFilename(final String dir, final String name) {
+        return FileNameUtils.getImageFilename(props.getHistogramLocation(), dir, name);
+    }
+    
+    /**
+     * Returns the full path to the image's thumbnail.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's thumbnail file.
+     */
+    String getImageThumbnailFilename(final String dir, final String name) {
+        return FileNameUtils.getImageThumbnailFilename(props.getHistogramLocation(), dir, name);
+    }
+    
+    /**
+     * Returns the full path to the image's histogram.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's histogram file.
+     */
+    String getImageHistogramFilename(final String dir, final String name) {
+        return FileNameUtils.getImageHistogramFilename(props.getHistogramLocation(), dir, name);
+    }
+    
+    /**
+     * Returns the full path to the image's cloud coverage mask.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's cloud coverage mask file.
+     */
+    String getImageCloudCoverFilename(final String dir, final String name) {
+        return FileNameUtils.getImageCloudCoverMaskFilename(props.getHistogramLocation(), dir, name);
+    }
+    
+    /**
+     * Get or create and get the thumbnail of the image.
+     *
+     * @param directory the directory of the image.
+     * @param name      the name of the image.
+     * @return the file containing the thumbnail of the image.
+     */
+    public File getImageThumbnail(final String directory, final String name) {
+        log.debug("[thumb] " + props.getThumbnailLocation() + "/" + directory + "/" + name);
+        final File thumbnailFile = new File(getImageThumbnailFilename(directory, name));
+        //check if directory exists
+        if (!thumbnailFile.getParentFile().exists()) {
+            thumbnailFile.getParentFile().mkdir();
+        }
+        //check if file exists
         if (thumbnailFile.exists()) {
             return thumbnailFile;
         } else {
             log.debug("[thumb:1] " + thumbnailFile.getAbsolutePath());
             long start = System.currentTimeMillis();
             try {
-                FileUtils.makeThumbnail(new File(props.getFilesLocation() + "/" + decodedImageDir + "/" + decodedImage), thumbnailFile, 450, 339);
+                FileUtils.makeThumbnail(new File(getImageFilename(directory, name)), thumbnailFile, 450, 339);
                 log.info("[thumb:1] took:" + (System.currentTimeMillis() - start));
                 return thumbnailFile;
             } catch (IOException e) {
@@ -315,9 +371,21 @@ public class FileService {
         }
     }
     
-    public File getImageHistogram(final String decodedImageDir, final String decodedImage) {
-        log.debug("[hist] " + props.getHistogramLocation() + "/" + decodedImage);
-        final File histogramFile = new File(props.getHistogramLocation() + "/" + decodedImage + ".png");
+    /**
+     * Get or create and get the histogram of the image.
+     *
+     * @param directory the directory of the image.
+     * @param name      the name of the image.
+     * @return the file containing the histogram of the image.
+     */
+    public File getImageHistogram(final String directory, final String name) {
+        log.debug("[hist] " + props.getHistogramLocation() + "/" + name);
+        final File histogramFile = new File(getImageHistogramFilename(directory, name));
+        //check if directory exists
+        if (!histogramFile.getParentFile().exists()) {
+            histogramFile.getParentFile().mkdir();
+        }
+        //check if file exists
         if (histogramFile.exists()) {
             return histogramFile;
         } else {
@@ -325,9 +393,21 @@ public class FileService {
         }
     }
     
-    public File getImageCloudCover(final String decodedImageDir, final String decodedImage) {
-        log.debug("[cloudcover] " + props.getHistogramLocation() + "/" + decodedImage);
-        final File cloudCoverFile = new File(props.getHistogramLocation() + "/" + decodedImage + ".mask.png");
+    /**
+     * Get or create and get the cloud coverage mask of the image.
+     *
+     * @param directory the directory of the image.
+     * @param name      the name of the image.
+     * @return the file containing the cloud coverage mask of the image.
+     */
+    public File getImageCloudCover(final String directory, final String name) {
+        log.debug("[cloudcover] " + props.getHistogramLocation() + "/" + name);
+        final File cloudCoverFile = new File(getImageCloudCoverFilename(directory, name));
+        //check if directory exists
+        if (!cloudCoverFile.getParentFile().exists()) {
+            cloudCoverFile.getParentFile().mkdir();
+        }
+        //check if file exists
         if (cloudCoverFile.exists()) {
             return cloudCoverFile;
         } else {

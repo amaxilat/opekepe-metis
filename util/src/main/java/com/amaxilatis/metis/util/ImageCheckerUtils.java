@@ -23,7 +23,7 @@ import java.util.Set;
 import static com.amaxilatis.metis.config.Conditions.N1_PIXEL_SIZE;
 import static com.amaxilatis.metis.config.Conditions.N2_BIT_SIZE;
 import static com.amaxilatis.metis.config.Conditions.N3_SAMPLES_PER_PIXEL;
-import static com.amaxilatis.metis.util.FileUtils.getResultFile;
+import static com.amaxilatis.metis.util.FileNameUtils.getResultFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.evaluateWorldFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.getWorldFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.parseWorldFile;
@@ -397,8 +397,7 @@ public class ImageCheckerUtils {
         log.info("[N6] histogramB center: {}", majorBinCenterB);
     
         if (histogramDir != null) {
-            String histogramFileName = file.getName() + ".png";
-            image.getHistogram().saveHistogramImage(new File(histogramDir, histogramFileName));
+            image.getHistogram().saveHistogramImage(new File(FileNameUtils.getImageHistogramFilename(histogramDir, file.getParentFile().getName(), file.getName())));
         }
         
         boolean result = histMinLimit < majorBinCenterLum && majorBinCenterLum < histMaxLimit;

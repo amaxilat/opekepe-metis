@@ -3,6 +3,7 @@ package com.amaxilatis.metis.model;
 
 import com.amaxilatis.metis.cdclient.ApiClient;
 import com.amaxilatis.metis.util.ColorUtils;
+import com.amaxilatis.metis.util.FileNameUtils;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -130,19 +131,63 @@ public class ImagePack {
             parseImagePixels(width, height, jImage);
             
             //debug
-            ImageIO.write(maskImage, "png", new File(histogramDir, this.file.getName() + "a.mask.png"));
+            ImageIO.write(maskImage, "png", new File(histogramDir + "/" + this.file.getParentFile().getName(), this.file.getName() + "a.mask.png"));
             
             //check for single cloud pixels that are probably incorrect
             cleanupCloudsBasedOnNearby(width, height, 2);
             //debug
-            ImageIO.write(maskImage, "png", new File(histogramDir, this.file.getName() + "b.mask.png"));
+            ImageIO.write(maskImage, "png", new File(histogramDir + "/" + this.file.getParentFile().getName(), this.file.getName() + "b.mask.png"));
             
             cleanupCloudsBasedOnTiles(width, height, 100, 3);
             //debug
-            ImageIO.write(maskImage, "png", new File(histogramDir, this.file.getName() + "c.mask.png"));
+            ImageIO.write(maskImage, "png", new File(histogramDir + "/" + this.file.getParentFile().getName(), this.file.getName() + "c.mask.png"));
             
             //write mask file to storage
-            ImageIO.write(maskImage, "png", new File(histogramDir, this.file.getName() + ".mask.png"));
+            ImageIO.write(maskImage, "png", new File(FileNameUtils.getImageCloudCoverMaskFilename(histogramDir, this.file.getParentFile().getName(), this.file.getName())));
+            
+            //            int c_checkedPixels = 0;
+            //            int c_cloudPixels = 0;
+            //
+            //            log.error("{} starting cloud detection", file.getName());
+            //
+            //            heightStep = 256;
+            //            widthTiles = width / 256;
+            //            heightTiles = height / 256;
+            //            for (int w = 0; w < widthTiles; w++) {
+            //                for (int h = 0; h < heightTiles; h++) {
+            //                    final int size = 256 * 256 * components;
+            //                    final int sizeRGB = 256 * 256 * 3;
+            //                    int[] dnValues = new int[size];
+            //                    //                    int[] dnValuesRGB = new int[sizeRGB];
+            //                    log.error("{} {} {}", file.getName(), w, h);
+            //                    jImage.getData().getPixels(w * 256, h * 256, 256, 256, dnValues);
+            //                    //                    for (int i = 0; i < 256 * 256; i++) {
+            //                    //                        dnValuesRGB[i * 3] = dnValues[i * 4];
+            //                    //                        dnValuesRGB[i * 3 + 1] = dnValues[i * 4 + 1];
+            //                    //                        dnValuesRGB[i * 3 + 2] = dnValues[i * 4 + 2];
+            //                    //                    }
+            //
+            //                    log.error("{} {} {}", file.getName(), w, h);
+            //                    DetectionsDTO response;
+            //                    do {
+            //                        response = apiClient.postData(DataDTO.builder().data(dnValues).build());
+            //                    } while (response == null);
+            //                    c_checkedPixels += (256 * 256);
+            //                    for (int j = 0; j < 256; j++) {
+            //
+            //                        for (int k = 0; k < 256; k++) {
+            //                            c_cloudPixels += response.getPredictions()[j][k];
+            //                            int mx = w * 256 + k;
+            //                            int my = h * 256 + j;
+            //                            tensorflowMaskImage.setRGB(mx, my, response.getPredictions()[j][k] == 1 ? WHITE_RGB : BLACK_RGB);
+            //                        }
+            //                    }
+            //                }
+            //            }
+            //            log.info("cloudPixels {} / {} c_cloudPixels {} / {}", cloudPixels, validPixels, c_cloudPixels, c_checkedPixels);
+            //
+            //            //write mask file to storage
+            //            ImageIO.write(tensorflowMaskImage, "png", new File(histogramDir + "/" + this.file.getParentFile().getName(), this.file.getName() + "-1.mask.png"));
             
             this.histogramLoaded = true;
         }
