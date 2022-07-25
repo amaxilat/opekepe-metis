@@ -184,7 +184,7 @@ public class FileService {
         imagesDirs.clear();
         images.clear();
         log.debug("[updateImageDirs] filesLocation: {}", props.getFilesLocation());
-        File[] imageDirectoryList = new File(props.getFilesLocation()).listFiles(File::isDirectory);
+        final File[] imageDirectoryList = new File(props.getFilesLocation()).listFiles(File::isDirectory);
         log.debug("[updateImageDirs] imageDirectoryList: {}", Arrays.toString(imageDirectoryList));
         if (imageDirectoryList != null) {
             Arrays.stream(imageDirectoryList).forEach(imagesDirectory -> {
@@ -201,27 +201,23 @@ public class FileService {
                         log.trace("[updateImageDirs] imagesDirectory: {} image: {}", imagesDirectoryName, imageName);
                         return ImageFileInfo.builder().name(imageName).hash(getStringHash(imageName)).build();
                     }).collect(Collectors.toSet());
-                    log.info("imagedir: {} size: {}", imagesDirectoryName, imageSet.size());
                     if (!imageSet.isEmpty()) {
                         images.get(imagesDirectoryName).addAll(imageSet);
                         imagesDirs.add(ImageFileInfo.builder().name(imagesDirectoryName).hash(getStringHash(imagesDirectoryName)).count(imageSet.size()).build());
-                    } else {
-                    
                     }
                 }
             });
         }
-        log.info("updateImageDirs took {}ms", (System.currentTimeMillis() - start));
+        log.info("[updateImageDirs] time:{}", (System.currentTimeMillis() - start));
     }
     
     
     @Scheduled(fixedRate = 600000L)
     public void runAllImages() {
-        for (Map.Entry<String, SortedSet<ImageFileInfo>> stringSortedSetEntry : images.entrySet()) {
-            for (ImageFileInfo imageFileInfo : stringSortedSetEntry.getValue()) {
-                final File thumbnailFile = new File(props.getThumbnailLocation() + "/" + imageFileInfo.getName() + ".jpg");
+        for (final Map.Entry<String, SortedSet<ImageFileInfo>> stringSortedSetEntry : images.entrySet()) {
+            for (final ImageFileInfo imageFileInfo : stringSortedSetEntry.getValue()) {
+                final File thumbnailFile = new File(getImageThumbnailFilename(stringSortedSetEntry.getKey(), imageFileInfo.getName()));
                 if (!thumbnailFile.exists()) {
-                    log.info("test::::{}", imageFileInfo);
                     tpe.execute(() -> getImageThumbnail(stringSortedSetEntry.getKey(), imageFileInfo.getName()));
                 }
             }
@@ -350,7 +346,7 @@ public class FileService {
      */
     public File getImageThumbnail(final String directory, final String name) {
         final File thumbnailFile = new File(getImageThumbnailFilename(directory, name));
-        log.debug("[thumb] " + thumbnailFile.getAbsolutePath());
+        log.debug("[thumbnail|{}|{}] {}", directory, name, thumbnailFile.getAbsolutePath());
         //check if directory exists
         if (!thumbnailFile.getParentFile().exists()) {
             thumbnailFile.getParentFile().mkdir();
@@ -359,11 +355,10 @@ public class FileService {
         if (thumbnailFile.exists()) {
             return thumbnailFile;
         } else {
-            log.debug("[thumb:1] " + thumbnailFile.getAbsolutePath());
             long start = System.currentTimeMillis();
             try {
                 FileUtils.makeThumbnail(new File(getImageFilename(directory, name)), thumbnailFile, 450, 339);
-                log.info("[thumb:1] took:" + (System.currentTimeMillis() - start));
+                log.info("[thumbnail-create|{}|{}] time:{}", directory, name, (System.currentTimeMillis() - start));
                 return thumbnailFile;
             } catch (IOException e) {
                 return null;
@@ -380,7 +375,7 @@ public class FileService {
      */
     public File getImageHistogram(final String directory, final String name) {
         final File histogramFile = new File(getImageHistogramFilename(directory, name));
-        log.debug("[hist] " + histogramFile.getAbsolutePath());
+        log.debug("[histogram|{}|{}] {}", directory, name, histogramFile.getAbsolutePath());
         //check if directory exists
         if (!histogramFile.getParentFile().exists()) {
             histogramFile.getParentFile().mkdir();
@@ -402,7 +397,7 @@ public class FileService {
      */
     public File getImageCloudCover(final String directory, final String name) {
         final File cloudCoverFile = new File(getImageCloudCoverFilename(directory, name));
-        log.debug("[cloudcover] " + cloudCoverFile.getAbsolutePath());
+        log.debug("[cloudCover|{}|{}] {}", directory, name, cloudCoverFile.getAbsolutePath());
         //check if directory exists
         if (!cloudCoverFile.getParentFile().exists()) {
             cloudCoverFile.getParentFile().mkdir();
