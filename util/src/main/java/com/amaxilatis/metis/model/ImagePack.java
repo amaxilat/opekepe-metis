@@ -1,6 +1,7 @@
 package com.amaxilatis.metis.model;
 
 
+import com.amaxilatis.metis.cdclient.ApiClient;
 import com.amaxilatis.metis.util.ColorUtils;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
@@ -53,7 +54,10 @@ public class ImagePack {
     private int cloudPixels = 0;
     @Getter
     private BufferedImage maskImage;
+    private BufferedImage tensorflowMaskImage;
     private String histogramDir;
+    
+    private ApiClient apiClient = new ApiClient();
     
     public ImagePack(final File file, final String histogramDir) throws IOException {
         this.ioMetadata = null;
@@ -110,53 +114,130 @@ public class ImagePack {
         if (!histogramLoaded) {
             
             final BufferedImage jImage = ImageIO.read(file);
+            //histogram
             this.histogram = new HistogramsHelper();
-            this.dnValuesStatistics = new SummaryStatistics();
-            final int components = jImage.getColorModel().getNumComponents();
+            //image information
             final int width = jImage.getWidth();
             final int height = jImage.getHeight();
+            // pixel value statistics
+            this.dnValuesStatistics = new SummaryStatistics();
             
+            //mask images for cloud detection
             this.maskImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+            this.tensorflowMaskImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
             
-            final int heightStep = height / 10;
-            int heightStart = 0;
-            int currentStep = heightStep;
-            do {
-                if (heightStart + currentStep > height) {
-                    currentStep = height - heightStart;
-                }
-                if (currentStep == 0) {
-                    break;
-                }
-                final int size = width * heightStep * components;
-                int dnValues[] = new int[size];
-                dnValues = jImage.getData().getPixels(0, heightStart, width, currentStep, dnValues);
-                int x = 0;
-                int y = 0;
-                for (int i = 0; i < size; i += components) {
-                    final int r = dnValues[i];
-                    final int g = dnValues[i + 1];
-                    final int b = dnValues[i + 2];
-                    final int nir = dnValues[i + 3];
-                    x = (i / 4) % width;
-                    y = (i / 4) / width + heightStart;
-                    if (isValidPixel(r, g, b, nir)) {
-                        //update the cloud data for check 4
-                        updateCloudData(x, y, r, g, b);
-                        //update histogram for check 5,6
-                        updateHistogram(r, g, b, nir);
-                        //update the cloud data for check 7
-                        updateContrastData(r, g, b);
-                    }
-                }
-                heightStart += heightStep;
-            } while (heightStart <= height);
+            //do a first pass for cloud, histogram and contrast data
+            parseImagePixels(width, height, jImage);
+            
+            //debug
+            ImageIO.write(maskImage, "png", new File(histogramDir, this.file.getName() + "a.mask.png"));
+            
+            //check for single cloud pixels that are probably incorrect
+            cleanupCloudsBasedOnNearby(width, height, 2);
+            //debug
+            ImageIO.write(maskImage, "png", new File(histogramDir, this.file.getName() + "b.mask.png"));
+            
+            cleanupCloudsBasedOnTiles(width, height, 100, 3);
+            //debug
+            ImageIO.write(maskImage, "png", new File(histogramDir, this.file.getName() + "c.mask.png"));
             
             //write mask file to storage
             ImageIO.write(maskImage, "png", new File(histogramDir, this.file.getName() + ".mask.png"));
             
             this.histogramLoaded = true;
         }
+    }
+    
+    private void parseImagePixels(final int width, final int height, final BufferedImage jImage) {
+        int heightStep = height / 10;
+        int heightStart = 0;
+        int currentStep = heightStep;
+        do {
+            if (heightStart + currentStep > height) {
+                currentStep = height - heightStart;
+            }
+            if (currentStep == 0) {
+                break;
+            }
+            final int size = width * heightStep;
+            int dnValues[] = new int[size];
+            dnValues = jImage.getRGB(0, heightStart, width, currentStep, dnValues, 0, width);
+            for (int i = 0; i < size; i++) {
+                final Color color = new Color(dnValues[i], true);
+                final int r = color.getRed();
+                final int g = color.getGreen();
+                final int b = color.getBlue();
+                final int nir = color.getAlpha();
+                final int x = (i) % width;
+                final int y = (i) / width + heightStart;
+                if (isValidPixel(r, g, b, nir)) {
+                    //update the cloud data for check 4
+                    updateCloudData(x, y, r, g, b);
+                    //update histogram for check 5,6
+                    updateHistogram(r, g, b, nir);
+                    //update the cloud data for check 7
+                    updateContrastData(r, g, b);
+                }
+            }
+            heightStart += heightStep;
+        } while (heightStart <= height);
+    }
+    
+    private void cleanupCloudsBasedOnTiles(int width, int height, int tileSize, int percentageThreshold) {
+        final int widthTiles = width / tileSize;
+        final int heightTiles = height / tileSize;
+        final int tileArea = tileSize * tileSize;
+        final int[] maskValues = new int[tileArea];
+        for (int w = 0; w < widthTiles; w++) {
+            for (int h = 0; h < heightTiles; h++) {
+                maskImage.getRGB(w * tileSize, h * tileSize, tileSize, tileSize, maskValues, 0, tileSize);
+                double count = 0;
+                for (int maskValue : maskValues) {
+                    if (maskValue == WHITE_RGB) {
+                        count++;
+                    }
+                }
+                final double percentage = (count / (tileArea)) * tileSize;
+                if (count > 0 && percentage <= percentageThreshold) {
+                    //if less than 1% of the tile are clouds, then probably no cloud in the tile
+                    log.info("[{}] count: {}, total: {}, p: {}", file.getName(), count, tileArea, percentage);
+                    for (int i = 0; i < tileSize; i++) {
+                        for (int j = 0; j < tileSize; j++) {
+                            if (maskImage.getRGB(w * tileSize + i, h * tileSize + j) == WHITE_RGB) {
+                                maskImage.setRGB(w * tileSize + i, h * tileSize + j, BLACK_RGB);
+                                cloudPixels--;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private void cleanupCloudsBasedOnNearby(final int width, final int height, final int threshold) {
+        for (int x = 1; x < width - 1; x++) {
+            for (int y = 1; y < height - 1; y++) {
+                if (maskImage.getRGB(x, y) == WHITE_RGB) {
+                    if (!isAnyNearby(maskImage, x, y, WHITE_RGB, threshold)) {
+                        maskImage.setRGB(x, y, BLACK_RGB);
+                        cloudPixels--;
+                    }
+                }
+            }
+        }
+    }
+    
+    private boolean isAnyNearby(final BufferedImage maskImage, final int x, final int y, final int specificColor, final int threshold) {
+        int nearby = 0;
+        nearby += maskImage.getRGB(x - 1, y) == specificColor ? 1 : 0;
+        nearby += maskImage.getRGB(x + 1, y) == specificColor ? 1 : 0;
+        nearby += maskImage.getRGB(x, y - 1) == specificColor ? 1 : 0;
+        nearby += maskImage.getRGB(x, y + 1) == specificColor ? 1 : 0;
+        nearby += maskImage.getRGB(x - 1, y - 1) == specificColor ? 1 : 0;
+        nearby += maskImage.getRGB(x - 1, y + 1) == specificColor ? 1 : 0;
+        nearby += maskImage.getRGB(x + 1, y - 1) == specificColor ? 1 : 0;
+        nearby += maskImage.getRGB(x + 1, y + 1) == specificColor ? 1 : 0;
+        return nearby > threshold;
     }
     
     private boolean isValidPixel(final int r, final int g, final int b, final int nir) {
