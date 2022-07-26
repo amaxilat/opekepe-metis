@@ -25,3 +25,26 @@
 hs_err_pid*
 
 */target
+
+**/convert_certificate.txt
+
+*.lock.db
+*.mv.db
+
+server/thumb
+server/hist
+server/reports
+server/results
+
+server/src/main/resources/application.properties
+server/src/main/resources/application-local.yml
+server/src/main/resources/application-opekepe.yml
+
+util/dataset*
+
+doc/metis.pdf
+doc/metis-admin.pdf
+
+documents
+
+dataset
