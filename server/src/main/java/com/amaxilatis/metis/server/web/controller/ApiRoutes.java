@@ -34,6 +34,8 @@ public interface ApiRoutes {
     String API_USER_DELETE = API_USER + "/{" + USERNAME + "}/delete";
     
     String VIEW_HOME = "/";
+    
+    String VIEW_USER = "/user";
     String VIEW_SETTINGS = "/settings";
     String VIEW_IMAGE_DIRECTORY = "/view";
     String VIEW_USERS = "/users";

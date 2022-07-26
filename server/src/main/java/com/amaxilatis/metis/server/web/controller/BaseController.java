@@ -47,13 +47,13 @@ public class BaseController {
     protected void prepareModel(final Model model) {
         if (!(SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof String)) {
             Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            log.info("{}",principal);
-            if (principal instanceof User){
+            log.info("{}", principal);
+            if (principal instanceof User) {
                 final User u = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 model.addAttribute("u", userService.getBySpringUser(u));
-            }else if (principal instanceof LdapUserDetailsImpl){
+            } else if (principal instanceof LdapUserDetailsImpl) {
                 final LdapUserDetailsImpl u = (LdapUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                model.addAttribute("u", UserDTO.fromUser(u));
+                model.addAttribute("u", userService.getByLdapUser(u));
             }
         }
         model.addAttribute("vp", versionProperties);

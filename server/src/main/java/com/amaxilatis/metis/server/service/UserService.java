@@ -5,9 +5,12 @@ import com.amaxilatis.metis.server.db.repository.UserRepository;
 import com.amaxilatis.metis.server.model.UserDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,8 +27,20 @@ public class UserService {
         return UserDTO.fromUser(u);
     }
     
-    public UserDTO getBySpringUser(org.springframework.security.core.userdetails.User u) {
-        return getByUsername(u.getUsername());
+    public UserDTO getByUsername(final String username, final Collection<GrantedAuthority> authorities) {
+        final UserDTO u = getByUsername(username);
+        u.setAuthorities(authorities);
+        return u;
+    }
+    
+    public UserDTO getBySpringUser(final org.springframework.security.core.userdetails.User u) {
+        return getByUsername(u.getUsername(), u.getAuthorities());
+    }
+    
+    public UserDTO getByLdapUser(final LdapUserDetailsImpl ldapUser) {
+        final UserDTO u = UserDTO.fromUser(ldapUser);
+        u.setAuthorities(ldapUser.getAuthorities());
+        return u;
     }
     
     public List<UserDTO> getAllUsers() {

@@ -1,12 +1,14 @@
 package com.amaxilatis.metis.server.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
 
 import javax.sql.DataSource;
 
@@ -20,25 +22,17 @@ public class SpringSecurityWebAppConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     PasswordEncoder encoder;
     
+    @Value("${metis.ldap.domain:none}")
+    private String ldapDomain;
+    
+    @Value("${metis.ldap.url:none}")
+    private String ldapUrl;
+    
+    @Value("${metis.ldap.use:false}")
+    private boolean useLdap;
+    
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-//        auth //inmemmory details
-//                .inMemoryAuthentication()
-//                .passwordEncoder(encoder)
-//                .withUser("test")
-//                .password(encoder.encode("user"))
-//                .roles("ADMIN");
-        auth //ldap details
-                .ldapAuthentication()
-                .rolePrefix("LDAP_")
-                .userDnPatterns("uid={0},ou=people")
-                .groupSearchBase("ou=groups")
-                .contextSource()
-                .url("ldap://localhost:8389/dc=springframework,dc=org")
-                .and()
-                .passwordCompare()
-                .passwordEncoder(encoder)
-                .passwordAttribute("userPassword");
         auth //jdbc details
                 .jdbcAuthentication()
                 //encoder
@@ -48,8 +42,19 @@ public class SpringSecurityWebAppConfig extends WebSecurityConfigurerAdapter {
                 //select user
                 .usersByUsernameQuery("select username, password, enabled from user where username=?")
                 //authorities
-                .authoritiesByUsernameQuery("select username, role from user where username=?")
-                .rolePrefix("JDBC_");
+                .authoritiesByUsernameQuery("select username, role from user where username=?").rolePrefix("JDBC_");
+        
+        if (useLdap) {
+            final ActiveDirectoryLdapAuthenticationProvider activeDirectoryLdapAuthenticationProvider =
+                    // connect to the active directory
+                    new ActiveDirectoryLdapAuthenticationProvider(ldapDomain, ldapUrl);
+            
+            // to parse AD failed credentials' error message due to account - expiry,lock, credentials - expiry,lock
+            activeDirectoryLdapAuthenticationProvider.setConvertSubErrorCodesToExceptions(true);
+            
+            auth //active directory details
+                    .authenticationProvider(activeDirectoryLdapAuthenticationProvider);
+        }
     }
     
     @Override

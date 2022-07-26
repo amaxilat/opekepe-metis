@@ -26,6 +26,7 @@ import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_HOME;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_IMAGE_DIRECTORY;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_LOGIN;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_SETTINGS;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_USER;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_USERS;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_USERS_ADD;
 
@@ -99,5 +100,12 @@ public class ViewController extends BaseController {
         model.addAttribute("images", fileService.listImages(decodedImageDir));
         model.addAttribute("file", file);
         return "view";
+    }
+    
+    @GetMapping(VIEW_USER)
+    public String userPage(final Model model) {
+        log.info("get:{}", VIEW_USER);
+        prepareModel(model);
+        return "user";
     }
 }

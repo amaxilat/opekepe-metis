@@ -3,3 +3,7 @@
     max-width: 300px;
     border: 1px solid grey;
 }
+
+.ldapuser {
+    background: #4e73df;
+}

@@ -44,11 +44,6 @@ spring:
     spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: none
-  ldap:
-    embedded:
-      ldif: classpath:test-server.ldif
-      base-dn: dc=springframework,dc=org
-      port: 8389
 logging:
   level:
     com.amaxilatis.metis: INFO
@@ -64,4 +59,8 @@ metis:
   version: ^project.version^
   processing:
     threads: -1
+  ldap:
+    domain: localhost
+    url: ldap://localhost
+    use: true
 

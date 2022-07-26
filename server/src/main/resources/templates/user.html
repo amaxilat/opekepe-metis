@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/base :: head"></head>
+<body id="page-top">
+
+<!-- Page Wrapper -->
+<div id="wrapper">
+
+    <nav th:replace="fragments/navbar :: sidebar2"></nav>
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+        <!-- Main Content -->
+        <div id="content">
+
+            <nav th:replace="fragments/navbar :: navbar2"></nav>
+
+            <!-- Begin Page Content -->
+            <div class="container-fluid">
+
+                <!-- Page Heading -->
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">Προφίλ Χρήστη</h1>
+                </div>
+
+                <!-- Content Row -->
+                <div class="row">
+                    <!-- Earnings (Monthly) Card Example -->
+                    <div class="col-xl-12 col-md-12 mb-12">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary mb-1">
+                                            Στοιχεία Χρήστη
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            <form class="form-horizontal">
+                                                <div class="form-group">
+
+                                                    <label for="nameInput">Όνομα</label>
+                                                    <input type="text" class="form-control" id="nameInput"
+                                                           aria-describedby="nameInput" disabled
+                                                           th:value="${u.name}">
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="usernameInput">Username</label>
+                                                    <input type="text" class="form-control" id="usernameInput"
+                                                           aria-describedby="usernameInput" disabled
+                                                           th:value="${u.username}">
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="roleInput">Ρόλος</label>
+                                                    <input type="text" class="form-control" id="roleInput"
+                                                           aria-describedby="roleInput" disabled
+                                                           th:value="${u.role}">
+                                                </div>
+
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <!--<i class="fas fa-calendar fa-2x text-gray-300"></i>-->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br/>
+                <!-- Content Row -->
+                <div class="row">
+                    <!-- Earnings (Monthly) Card Example -->
+                    <div class="col-xl-12 col-md-12 mb-12">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary mb-1">
+                                            Authorities
+                                        </div>
+
+                                        <div th:each="auth : ${u.authorities}">
+                                            <span class="badge badge-info" th:classappend="${u.local ? '':'ldapuser'}"
+                                                  th:text="${auth}">authority</span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /.container-fluid -->
+
+    </div>
+    <!-- End of Main Content -->
+
+
+</div>
+<!-- End of Content Wrapper -->
+
+<!-- Footer -->
+<div th:replace="fragments/base :: footer"></div>
+<th:block th:replace="fragments/base :: script"></th:block>
+
+<script type="text/javascript">
+    window.onload = function () {
+        connect();
+    };
+</script>
+</body>
+</html>
