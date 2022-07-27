@@ -23,6 +23,7 @@ public class ImageParsingTest {
     final File directory2F = new File("..\\dataset\\dataset2F\\");
     final File directory6F = new File("..\\dataset\\dataset6F\\");
     final File directory8 = new File("..\\dataset\\dataset8\\");
+    final File directory4 = new File("..\\dataset\\dataset4\\0456039030.tif");
     private static List<Integer> tasks;
     
     @BeforeAll
@@ -90,6 +91,26 @@ public class ImageParsingTest {
                 Assertions.assertEquals(result.getTask(), tasks.get(0));
                 Assertions.assertTrue(result.getResult());
             }
+        } catch (IOException | TikaException | SAXException | ImageProcessingException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+    
+    @Test
+    void testN4_true() {
+        tasks.add(4);
+        try {
+            final List<FileJobResult> results = new ArrayList<>();
+            if (directory4.isDirectory()) {
+                results.addAll(ImageCheckerUtils.parseDir(directory4, tasks));
+            } else {
+                log.warn("Input not a directory");
+                results.addAll(ImageCheckerUtils.parseFile(directory4, tasks, null, directory4.getParent()));
+            }
+            //            for (final FileJobResult result : results) {
+            //                Assertions.assertEquals(result.getTask(), tasks.get(0));
+            //                Assertions.assertTrue(result.getResult());
+            //            }
         } catch (IOException | TikaException | SAXException | ImageProcessingException e) {
             log.error(e.getMessage(), e);
         }

@@ -1,6 +1,6 @@
 = METIS - Εφαρμογή Για Το Μαζικό Έλεγχο Ορθοφωτοχαρτών
 :author: ΦΩΤΟΠΟ ΑΝΩΝΥΜΟΣ ΕΤΑΙΡΕΙΑ ΜΕΛΕΤΩΝ ΑΝΑΠΤΥΞΗΣ & ΓΕΩΓΡΑΦΙΚΩΝ ΣΥΣΤΗΜΑΤΩΝ ΠΛΗΡΟΦΟΡΙΩΝ
-:revnumber: 0.3.7
+:revnumber: 0.10.0
 :description: Ο οδηγός αυτός περιγράφει τη παραμετροποίηση / διαχείριση της εφαρμογής Metis για τον μαζικό έλεγχο ορθοφωτοχαρτών από τον διαχειριστή του συστήματος.
 :doctype: book
 :sectanchors:
@@ -73,23 +73,23 @@ keytool.exe -importkeystore -destkeystore metiscert.p12 -deststoretype pkcs12 -s
 === Λήψη Αντιγράφων Ασφαλείας
 
 .Λήψη Αντιγράφων Ασφαλείας - Γενικά
-[#service-restart]
+[#backup-1]
 image::img-admin/backup-1.png[align="center"]
 .Λήψη Αντιγράφων Ασφαλείας - Triggers
-[#service-restart]
+[#backup-2]
 image::img-admin/backup-2.png[align="center"]
 .Λήψη Αντιγράφων Ασφαλείας - Actions
-[#service-restart]
+[#backup-3]
 image::img-admin/backup-3.png[align="center"]
 
 === Εκκαθάριση Αντιγράφων Ασφαλείας
 
 .Εκκαθάριση Αντιγράφων Ασφαλείας - Γενικά
-[#service-restart]
+[#clean-1]
 image::img-admin/clean-1.png[align="center"]
 .Εκκαθάριση Αντιγράφων Ασφαλείας - Triggers
-[#service-restart]
+[#clean-2]
 image::img-admin/clean-2.png[align="center"]
 .Εκκαθάριση Αντιγράφων Ασφαλείας - Actions
-[#service-restart]
+[#clean-3]
 image::img-admin/clean-3.png[align="center"]

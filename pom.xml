@@ -5,7 +5,7 @@
 
     <groupId>com.amaxilatis.metis</groupId>
     <artifactId>parent</artifactId>
-    <version>0.9.2-SNAPSHOT</version>
+    <version>0.10.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>parent</name>
     <description>Metis satellite and aerial photography image validation</description>
