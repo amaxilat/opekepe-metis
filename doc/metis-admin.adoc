@@ -39,3 +39,57 @@ tbd
 === Windows Service
 
 tbd
+
+```
+Metis.exe install Metis.xml
+```
+
+== Διαχείριση Εφαρμογής
+
+=== Επανεκκίνηση Εφαρμογής
+
+Για την επανεκκίνηση της εφαρμογής χρειάζεται να συνδεθούμε στο VM το οποίο εκτελεί την εφαρμογή και να ανοίξουμε την καρτέλα `Services` του `Task Manager`.
+Εκεί στο service με όνομα `Metis` με δεξί κλίκ μπορούμε να επιλέξουμε `Restart` για την επανεκκίνησή της.
+
+.Επανεκκίνηση Εφαρμογής
+[#service-restart]
+image::img-admin/service.png[align="center"]
+
+=== Μετατροπή Certificate
+
+Η εφαρμογή χρησιμοποιεί SSL certificates μορφής `.p12` για την φόρτωση του πιστοποιητικού και του αντίστοιχου private key.
+Για τη μετατροπή του πιστοποιητικού από τη μορφή `.pfx` γίνεται χρήση του εργαλείου `keytool` του `jdk` μέσω της παρακάτω εντολής:
+
+```
+keytool.exe -importkeystore -destkeystore metiscert.p12 -deststoretype pkcs12 -srckeystore source.pfx
+```
+
+Με την εκτέλεση της εφαρμογής θα πρέπει να δωθεί από το χρήστη ένας κωδικός για την αποθήκευση του keystore στη μορφή `.p12` καθώς και ο κωδικός του `.pfx` keystore.
+
+Το keystore που δημιουργείται πρέπει να τοποθετηθεί μέσα στο φάκελο της εφαρμογής και να γίνει επανεκκίνηση της εφαρμογής για να φορτωθεί το νέο certificate.
+
+== Αντίγραφα Ασφαλείας
+
+=== Λήψη Αντιγράφων Ασφαλείας
+
+.Λήψη Αντιγράφων Ασφαλείας - Γενικά
+[#service-restart]
+image::img-admin/backup-1.png[align="center"]
+.Λήψη Αντιγράφων Ασφαλείας - Triggers
+[#service-restart]
+image::img-admin/backup-2.png[align="center"]
+.Λήψη Αντιγράφων Ασφαλείας - Actions
+[#service-restart]
+image::img-admin/backup-3.png[align="center"]
+
+=== Εκκαθάριση Αντιγράφων Ασφαλείας
+
+.Εκκαθάριση Αντιγράφων Ασφαλείας - Γενικά
+[#service-restart]
+image::img-admin/clean-1.png[align="center"]
+.Εκκαθάριση Αντιγράφων Ασφαλείας - Triggers
+[#service-restart]
+image::img-admin/clean-2.png[align="center"]
+.Εκκαθάριση Αντιγράφων Ασφαλείας - Actions
+[#service-restart]
+image::img-admin/clean-3.png[align="center"]
