@@ -23,6 +23,7 @@
 
     <modules>
         <module>util</module>
+        <module>detector-client</module>
         <module>server</module>
     </modules>
 
@@ -173,6 +174,11 @@
             <dependency>
                 <groupId>com.amaxilatis.metis</groupId>
                 <artifactId>util</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amaxilatis.metis</groupId>
+                <artifactId>detector-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
