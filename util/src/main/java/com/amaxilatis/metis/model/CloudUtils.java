@@ -16,7 +16,10 @@ public class CloudUtils {
     static int BLACK_RGB = Color.black.getRGB(); // Color black
     
     public static boolean isCloud(double h, double s, double v) {
-        //        log.info("h:{} s:{} v:{}", h, s, v);
-        return ((H[(int) h] + S[(int) s] + V[(int) v]) / 3) > 0.7;
+        try {
+            return ((H[(int) h] + S[(int) s] + V[(int) v]) / 3) > 0.7;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return false;
+        }
     }
 }
