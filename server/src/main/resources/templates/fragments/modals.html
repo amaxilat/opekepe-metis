@@ -2,12 +2,14 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="fragments/base :: head"></head>
 <body>
-<div th:fragment="modal-run" class="modal fade" th:id="'modal-run-'+${imageDirectoryHash}" tabindex="-1"
-     aria-labelledby="runModalLabel" aria-hidden="true">
+<div th:fragment="modal-run(type,name,title)" class="modal fade" th:id="'modal-run-'+${name}+'-'+${imageDirectoryHash}"
+     tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="runModalLabel" th:text="${imageDirectoryName}">Modal title</h5>
+                <h5 class="modal-title">
+                    <span th:text="${title}"></span> <span th:text="${imageDirectoryHash}"></span>
+                </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -19,7 +21,7 @@
                     <div class="form-group form-check" th:each="test : ${tests}">
                         <input type="checkbox" class="form-check-input" name="tasks"
                                th:id="'check-'+${test.name}+'-'+${imageDirectoryHash}" th:value="${test.id}"
-                               th:checked="${test.enabled}" th:disabled="${!test.enabled}"/>
+                               th:checked="${test.type==type}" th:disabled="${!test.enabled}"/>
                         <label class="form-check-label" th:text="${test.name}"
                                th:attr="for='check-'+${test.name}+'-'+${imageDirectoryHash}">
                             Έλεγχος

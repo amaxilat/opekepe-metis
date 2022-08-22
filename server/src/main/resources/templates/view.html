@@ -23,20 +23,42 @@
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">Φάκελος: <span id="directory" th:text="${imageDir}"></span></h1>
                     <div class="btn-group" role="group" aria-label="report actions">
-                        <button type="button"
-                                data-toggle="modal" th:attr="data-target='#modal-run-'+${imageDirectoryHash}"
-                                class="d-none d-sm-inline-block btn btn-sm btn-primary  shadow-sm">
-                            <span class="icon"><i class="fas fa-search fa-sm text-white-50"></i></span>
-                            <span class="text">Έλεγχος Φακέλου</span>
-                        </button>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown"
+                                    aria-expanded="false">
+                                <span class="icon"><i class="fas fa-search text-white-50"></i></span>
+                                <span class="text">Έλεγχος Φακέλου</span>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" data-toggle="modal" style="cursor: pointer"
+                                   th:attr="data-target='#modal-run-characteristics-'+${imageDirectoryHash}">
+                                    <span class="icon"><i class="fas fa-search text-gray-50"></i></span>
+                                    <span class="text">Έλεγχος Χαρακτηριστικών</span>
+                                </a>
+
+                                <a class="dropdown-item" data-toggle="modal" style="cursor: pointer"
+                                   th:attr="data-target='#modal-run-cloud-'+${imageDirectoryHash}">
+                                    <span class="icon"><i class="fas fa-cloud text-gray-50"></i></span>
+                                    <span class="text">Έλεγχος Νεφοκάλυψης</span>
+                                </a>
+                                <a class="dropdown-item" data-toggle="modal" style="cursor: pointer"
+                                   th:attr="data-target='#modal-run-similar-'+${imageDirectoryHash}">
+                                    <span class="icon"><i class="fas fa-boxes text-gray-50"></i></span>
+                                    <span class="text">Έλεγχος Ομοιογένειας</span>
+                                </a>
+                            </div>
+                        </div>
                         <button type="button"
                                 data-toggle="modal" th:attr="data-target='#modal-clean-'+${imageDirectoryHash}"
-                                class="d-none d-sm-inline-block btn btn-sm btn-danger  shadow-sm">
-                            <span class="icon"><i class="fas fa-eraser fa-sm text-white-50"></i></span>
+                                class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
+                            <span class="icon"><i class="fas fa-eraser text-white-50"></i></span>
                             <span class="text">Διαγραφή Αποτελεσμάτων</span>
                         </button>
                     </div>
-                    <div th:replace="fragments/modals :: modal-run"></div>
+
+                    <div th:replace="fragments/modals :: modal-run(0,'characteristics', 'Έλεγχος Χαρακτηριστικών')"></div>
+                    <div th:replace="fragments/modals :: modal-run(1,'cloud', 'Έλεγχος Νεφοκάλυψης')"></div>
+                    <div th:replace="fragments/modals :: modal-run(2,'similar', 'Έλεγχος Ομοιογένειας')"></div>
                     <div th:replace="fragments/modals :: modal-clean"></div>
                 </div>
 
