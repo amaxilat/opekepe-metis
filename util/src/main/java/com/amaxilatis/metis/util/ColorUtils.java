@@ -2,6 +2,8 @@ package com.amaxilatis.metis.util;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.awt.*;
+
 @Slf4j
 public class ColorUtils {
     
@@ -13,9 +15,19 @@ public class ColorUtils {
     /**
      * Get the brightness value of a pixel
      *
-     * @param red   the pixels red value
-     * @param green the pixels green value
-     * @param blue  the pixels blue value
+     * @param color the color of the pixel
+     * @return the calculated brightness value
+     */
+    public static double getBrightness(final Color color) {
+        return getBrightness(color.getRed(), color.getGreen(), color.getBlue());
+    }
+    
+    /**
+     * Get the brightness value of a pixel
+     *
+     * @param red   the pixel's red value
+     * @param green the pixel's green value
+     * @param blue  the pixel's blue value
      * @return the calculated brightness value
      */
     public static double getBrightness(final double red, final double green, final double blue) {
@@ -25,9 +37,9 @@ public class ColorUtils {
     /**
      * Get the brightness value of a pixel
      *
-     * @param red   the pixels red value
-     * @param green the pixels green value
-     * @param blue  the pixels blue value
+     * @param red   the pixel's red value
+     * @param green the pixel's green value
+     * @param blue  the pixel's blue value
      * @return the calculated brightness value
      */
     public static double getBrightness(final int red, final int green, final int blue) {
