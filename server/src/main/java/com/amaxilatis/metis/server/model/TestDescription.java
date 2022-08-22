@@ -9,6 +9,7 @@ public class TestDescription implements Comparable<TestDescription> {
     private int id;
     private String name;
     private String description;
+    private int type;
     private boolean enabled;
     
     @Override

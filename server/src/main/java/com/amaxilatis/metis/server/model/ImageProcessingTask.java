@@ -40,7 +40,6 @@ public class ImageProcessingTask implements Runnable {
             fileService.append(outFileName, sb.toString());
             
             log.info("parsed file [{}s] {} {}", ((System.currentTimeMillis() - start) / 1000), imageFile, results);
-            log.info("processing complete {}", System.currentTimeMillis());
         } catch (IOException | TikaException | SAXException | ImageProcessingException e) {
             log.error(e.getMessage(), e);
         }
