@@ -46,6 +46,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.amaxilatis.metis</groupId>
+            <artifactId>detector-client</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>

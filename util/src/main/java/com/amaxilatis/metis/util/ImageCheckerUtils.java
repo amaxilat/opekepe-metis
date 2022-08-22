@@ -107,25 +107,6 @@ public class ImageCheckerUtils {
                     log.error(e.getMessage(), e);
                 }
             }
-            if (tasks.contains(4)) {
-                try {
-                    final File resultFile = getResultFile(resultsDir, file, 4);
-                    final FileJobResult result;
-                    if (resultsDir != null && resultFile.exists()) {
-                        log.info("loading test 4 result for {}", file);
-                        result = mapper.readValue(resultFile, FileJobResult.class);
-                    } else {
-                        log.info("running test 4 for {}", file);
-                        result = ImageCheckerUtils.testN4(file, image);
-                        if (resultsDir != null) {
-                            mapper.writeValue(resultFile, result);
-                        }
-                    }
-                    results.add(result);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
             if (tasks.contains(5)) {
                 try {
                     final File resultFile = getResultFile(resultsDir, file, 5);
@@ -193,6 +174,25 @@ public class ImageCheckerUtils {
                     } else {
                         log.info("running test 8 for {}", file);
                         result = ImageCheckerUtils.testN8(file, image);
+                        if (resultsDir != null) {
+                            mapper.writeValue(resultFile, result);
+                        }
+                    }
+                    results.add(result);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+            if (tasks.contains(4)) {
+                try {
+                    final File resultFile = getResultFile(resultsDir, file, 4);
+                    final FileJobResult result;
+                    if (resultsDir != null && resultFile.exists()) {
+                        log.info("loading test 4 result for {}", file);
+                        result = mapper.readValue(resultFile, FileJobResult.class);
+                    } else {
+                        log.info("running test 4 for {}", file);
+                        result = ImageCheckerUtils.testN4(file, image);
                         if (resultsDir != null) {
                             mapper.writeValue(resultFile, result);
                         }
@@ -333,14 +333,14 @@ public class ImageCheckerUtils {
      * @return
      */
     public static FileJobResult testN4(final File file, final ImagePack image) throws IOException {
-        image.loadHistogram();
+        image.detectClouds(false, true);
         double percentage = ((double) image.getCloudPixels() / (double) image.getValidPixels()) * 100;
     
         boolean result = percentage < 5;
     
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(4);
     
-        resultBuilder.note(String.format("Εικονοστοιχεία με Συννεφα %d, Συνολικά Εικονοστοιχεία %d, Ποσοστό: %.2f", image.getCloudPixels(), image.getValidPixels(), percentage));
+        resultBuilder.note(String.format("Εικονοστοιχεία με Συννεφα %.0f, Συνολικά Εικονοστοιχεία %.0f, Ποσοστό: %.2f", image.getCloudPixels(), image.getValidPixels(), percentage));
     
         return resultBuilder.result(result).build();
     }
