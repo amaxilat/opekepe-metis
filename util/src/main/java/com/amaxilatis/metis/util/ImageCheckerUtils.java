@@ -340,7 +340,7 @@ public class ImageCheckerUtils {
     
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(4);
     
-        resultBuilder.note(String.format("Εικονοστοιχεία με Συννεφα %.0f, Συνολικά Εικονοστοιχεία %.0f, Ποσοστό: %.2f", image.getCloudPixels(), image.getValidPixels(), percentage));
+        resultBuilder.note(String.format("Εικονοστοιχεία με Συννεφα %.0f, Συνολικά Εικονοστοιχεία %.0f, Ποσοστό: %.2f%%", image.getCloudPixels(), image.getValidPixels(), percentage));
     
         return resultBuilder.result(result).build();
     }
