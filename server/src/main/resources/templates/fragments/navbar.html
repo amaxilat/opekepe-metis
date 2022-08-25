@@ -56,24 +56,36 @@
 
         <li class="nav-item no-arrow mx-1">
             <a class="nav-link">
-                        <span id="dot"
-                              style="height: 15px;  width: 15px;  background-color: #bbb;  border-radius: 50%;  display: inline-block;"></span>
+
             </a>
         </li>
+
+        <li class="nav-item no-arrow mx-1">
+            <a class="nav-link">
+                <span id="dot-cloud"><i class="fa fa-cloud"></i></span>
+            </a>
+        </li>
+
         <li class="nav-item no-arrow mx-1">
             <a class="nav-link" style="color: #5a5c69; font-weight: bold">
-                Θέσεις:
-                &nbsp;
+                Μοντέλο:&nbsp;<span id="cloud-model"></span>
+            </a>
+        </li>
+
+        <div class="topbar-divider d-none d-sm-block"></div>
+
+        <li class="nav-item no-arrow mx-1">
+            <a class="nav-link">
+                <span id="dot"><i class="fa fa-cogs"></i></span>
+            </a>
+        </li>
+
+        <li class="nav-item no-arrow mx-1">
+            <a class="nav-link" style="color: #5a5c69; font-weight: bold">
+                Ουρά:&nbsp;&nbsp;
                 <span id="pool-active" th:text="${pool.active}">0</span>
                 /
                 <span id="pool-max" th:text="${pool.max}">0</span>
-            </a>
-        </li>
-        <li class="nav-item no-arrow mx-1">
-            <a class="nav-link" style="color: #5a5c69; font-weight: bold">
-                Ουρά:
-                &nbsp;
-                <span id="pool-pending" th:text="${pool.pending}">0</span>
             </a>
         </li>
 

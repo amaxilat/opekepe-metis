@@ -2,15 +2,17 @@ let stompClient = null;
 
 function setConnected(connected) {
     if (connected) {
-        $("#dot").css("background-color", "#49660e");
+        $("#dot").css("color", "#49660e");
     } else {
-        $("#dot").css("background-color", "#bbb");
+        $("#dot").css("color", "#bbb");
     }
 }
 
 function connect() {
     const socket = new SockJS('/metis-websocket');
     stompClient = Stomp.over(socket);
+    stompClient.debug = () => {
+    };
     stompClient.connect({}, function (frame) {
         setConnected(true);
         stompClient.subscribe('/topic/pool', function (greeting) {
@@ -24,6 +26,16 @@ function connect() {
     });
 }
 
+function connect_cloud_detection() {
+    $.get("/v1/api/cloud", function (data) {
+        $("#dot-cloud").css("color", "#49660e");
+        $("#cloud-model").text(data['model']);
+    }).fail(function () {
+        $("#dot-cloud").css("color", "#bbb");
+        $("#cloud-model").text('');
+    });
+}
+
 function disconnect() {
     if (stompClient !== null) {
         stompClient.disconnect();
@@ -34,7 +46,6 @@ function disconnect() {
 function updatePoolInfo(message) {
     $("#pool-active").text(message.active);
     $("#pool-max").text(message.max);
-    $("#pool-pending").text(message.pending);
 }
 
 function translate(message) {

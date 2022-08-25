@@ -11,6 +11,7 @@ public interface ApiRoutes {
     
     String API_BASE = API_V1 + "/api";
     String API_POOL = API_BASE + "/pool";
+    String API_CLOUD = API_BASE + "/cloud";
     String API_SCAN_IMAGES = API_BASE + "/imageScan";
     String API_IMAGE = API_BASE + "/image";
     String API_THUMBNAIL = API_BASE + "/thumbnail";

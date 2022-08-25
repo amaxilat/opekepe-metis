@@ -200,9 +200,9 @@
                             }
                             $("#imageResultsBody .test-result-" + task.task).find(".test-result-note").text(task.note);
                             $("#image-histogram").attr("src", histogram_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
-                            $("#image-cloudcover").attr("src", cloudcover_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
                         });
                         $("#image-thumbnail").attr("src", thumbnail_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
+                        $("#image-cloudcover").attr("src", cloudcover_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
                     });
                 }
 
@@ -210,6 +210,9 @@
                     connect();
                     reloadFile();
                     Zoom(".zoomable");
+                });
+                $(document).ready(function () {
+                    connect_cloud_detection();
                 });
             </script>
         </div>

@@ -96,6 +96,9 @@
         connect();
     };
     $(document).ready(function () {
+        connect_cloud_detection();
+    });
+    $(document).ready(function () {
         $('table#dataTable2').DataTable({
             processing: true,
             language: {

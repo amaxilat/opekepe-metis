@@ -1,5 +1,6 @@
 package com.amaxilatis.metis.server.web.controller.api;
 
+import com.amaxilatis.metis.detector.client.dto.PingDataDTO;
 import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.SortedSet;
 
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_CLOUD;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_CLOUDCOVER_DIRECTORY_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_HISTOGRAM_DIRECTORY_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE;
@@ -52,6 +54,13 @@ public class ApiController extends BaseController {
     public PoolInfo apiPool() {
         log.info("get:{}", API_POOL);
         return imageProcessingService.getPoolInfo();
+    }
+    
+    @ResponseBody
+    @GetMapping(value = API_CLOUD, produces = MediaType.APPLICATION_JSON_VALUE)
+    public PingDataDTO apiCloud() {
+        log.info("get:{}", API_CLOUD);
+        return imageProcessingService.getCloudInfo();
     }
     
     @ResponseBody
@@ -94,6 +103,7 @@ public class ApiController extends BaseController {
         final File thumbnailFile = fileService.getImageThumbnail(decodedImageDir, decodedImage);
         return thumbnailFile != null ? FileUtils.sendFile(response, thumbnailFile, thumbnailFile.getName()) : null;
     }
+    
     @GetMapping(value = API_HISTOGRAM_DIRECTORY_IMAGE)
     public ResponseEntity<Resource> apiDownloadImageHistogram(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) throws IOException {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_HISTOGRAM_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
