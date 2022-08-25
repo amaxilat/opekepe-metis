@@ -43,6 +43,8 @@ t_reply = []
 
 
 def avg(lst):
+    if len(lst) == 0:
+        return 0
     return sum(lst) / len(lst)
 
 
@@ -56,6 +58,13 @@ def load_request_data(req):
         return json.loads(gzip.decompress(req.data))
     else:
         return json.loads(req.data)
+
+
+@app.route('/ping', methods=['GET'])
+def get_ping():
+    stats_response = {'load': avg(t_load), 'prepare': avg(t_prepare), 'predict': avg(t_predict), 'reply': avg(t_reply)}
+    ping_response = {'model': model_name, 'threshold': threshold, 'stats': stats_response}
+    return make_response(jsonify(ping_response), 200)
 
 
 @app.route('/', methods=['POST'])

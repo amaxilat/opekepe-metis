@@ -52,4 +52,12 @@ public class DetectorApiClient implements DetectorApiClientInterface {
         }
         return response.getBody();
     }
+    
+    public PingDataDTO getPingData() {
+        final ResponseEntity<PingDataDTO> response = restTemplate.getForEntity(baseUrl + API_PING, PingDataDTO.class);
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new RestClientException(response.toString());
+        }
+        return response.getBody();
+    }
 }
