@@ -58,6 +58,7 @@ metis:
   cloudMaskLocation: cloud
   filesLocation: files
   version: ^project.version^
+  dbBackupLocation: backup
   processing:
     threads: -1
   ldap:

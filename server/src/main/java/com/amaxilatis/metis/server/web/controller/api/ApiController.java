@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.SortedSet;
 
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_BACKUP;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_CLOUD;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_CLOUDCOVER_DIRECTORY_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_HISTOGRAM_DIRECTORY_IMAGE;
@@ -120,6 +121,13 @@ public class ApiController extends BaseController {
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File cloudCoverFile = fileService.getImageCloudCover(decodedImageDir, decodedImage);
         return cloudCoverFile != null ? FileUtils.sendFile(response, cloudCoverFile, cloudCoverFile.getName()) : null;
+    }
+    
+    @ResponseBody
+    @GetMapping(value = API_BACKUP)
+    public String apiBackup() {
+        reportService.backup();
+        return "ok";
     }
     
 }

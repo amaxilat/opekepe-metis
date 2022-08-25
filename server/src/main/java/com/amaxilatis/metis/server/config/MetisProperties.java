@@ -13,6 +13,7 @@ public class MetisProperties {
     private String histogramLocation;
     private String cloudMaskLocation;
     private String resultsLocation;
+    private String dbBackupLocation;
     private String version;
     
 }
