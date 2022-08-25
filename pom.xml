@@ -13,12 +13,19 @@
 
     <properties>
         <java.version>11</java.version>
-        <spring.boot.version>2.6.6</spring.boot.version>
+        <spring.boot.version>2.7.3</spring.boot.version>
         <maven.failsafe.plugin.version>2.22.2</maven.failsafe.plugin.version>
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <git-commit-id-plugin.version>4.0.3</git-commit-id-plugin.version>
-        <log4j2.version>2.17.0</log4j2.version>
-        <git-commit-id-plugin.version>4.0.3</git-commit-id-plugin.version>
+        <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
+        <dependency-check-maven.version>7.1.2</dependency-check-maven.version>
+        <git-commit-id-plugin.version>4.9.10</git-commit-id-plugin.version>
+        <org.junit.jupiter.version>5.9.0</org.junit.jupiter.version>
+        <org.slf4j.version>1.7.36</org.slf4j.version>
+        <log4j2.version>2.18.0</log4j2.version>
+        <commons-math3.version>3.6.1</commons-math3.version>
+        <commons-codec.version>1.15</commons-codec.version>
+        <tika.version>2.4.1</tika.version>
+        <org.apache.poi.version>5.2.2</org.apache.poi.version>
     </properties>
 
     <modules>
@@ -49,9 +56,13 @@
                     </configuration>
                 </plugin>
                 <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
+                </plugin>
+                <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
-                    <version>6.5.1</version>
+                    <version>${dependency-check-maven.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
@@ -125,7 +136,6 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>6.5.1</version>
                 <configuration>
                     <formats>
                         <format>HTML</format>
@@ -161,6 +171,17 @@
             </dependency>
 
             <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${org.slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-simple</artifactId>
+                <version>${org.slf4j.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter</artifactId>
                 <version>${spring.boot.version}</version>
@@ -186,10 +207,48 @@
                 <artifactId>server</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-math3</artifactId>
+                <version>${commons-math3.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${commons-codec.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi</artifactId>
+                <version>${org.apache.poi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-ooxml</artifactId>
+                <version>${org.apache.poi.version}</version>
+            </dependency>
+
+            <!-- Test -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-test</artifactId>
                 <version>${spring.boot.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${org.junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${org.junit.jupiter.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
