@@ -5,7 +5,6 @@ import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.model.ImageFileInfo;
 import com.amaxilatis.metis.server.model.PoolInfo;
-import com.amaxilatis.metis.server.model.UserListDTO;
 import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
 import com.amaxilatis.metis.server.service.JobService;
@@ -37,8 +36,6 @@ import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE_DIR
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_POOL;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_SCAN_IMAGES;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_THUMBNAIL_DIRECTORY_IMAGE;
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_USERS;
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_USER_DELETE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.IMAGE_DIR_HASH;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.IMAGE_HASH;
 
@@ -114,21 +111,5 @@ public class ApiController extends BaseController {
         final File cloudCoverFile = fileService.getImageCloudCover(decodedImageDir, decodedImage);
         return cloudCoverFile != null ? FileUtils.sendFile(response, cloudCoverFile, cloudCoverFile.getName()) : null;
     }
-    
-    @ResponseBody
-    @GetMapping(value = API_USERS)
-    public UserListDTO apiUsers() {
-        log.info("get:{}", API_USERS);
-        return UserListDTO.builder().users(userService.getAllUsers()).build();
-    }
-    
-    @ResponseBody
-    @GetMapping(value = API_USER_DELETE)
-    public String apiUserDelete(@PathVariable final String username) {
-        log.info("get:{}, username:{}", API_USER_DELETE, username);
-        userService.deleteUser(username);
-        return username;
-    }
-    
     
 }

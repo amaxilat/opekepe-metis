@@ -71,25 +71,6 @@ public class ViewController extends BaseController {
         return "settings";
     }
     
-    @GetMapping(VIEW_USERS)
-    public String usersPage(final Model model) {
-        log.info("get:{}", VIEW_USERS);
-        prepareModel(model);
-        return "users";
-    }
-    
-    @PostMapping(value = VIEW_USERS_ADD)
-    public String apiAddUser(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("name") String name, @RequestParam("role") String role, @RequestParam(value = "enabled", defaultValue = "false") Boolean enabled) {
-        log.info("POST:{}", VIEW_USERS_ADD);
-        if (userService.getByUsername(username) != null) {
-            log.info("user exists!");
-            return "redirect:" + VIEW_USERS;
-        } else {
-            userService.addUser(username, password, name, role, enabled);
-            return "redirect:" + VIEW_USERS;
-        }
-    }
-    
     @GetMapping(VIEW_IMAGE_DIRECTORY)
     public String homePage(final Model model, @RequestParam("dir") final String imageDirectoryHash, @RequestParam(value = "file", required = false) final String file) {
         log.info("get:{}, imageDirectoryHash:{}", VIEW_IMAGE_DIRECTORY, imageDirectoryHash);

@@ -11,6 +11,7 @@ public class MetisProperties {
     private String filesLocation;
     private String thumbnailLocation;
     private String histogramLocation;
+    private String cloudMaskLocation;
     private String resultsLocation;
     private String version;
     

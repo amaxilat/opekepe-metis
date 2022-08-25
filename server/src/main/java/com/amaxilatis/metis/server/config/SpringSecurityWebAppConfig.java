@@ -33,17 +33,6 @@ public class SpringSecurityWebAppConfig extends WebSecurityConfigurerAdapter {
     
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth //jdbc details
-                .jdbcAuthentication()
-                //encoder
-                .passwordEncoder(encoder)
-                //datasource
-                .dataSource(dataSource)
-                //select user
-                .usersByUsernameQuery("select username, password, enabled from user where username=?")
-                //authorities
-                .authoritiesByUsernameQuery("select username, role from user where username=?").rolePrefix("JDBC_");
-        
         if (useLdap) {
             final ActiveDirectoryLdapAuthenticationProvider activeDirectoryLdapAuthenticationProvider =
                     // connect to the active directory
@@ -54,6 +43,13 @@ public class SpringSecurityWebAppConfig extends WebSecurityConfigurerAdapter {
             
             auth //active directory details
                     .authenticationProvider(activeDirectoryLdapAuthenticationProvider);
+        } else {
+            auth //inmemmory details
+                    .inMemoryAuthentication()
+                    .passwordEncoder(encoder)
+                    .withUser("metis")
+                    .password(encoder.encode("password"))
+                    .roles("ADMIN");
         }
     }
     

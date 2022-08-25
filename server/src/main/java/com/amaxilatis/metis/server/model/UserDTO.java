@@ -1,6 +1,5 @@
 package com.amaxilatis.metis.server.model;
 
-import com.amaxilatis.metis.server.db.model.User;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,13 +21,6 @@ public class UserDTO {
     private Boolean enabled;
     
     private Boolean local;
-    
-    public static UserDTO fromUser(final User u) {
-        if (u == null) {
-            return null;
-        }
-        return UserDTO.builder().name(u.getName()).username(u.getUsername()).role(u.getRole()).enabled(u.getEnabled()).local(true).build();
-    }
     
     public static UserDTO fromUser(LdapUserDetailsImpl u) {
         if (u == null) {

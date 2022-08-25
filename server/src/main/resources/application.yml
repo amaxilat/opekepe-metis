@@ -36,7 +36,7 @@ spring:
     locations: classpath:db/migration
     table: flyway_schema_history
   datasource:
-    url: jdbc:h2:file:./metis.db;AUTO_SERVER=TRUE
+    url: jdbc:h2:file:./metis.db;MODE=Oracle;AUTO_SERVER=TRUE
     username: sa
     password: password
     driverClassName: org.h2.Driver
@@ -55,6 +55,7 @@ metis:
   resultsLocation: results
   thumbnailLocation: thumb
   histogramLocation: hist
+  cloudMaskLocation: cloud
   filesLocation: files
   version: ^project.version^
   processing:

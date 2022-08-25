@@ -1,5 +1,7 @@
 package com.amaxilatis.metis.server.service;
 
+import com.amaxilatis.metis.detector.client.DetectorApiClient;
+import com.amaxilatis.metis.detector.client.dto.PingDataDTO;
 import com.amaxilatis.metis.server.model.ImageProcessingTask;
 import com.amaxilatis.metis.server.model.PoolInfo;
 import com.amaxilatis.metis.server.model.TestDescription;
@@ -60,6 +62,10 @@ public class ImageProcessingService {
     public PoolInfo getPoolInfo() {
         final long pending = taskExecutor.getThreadPoolExecutor().getTaskCount() - taskExecutor.getThreadPoolExecutor().getCompletedTaskCount();
         return new PoolInfo(taskExecutor.getCorePoolSize(), taskExecutor.getPoolSize(), taskExecutor.getActiveCount(), pending);
+    }
+    
+    public PingDataDTO getCloudInfo() {
+        return new DetectorApiClient().getPingData();
     }
     
     public Set<TestDescription> getTestDescriptions() {

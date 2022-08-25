@@ -11,29 +11,14 @@ import com.amaxilatis.metis.server.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.List;
 
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.ACTION_CHANGE_PASSWORD;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.ACTION_CLEAN;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.ACTION_RUN;
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_HOME;
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_IMAGE_DIRECTORY;
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_LOGIN;
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_SETTINGS;
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_USERS;
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_USERS_ADD;
 
 @SuppressWarnings({"SameReturnValue"})
 @Slf4j
@@ -60,16 +45,5 @@ public class ActionController extends BaseController {
         fileService.clean(decodedName, tasks);
         return String.format("redirect:/view?dir=%s&successMessage=files-cleaned", decodedName);
     }
-    
-    @PostMapping(value = ACTION_CHANGE_PASSWORD)
-    public String apiUsers(@RequestParam("username") final String username, @RequestParam("oldPassword") final String oldPassword, @RequestParam("newPassword") final String newPassword) {
-        log.info("post:{}", ACTION_CHANGE_PASSWORD);
-        if (userService.updateUserPassword(username, oldPassword, newPassword)) {
-            return "redirect:/?successMessage=password-changed";
-        } else {
-            return "redirect:/?errorMessage=password-not-changed";
-        }
-    }
-    
     
 }

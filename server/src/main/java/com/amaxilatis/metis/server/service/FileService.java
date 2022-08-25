@@ -62,6 +62,10 @@ public class FileService {
         return props.getHistogramLocation();
     }
     
+    public String getCloudMaskLocation() {
+        return props.getCloudMaskLocation();
+    }
+    
     public String getFilesLocation() {
         return props.getFilesLocation();
     }
@@ -157,26 +161,24 @@ public class FileService {
     
     @PostConstruct
     public void init() {
-        
-        final File reports = new File(props.getReportLocation());
-        if (!reports.exists()) {
-            log.info("creating reports directory...");
-            boolean result = reports.mkdirs();
-            log.debug("created reports directory {}", result);
-        }
-        final File thumbs = new File(props.getThumbnailLocation());
-        if (!thumbs.exists()) {
-            log.info("creating thumbnail directory...");
-            boolean result = thumbs.mkdirs();
-            log.debug("created thumbnail directory {}", result);
-        }
-        final File hists = new File(props.getHistogramLocation());
-        if (!hists.exists()) {
-            log.info("creating histogram directory...");
-            boolean result = hists.mkdirs();
-            log.debug("created histogram directory {}", result);
-        }
+        checkAndCreadDirectory(props.getReportLocation(), "reports");
+        checkAndCreadDirectory(props.getResultsLocation(), "results");
+        checkAndCreadDirectory(props.getThumbnailLocation(), "thumbnail");
+        checkAndCreadDirectory(props.getHistogramLocation(), "histogram");
+        checkAndCreadDirectory(props.getCloudMaskLocation(), "cloudMask");
         updateImageDirs(true);
+    }
+    
+    private boolean checkAndCreadDirectory(final String location, final String name) {
+        final File locationDir = new File(location);
+        if (!locationDir.exists()) {
+            log.info("creating {} directory...", name);
+            boolean result = locationDir.mkdirs();
+            log.debug("created {} directory {}", name, result);
+            return result;
+        } else {
+            return true;
+        }
     }
     
     public void updateImageDirs(final boolean generateThumbnails) {
@@ -204,6 +206,10 @@ public class FileService {
                     if (!imageSet.isEmpty()) {
                         images.get(imagesDirectoryName).addAll(imageSet);
                         imagesDirs.add(ImageFileInfo.builder().name(imagesDirectoryName).hash(getStringHash(imagesDirectoryName)).count(imageSet.size()).build());
+                        checkAndCreadDirectory(props.getResultsLocation() + "/" + imagesDirectoryName, "results");
+                        checkAndCreadDirectory(props.getThumbnailLocation() + "/" + imagesDirectoryName, "thumbnail");
+                        checkAndCreadDirectory(props.getHistogramLocation() + "/" + imagesDirectoryName, "histogram");
+                        checkAndCreadDirectory(props.getCloudMaskLocation() + "/" + imagesDirectoryName, "cloudMask");
                     }
                 }
             });
@@ -334,7 +340,7 @@ public class FileService {
      * @return the full  path to the image's cloud coverage mask file.
      */
     String getImageCloudCoverFilename(final String dir, final String name) {
-        return FileNameUtils.getImageCloudCoverMaskFilename(props.getHistogramLocation(), dir, name);
+        return FileNameUtils.getImageCloudCoverMaskFilename(props.getCloudMaskLocation(), dir, name);
     }
     
     /**

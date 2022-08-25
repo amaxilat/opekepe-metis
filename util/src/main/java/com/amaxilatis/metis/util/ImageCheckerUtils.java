@@ -38,17 +38,17 @@ public class ImageCheckerUtils {
     public static List<FileJobResult> parseDir(final File directory, final List<Integer> tasks) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
         for (final File file : Objects.requireNonNull(directory.listFiles())) {
-            results.addAll(parseFile(file, tasks, null, null));
+            results.addAll(parseFile(file, tasks, null, null, null));
         }
         return results;
     }
     
-    public static List<FileJobResult> parseFile(final File file, final List<Integer> tasks, final String resultsDir, final String histogramDir) throws IOException, TikaException, SAXException, ImageProcessingException {
+    public static List<FileJobResult> parseFile(final File file, final List<Integer> tasks, final String resultsDir, final String histogramDir, final String cloudMaskDir) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
         
         if (file.getName().endsWith(".tif") || file.getName().endsWith(".jpf")) {
             log.info("[{}] parsing...", file.getName());
-            ImagePack image = new ImagePack(file, histogramDir);
+            ImagePack image = new ImagePack(file, histogramDir, cloudMaskDir);
             
             if (tasks.contains(1)) {
                 try {
@@ -333,15 +333,15 @@ public class ImageCheckerUtils {
      * @return
      */
     public static FileJobResult testN4(final File file, final ImagePack image) throws IOException {
-        image.detectClouds(false, true);
+        image.detectClouds(true);
         double percentage = ((double) image.getCloudPixels() / (double) image.getValidPixels()) * 100;
-    
+        
         boolean result = percentage < 5;
-    
+        
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(4);
-    
+        
         resultBuilder.note(String.format("Εικονοστοιχεία με Συννεφα %.0f, Συνολικά Εικονοστοιχεία %.0f, Ποσοστό: %.2f%%", image.getCloudPixels(), image.getValidPixels(), percentage));
-    
+        
         return resultBuilder.result(result).build();
     }
     
@@ -380,7 +380,7 @@ public class ImageCheckerUtils {
      * @param file
      * @return
      */
-    public static FileJobResult testN6(final File file, final ImagePack image,final String histogramDir) throws IOException {
+    public static FileJobResult testN6(final File file, final ImagePack image, final String histogramDir) throws IOException {
         image.loadHistogram();
         
         int histMinLimit = (int) (128 * 0.85);
@@ -395,7 +395,7 @@ public class ImageCheckerUtils {
         log.info("[N6] histogramG center: {}", majorBinCenterG);
         final int majorBinCenterB = image.getHistogram().majorBin(ColorUtils.LAYERS.BLUE);
         log.info("[N6] histogramB center: {}", majorBinCenterB);
-    
+        
         if (histogramDir != null) {
             image.getHistogram().saveHistogramImage(new File(FileNameUtils.getImageHistogramFilename(histogramDir, file.getParentFile().getName(), file.getName())));
         }
@@ -420,13 +420,13 @@ public class ImageCheckerUtils {
         double std = image.getDnValuesStatistics().getStandardDeviation();
         double coefficientOfVariation = std / mean;
         double variance = image.getDnValuesStatistics().getVariance();
-    
+        
         boolean result = coefficientOfVariation > 0.1 && coefficientOfVariation < 0.2;
         
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(7);
-    
+        
         resultBuilder.note(String.format("Μέση Τιμή: %.2f, Τυπική Απόκλιση: %.2f, Διασπορά: %.2f, Συντελεστής Διακύμανσης: %.2f", mean, std, variance, coefficientOfVariation));
-    
+        
         return resultBuilder.result(result).build();
     }
     

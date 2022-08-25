@@ -4,8 +4,8 @@ package com.amaxilatis.metis.model;
 import com.amaxilatis.metis.detector.client.DetectorApiClient;
 import com.amaxilatis.metis.detector.client.dto.DataDTO;
 import com.amaxilatis.metis.detector.client.dto.DetectionsDTO;
-import com.amaxilatis.metis.detector.client.dto.DetectionsListDTO;
 import com.amaxilatis.metis.detector.client.dto.ImageDetectionResultDTO;
+import com.amaxilatis.metis.util.CloudUtils;
 import com.amaxilatis.metis.util.ColorUtils;
 import com.amaxilatis.metis.util.FileNameUtils;
 import com.drew.imaging.ImageMetadataReader;
@@ -22,21 +22,27 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
 
 import javax.imageio.ImageIO;
-import java.awt.Color;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-import static com.amaxilatis.metis.model.CloudUtils.BLACK_RGB;
-import static com.amaxilatis.metis.model.CloudUtils.WHITE_RGB;
+import static com.amaxilatis.metis.util.CloudUtils.BLACK_RGB;
+import static com.amaxilatis.metis.util.CloudUtils.GRAY_RGB;
+import static com.amaxilatis.metis.util.CloudUtils.WHITE_RGB;
+import static com.amaxilatis.metis.util.CloudUtils.cleanupCloudsBasedOnNearby;
+import static com.amaxilatis.metis.util.CloudUtils.cleanupCloudsBasedOnTiles;
+import static com.amaxilatis.metis.util.ImageDataUtils.getImageTileDataFromCoordinates;
+import static com.amaxilatis.metis.util.ImageDataUtils.isEmptyTile;
+import static com.amaxilatis.metis.util.ImageDataUtils.isValidPixel;
 import static org.apache.tika.mime.MimeTypes.OCTET_STREAM;
 
 @Slf4j
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ImagePack {
+    private static final int TILE_WIDTH = 256;
+    private static final int TILE_HEIGHT = 256;
     private com.drew.metadata.Metadata ioMetadata;
     private BufferedImage image;
     @Getter
@@ -63,6 +69,7 @@ public class ImagePack {
     private BufferedImage maskImage;
     private BufferedImage tensorflowMaskImage;
     private String histogramDir;
+    private String cloudMaskDir;
     
     private DetectorApiClient detectorApiClient = new DetectorApiClient();
     
@@ -73,7 +80,7 @@ public class ImagePack {
      * @param histogramDir the directory where the histogram of the image needs to be stored.
      * @throws IOException
      */
-    public ImagePack(final File file, final String histogramDir) throws IOException {
+    public ImagePack(final File file, final String histogramDir, final String cloudMaskDir) throws IOException {
         this.ioMetadata = null;
         this.image = null;
         this.metadata = new Metadata();
@@ -83,6 +90,7 @@ public class ImagePack {
         this.context = new ParseContext();
         this.file = file;
         this.histogramDir = histogramDir;
+        this.cloudMaskDir = cloudMaskDir;
         
         this.loaded = false;
         this.histogramLoaded = false;
@@ -146,10 +154,9 @@ public class ImagePack {
     /**
      * Parse the image and generate its histogram
      *
-     * @param debugCloudDetection flag use to enable generation of intermediate cloud detection masks.
      * @throws IOException
      */
-    public void detectClouds(final boolean debugCloudDetection, boolean segmented) throws IOException {
+    public void detectClouds(boolean segmented) throws IOException {
         final BufferedImage jImage = ImageIO.read(file);
         //image information
         final int width = jImage.getWidth();
@@ -159,35 +166,18 @@ public class ImagePack {
         this.maskImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         this.tensorflowMaskImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         
-        //do a first pass for cloud, histogram and contrast data
-        parseImagePixels(width, height, jImage, false, false, true);
-        
-        if (debugCloudDetection) {
-            //debug
-            ImageIO.write(maskImage, "png", new File(histogramDir + "/" + this.file.getParentFile().getName(), this.file.getName() + "-nai-a.mask.png"));
-        }
-        
-        //check for single cloud pixels that are probably incorrect
-        int removedPixels = cleanupCloudsBasedOnNearby(maskImage, width, height, 2);
-        cloudPixels -= removedPixels;
-        if (debugCloudDetection) {
-            //debug
-            ImageIO.write(maskImage, "png", new File(histogramDir + "/" + this.file.getParentFile().getName(), this.file.getName() + "-nai-b.mask.png"));
-        }
-        
-        removedPixels = cleanupCloudsBasedOnTiles(maskImage, width, height, 100, 3);
-        cloudPixels -= removedPixels;
-        if (debugCloudDetection) {
-            //debug
-            ImageIO.write(maskImage, "png", new File(histogramDir + "/" + this.file.getParentFile().getName(), this.file.getName() + "-nai-c.mask.png"));
-        }
-        
-        //write mask file to storage
-        ImageIO.write(maskImage, "png", new File(histogramDir + "/" + this.file.getParentFile().getName(), this.file.getName() + "-nai.mask.png"));
-        
-        
-        int c_checkedPixels = 0;
-        int c_cloudPixels = 0;
+        //        //do a first pass for cloud, histogram and contrast data
+        //        parseImagePixels(width, height, jImage, false, false, true);
+        //
+        //        //check for single cloud pixels that are probably incorrect
+        //        int removedPixels = cleanupCloudsBasedOnNearby(maskImage, width, height, 2);
+        //        cloudPixels -= removedPixels;
+        //
+        //        removedPixels = cleanupCloudsBasedOnTiles(maskImage, width, height, 100, 3);
+        //        cloudPixels -= removedPixels;
+        //
+        //        //write mask file to storage
+        //        ImageIO.write(maskImage, "png", new File(cloudMaskDir + "/" + this.file.getParentFile().getName(), this.file.getName() + "-nai.mask.png"));
         
         final long start = System.currentTimeMillis();
         log.info(String.format("[%20s] starting TF cloud detection...", file.getName()));
@@ -195,113 +185,110 @@ public class ImagePack {
         ImageDetectionResultDTO detectionResult = null;
         
         if (segmented) {
-            detectionResult = detectCloudsInTilesOfImage(jImage, width, height, debugCloudDetection);
-            
-            
+            detectionResult = detectCloudsInTilesOfImage(jImage, width, height);
         } else {
             detectionResult = detectCloudsInWholeImage();
         }
         
         //get results form the call
-        c_checkedPixels = detectionResult.getPixels();
-        c_cloudPixels = detectionResult.getCloudy();
-        
-        validPixels = c_checkedPixels;
-        cloudPixels = c_cloudPixels;
+        validPixels = detectionResult.getPixels();
+        cloudPixels = detectionResult.getCloudy();
         
         double percentage = validPixels / cloudPixels;
         log.info(String.format("[%20s] TF cloud detection result: %1.3f took: %d sec", file.getName(), percentage, (System.currentTimeMillis() - start) / 1000));
     }
     
-    private ImageDetectionResultDTO detectCloudsInTilesOfImage(final BufferedImage image, final int width, final int height, final boolean debugCloudDetection) throws IOException {
-        double c_checkedPixels = 0;
-        double c_cloudPixels = 0;
+    private ImageDetectionResultDTO detectCloudsInTilesOfImage(final BufferedImage image, final int width, final int height) throws IOException {
+        double tfCheckedPixels = 0;
+        double tfCloudPixels = 0;
         
         int components = 4;
-        int widthTiles = width / 256;
-        int heightTiles = height / 256;
+        //paint the whole image gray - not yet processed
+        for (int w = 0; w < width; w++) {
+            for (int h = 0; h < height; h++) {
+                tensorflowMaskImage.setRGB(w, h, GRAY_RGB);
+            }
+        }
+        //write mask file to storage
+        updateMaskImage();
+        
+        int widthTiles = width / TILE_WIDTH;
+        int heightTiles = height / TILE_HEIGHT;
         for (int w = 0; w < widthTiles; w++) {
             for (int h = 0; h < heightTiles; h++) {
-                List<DataDTO> tiles = new ArrayList<>();
-                
-                final int size = 256 * 256 * components;
-                int[] dnValues = new int[size];
-                image.getData().getPixels(w * 256, h * 256, 256, 256, dnValues);
-                c_checkedPixels += (256 * 256);
-                if (isEmptyTile(dnValues)) {
-                    log.trace(String.format("[%20s] tile:[%02d,%02d] skipping...", file.getName(), w, h));
-                    for (int j = 0; j < 256; j++) {
-                        for (int k = 0; k < 256; k++) {
-                            tensorflowMaskImage.setRGB(w * 256 + k, h * 256 + j, BLACK_RGB);
-                        }
-                    }
-                } else {
-                    log.trace(String.format("[%20s] tile:[%02d,%02d] detecting...", file.getName(), w, h));
-                    tiles.add(DataDTO.builder().w(w).h(h).data(dnValues).build());
+                //all tiles in the TILE_WIDTH x TILE_HEIGHT grid
+                tfCheckedPixels += (TILE_WIDTH * TILE_HEIGHT);
+                tfCloudPixels += checkTileData(image, w * TILE_WIDTH, h * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, components);
+            }
+            
+            //last tile in each column
+            tfCheckedPixels += (TILE_WIDTH * (height - heightTiles * TILE_HEIGHT));
+            tfCloudPixels += checkTileData(image, w * TILE_WIDTH, height - TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, components);
+            
+            //write mask file to storage
+            updateMaskImage();
+        }
+        for (int h = 0; h < heightTiles; h++) {
+            //last tile in each row
+            tfCheckedPixels += ((width - widthTiles * TILE_WIDTH) * TILE_HEIGHT);
+            tfCloudPixels += checkTileData(image, width - TILE_WIDTH, h * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, components);
+        }
+        
+        //last tile in last row and column
+        tfCheckedPixels += ((width - widthTiles * TILE_WIDTH) * (height - heightTiles * TILE_HEIGHT));
+        tfCloudPixels += checkTileData(image, width - TILE_WIDTH, height - TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, components);
+        
+        int removedPixels = cleanupCloudsBasedOnNearby(tensorflowMaskImage, width, height, 2);
+        tfCloudPixels -= removedPixels;
+        
+        removedPixels = cleanupCloudsBasedOnTiles(tensorflowMaskImage, width, height, 100, 3);
+        tfCloudPixels -= removedPixels;
+        
+        //write mask file to storage
+        updateMaskImage();
+        
+        return new ImageDetectionResultDTO(null, null, (int) tfCheckedPixels, (int) tfCloudPixels, tfCloudPixels / tfCheckedPixels);
+    }
+    
+    private void updateMaskImage() throws IOException {
+        ImageIO.write(tensorflowMaskImage, "png", new File(FileNameUtils.getImageCloudCoverMaskFilename(cloudMaskDir, this.file.getParentFile().getName(), this.file.getName())));
+    }
+    
+    private int checkTileData(final BufferedImage image, final int startWidth, final int startHeight, final int tileWidth, final int tileHeight, final int components) {
+        int thisTileCloudPixels = 0;
+        int[] dnValues = getImageTileDataFromCoordinates(image, tileWidth, tileHeight, components, startWidth, startHeight);
+        if (isEmptyTile(dnValues)) {
+            log.trace(String.format("[%20s] tile_l:[%04d,%04d] skipping...", file.getName(), startWidth, startHeight));
+            for (int j = 0; j < TILE_WIDTH; j++) {
+                for (int k = 0; k < TILE_HEIGHT; k++) {
+                    tensorflowMaskImage.setRGB(startWidth + k, startHeight + j, BLACK_RGB);
                 }
-                
-                if (!tiles.isEmpty()) {
-                    DetectionsListDTO responseList;
-                    do {
-                        responseList = detectorApiClient.postData(tiles);
-                    } while (responseList == null);
-                    for (DetectionsDTO response : responseList.getTiles()) {
-                        for (int j = 0; j < 256; j++) {
-                            for (int k = 0; k < 256; k++) {
-                                c_cloudPixels += response.getPredictions()[j][k];
-                                int mx = response.getW() * 256 + k;
-                                int my = response.getH() * 256 + j;
-                                tensorflowMaskImage.setRGB(mx, my, response.getPredictions()[j][k] == 1 ? WHITE_RGB : BLACK_RGB);
-                            }
-                        }
-                    }
+            }
+        } else {
+            log.trace(String.format("[%20s] tile_l:[%04d,%04d] detecting...", file.getName(), startWidth, startHeight));
+            
+            DetectionsDTO detectionsDTO;
+            do {
+                detectionsDTO = detectorApiClient.postData(DataDTO.builder().w(startWidth).h(startHeight).data(dnValues).build());
+            } while (detectionsDTO == null);
+            
+            for (int j = 0; j < TILE_WIDTH; j++) {
+                for (int k = 0; k < TILE_HEIGHT; k++) {
+                    thisTileCloudPixels += detectionsDTO.getPredictions()[j][k];
+                    int mx = startWidth + k;
+                    int my = startHeight + j;
+                    tensorflowMaskImage.setRGB(mx, my, detectionsDTO.getPredictions()[j][k] == 1 ? WHITE_RGB : BLACK_RGB);
                 }
             }
         }
-        
-        
-        if (debugCloudDetection) {
-            //debug
-            ImageIO.write(tensorflowMaskImage, "png", new File(histogramDir + "/" + this.file.getParentFile().getName(), this.file.getName() + "-tf-a.mask.png"));
-        }
-        
-        cleanupCloudsBasedOnNearby(tensorflowMaskImage, width, height, 2);
-        if (debugCloudDetection) {
-            //debug
-            ImageIO.write(tensorflowMaskImage, "png", new File(histogramDir + "/" + this.file.getParentFile().getName(), this.file.getName() + "-tf-b.mask.png"));
-        }
-        
-        cleanupCloudsBasedOnTiles(tensorflowMaskImage, width, height, 100, 3);
-        if (debugCloudDetection) {
-            //debug
-            ImageIO.write(tensorflowMaskImage, "png", new File(histogramDir + "/" + this.file.getParentFile().getName(), this.file.getName() + "-tf-c.mask.png"));
-        }
-        
-        //write mask file to storage
-        ImageIO.write(tensorflowMaskImage, "png", new File(FileNameUtils.getImageCloudCoverMaskFilename(histogramDir, this.file.getParentFile().getName(), this.file.getName())));
-        
-        return new ImageDetectionResultDTO(null, null, (int) c_checkedPixels, (int) c_cloudPixels, c_cloudPixels / c_checkedPixels);
+        return thisTileCloudPixels;
     }
     
     private ImageDetectionResultDTO detectCloudsInWholeImage() {
         //make a call to the cloud detection server for the whole image
-        return detectorApiClient.checkImageFile(file.getAbsolutePath(), new File(FileNameUtils.getImageCloudCoverMaskFilename(histogramDir, this.file.getParentFile().getName(), this.file.getName())).getAbsolutePath());
+        return detectorApiClient.checkImageFile(file.getAbsolutePath(), new File(FileNameUtils.getImageCloudCoverMaskFilename(cloudMaskDir, this.file.getParentFile().getName(), this.file.getName())).getAbsolutePath());
     }
     
-    /**
-     * Checks if the tile is empty, with full black or full white pixels.
-     *
-     * @param pixelValues the pixel values
-     * @return true if all the pixels are empty and false if at least one is not.
-     */
-    private boolean isEmptyTile(final int[] pixelValues) {
-        for (int i = 0; i < pixelValues.length; i += 4) {
-            if (isValidPixel(pixelValues[i], pixelValues[i + 1], pixelValues[i + 2], pixelValues[i + 3])) {
-                return false;
-            }
-        }
-        return true;
-    }
     
     private void parseImagePixels(final int width, final int height, final BufferedImage jImage, final boolean updateHistogram, final boolean updateContrast, final boolean detectClouds) {
         int heightStep = height / 10;
@@ -340,118 +327,6 @@ public class ImagePack {
         } while (heightStart <= height);
     }
     
-    /**
-     * Cleans up the image mask based on the percentage of cloud pixels found inside each tile of the provided size.
-     *
-     * @param image               the object containing the image mask
-     * @param width               the width of the image
-     * @param height              the height of the image
-     * @param tileSize            the size of the tile
-     * @param percentageThreshold the top threshold to consider a cloudy tile invalid (0-100)
-     * @return the number of the removed cloud pixels.
-     */
-    private int cleanupCloudsBasedOnTiles(final BufferedImage image, final int width, final int height, final int tileSize, final int percentageThreshold) {
-        int removedPixels = 0;
-        final int widthTiles = width / tileSize;
-        final int heightTiles = height / tileSize;
-        final int tileArea = tileSize * tileSize;
-        final int[] maskValues = new int[tileArea];
-        for (int w = 0; w < widthTiles; w++) {
-            for (int h = 0; h < heightTiles; h++) {
-                image.getRGB(w * tileSize, h * tileSize, tileSize, tileSize, maskValues, 0, tileSize);
-                double count = 0;
-                for (int maskValue : maskValues) {
-                    if (maskValue == WHITE_RGB) {
-                        count++;
-                    }
-                }
-                final double percentage = (count / (tileArea)) * tileSize;
-                if (count > 0 && percentage <= percentageThreshold) {
-                    //if less than 1% of the tile are clouds, then probably no cloud in the tile
-                    log.trace("[{}] count: {}, total: {}, p: {}", file.getName(), count, tileArea, percentage);
-                    for (int i = 0; i < tileSize; i++) {
-                        for (int j = 0; j < tileSize; j++) {
-                            if (image.getRGB(w * tileSize + i, h * tileSize + j) == WHITE_RGB) {
-                                image.setRGB(w * tileSize + i, h * tileSize + j, BLACK_RGB);
-                                removedPixels++;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return removedPixels;
-    }
-    
-    /**
-     * Cleans up the image mask based on the number of nearby pixels belonging to a cloud, used to remove rogue cloud pixels that are probably false positives.
-     *
-     * @param image     the object containing the image mask
-     * @param width     the width of the image
-     * @param height    the height of the image
-     * @param threshold the number of nearby pixels needed to consider a pixel a valid cloudy pixel
-     * @return the number of the removed cloud pixels.
-     */
-    private int cleanupCloudsBasedOnNearby(final BufferedImage image, final int width, final int height, final int threshold) {
-        int removedPixels = 0;
-        for (int x = 1; x < width - 1; x++) {
-            for (int y = 1; y < height - 1; y++) {
-                if (image.getRGB(x, y) == WHITE_RGB) {
-                    if (!isAnyNearby(image, x, y, WHITE_RGB, threshold)) {
-                        image.setRGB(x, y, BLACK_RGB);
-                        removedPixels++;
-                    }
-                }
-            }
-        }
-        return removedPixels;
-    }
-    
-    /**
-     * Checks if the nearby pixels of the defined x,y pixel are cloudy or not and the number of the cloud pixels with regard to a given threshold.
-     *
-     * @param image         the object containing the image mask
-     * @param x             the x coordinate of the pixel to check
-     * @param y             the y coordinate of the pixel to check
-     * @param specificColor the color to check for
-     * @param threshold     the number of nearby pixels needed to consider a pixel a valid cloudy pixel
-     * @return true if the pixel is considered valid, false if it was a false positive.
-     */
-    private boolean isAnyNearby(final BufferedImage image, final int x, final int y, final int specificColor, final int threshold) {
-        int nearby = 0;
-        nearby += image.getRGB(x - 1, y) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x + 1, y) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x, y - 1) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x, y + 1) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x - 1, y - 1) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x - 1, y + 1) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x + 1, y - 1) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x + 1, y + 1) == specificColor ? 1 : 0;
-        return nearby > threshold;
-    }
-    
-    /**
-     * Checks if the pixel's value is valid (non-white and non-black).
-     *
-     * @param pixelColor the pixel's color
-     * @return true if the pixel is non-white and non-black, false else.
-     */
-    private boolean isValidPixel(final Color pixelColor) {
-        return isValidPixel(pixelColor.getRed(), pixelColor.getGreen(), pixelColor.getBlue(), pixelColor.getAlpha());
-    }
-    
-    /**
-     * Checks if the pixel's value is valid (non-white and non-black).
-     *
-     * @param r   the red component of the pixel
-     * @param g   the green component of the pixel
-     * @param b   the blue component of the pixel
-     * @param nir the nir comomponent of the pixel
-     * @return true if the pixel is non-white and non-black, false else.
-     */
-    private boolean isValidPixel(final int r, final int g, final int b, final int nir) {
-        return (255 != r || 255 != g || 255 != b || 255 != nir) && (0 != r || 0 != g || 0 != b || 0 != nir);
-    }
     
     private void updateHistogram(final Color color) {
         histogram.addValues(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
@@ -464,7 +339,13 @@ public class ImagePack {
     
     private void updateCloudData(final int x, final int y, final Color color) {
         final float[] hsv = new float[3];
-        Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsv);
+        
+        double colorRed = ((1 - color.getAlpha() / 255.0) * color.getRed() / 255.0) + (color.getAlpha() / 255.0 * color.getRed() / 255.0);
+        double colorGreen = ((1 - color.getAlpha() / 255.0) * color.getGreen() / 255.0) + (color.getAlpha() / 255.0 * color.getGreen() / 255.0);
+        double colorBlue = ((1 - color.getAlpha() / 255.0) * color.getBlue() / 255.0) + (color.getAlpha() / 255.0 * color.getBlue() / 255.0);
+        
+        //Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsv);
+        Color.RGBtoHSB((int) (colorRed * 255), (int) (colorGreen * 255), (int) (colorBlue * 255), hsv);
         final boolean isCloud = CloudUtils.isCloud(hsv[0] * 255, hsv[1] * 255, hsv[2] * 255);
         //log.info("h: {} s: {} v: {} | cloudProbability:{}", hsv[0] * 255, hsv[1] * 255, hsv[2] * 255, cloudProbability);
         if (isCloud) {
