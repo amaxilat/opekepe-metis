@@ -22,8 +22,8 @@ public class Report {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private String filesLocation;
-    private String reportLocation;
-    private String path;
     private Date date;
+    private String filesLocation;
+    private String path;
+    private String reportLocation;
 }

@@ -105,9 +105,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
+            <groupId>org.apache.derby</groupId>
+            <artifactId>derby</artifactId>
         </dependency>
 
         <dependency>

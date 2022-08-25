@@ -36,13 +36,13 @@ spring:
     locations: classpath:db/migration
     table: flyway_schema_history
   datasource:
-    url: jdbc:h2:file:./metis.db;MODE=Oracle;AUTO_SERVER=TRUE
+    url: jdbc:derby:directory:metisdb;create=true
     username: sa
     password: password
-    driverClassName: org.h2.Driver
+    driverClassName: org.apache.derby.jdbc.EmbeddedDriver
   jpa:
-    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
+      use-new-id-generator-mappings: false
       ddl-auto: none
 logging:
   level:
