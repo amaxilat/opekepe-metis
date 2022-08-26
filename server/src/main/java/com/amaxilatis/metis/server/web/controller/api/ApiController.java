@@ -25,13 +25,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.SortedSet;
 
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_BACKUP;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_CLOUD;
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_CLOUDCOVER_DIRECTORY_IMAGE;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_CLOUD_COVER_DIRECTORY_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_HISTOGRAM_DIRECTORY_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE_DIRECTORY;
@@ -97,7 +96,7 @@ public class ApiController extends BaseController {
     }
     
     @GetMapping(value = API_THUMBNAIL_DIRECTORY_IMAGE)
-    public ResponseEntity<Resource> apiDownloadImageThumb(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) throws IOException {
+    public ResponseEntity<Resource> apiDownloadImageThumb(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_THUMBNAIL_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
@@ -106,7 +105,7 @@ public class ApiController extends BaseController {
     }
     
     @GetMapping(value = API_HISTOGRAM_DIRECTORY_IMAGE)
-    public ResponseEntity<Resource> apiDownloadImageHistogram(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) throws IOException {
+    public ResponseEntity<Resource> apiDownloadImageHistogram(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_HISTOGRAM_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
@@ -114,9 +113,9 @@ public class ApiController extends BaseController {
         return histogramFile != null ? FileUtils.sendFile(response, histogramFile, histogramFile.getName()) : null;
     }
     
-    @GetMapping(value = API_CLOUDCOVER_DIRECTORY_IMAGE)
-    public ResponseEntity<Resource> apiDownloadImageCloudCover(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) throws IOException {
-        log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_CLOUDCOVER_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
+    @GetMapping(value = API_CLOUD_COVER_DIRECTORY_IMAGE)
+    public ResponseEntity<Resource> apiDownloadImageCloudCover(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+        log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_CLOUD_COVER_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File cloudCoverFile = fileService.getImageCloudCover(decodedImageDir, decodedImage);

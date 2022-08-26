@@ -1,17 +1,17 @@
 package com.amaxilatis.metis.server.config;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class ProcessingQueueConfiguration {
     
-    @Autowired
-    private ProcessingProperties processingProperties;
+    private final ProcessingProperties processingProperties;
     
     @Bean
     public ThreadPoolTaskExecutor taskExecutor() {

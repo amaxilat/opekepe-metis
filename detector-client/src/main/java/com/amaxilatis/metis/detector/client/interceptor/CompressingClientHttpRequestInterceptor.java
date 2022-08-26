@@ -11,18 +11,20 @@ import java.io.IOException;
 import java.util.zip.GZIPOutputStream;
 
 public class CompressingClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
+    private static final String COMPRESSION = "gzip";
+    
     public static byte[] compress(byte[] body) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(baos)) {
+        final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try (final GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
             gzipOutputStream.write(body);
         }
-        return baos.toByteArray();
+        return byteArrayOutputStream.toByteArray();
     }
     
     public ClientHttpResponse intercept(HttpRequest req, byte[] body, ClientHttpRequestExecution exec) throws IOException {
         HttpHeaders httpHeaders = req.getHeaders();
-        httpHeaders.add(HttpHeaders.CONTENT_ENCODING, "gzip");
-        httpHeaders.add(HttpHeaders.ACCEPT_ENCODING, "gzip");
+        httpHeaders.add(HttpHeaders.CONTENT_ENCODING, COMPRESSION);
+        httpHeaders.add(HttpHeaders.ACCEPT_ENCODING, COMPRESSION);
         return exec.execute(req, compress(body));
     }
 }

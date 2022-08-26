@@ -52,7 +52,7 @@ public class FileService {
     
     private final MetisProperties props;
     
-    ExecutorService tpe = Executors.newFixedThreadPool(1);
+    final ExecutorService tpe = Executors.newFixedThreadPool(1);
     
     public String getResultsLocation() {
         return props.getResultsLocation();
@@ -161,20 +161,26 @@ public class FileService {
     
     @PostConstruct
     public void init() {
-        checkAndCreadDirectory(props.getReportLocation(), "reports");
-        checkAndCreadDirectory(props.getResultsLocation(), "results");
-        checkAndCreadDirectory(props.getThumbnailLocation(), "thumbnail");
-        checkAndCreadDirectory(props.getHistogramLocation(), "histogram");
-        checkAndCreadDirectory(props.getCloudMaskLocation(), "cloudMask");
+        checkAndCreateDirectory(props.getReportLocation());
+        checkAndCreateDirectory(props.getResultsLocation());
+        checkAndCreateDirectory(props.getThumbnailLocation());
+        checkAndCreateDirectory(props.getHistogramLocation());
+        checkAndCreateDirectory(props.getCloudMaskLocation());
         updateImageDirs(true);
     }
     
-    private boolean checkAndCreadDirectory(final String location, final String name) {
+    /**
+     * Checks if the required directory exists and creates it if needed.
+     *
+     * @param location the directory to create
+     * @return true if the directory exists or is created, false if there was an error.
+     */
+    private boolean checkAndCreateDirectory(final String location) {
         final File locationDir = new File(location);
         if (!locationDir.exists()) {
-            log.info("creating {} directory...", name);
+            log.info("creating {} directory...", locationDir.getName());
             boolean result = locationDir.mkdirs();
-            log.debug("created {} directory {}", name, result);
+            log.debug("created {} directory {}", locationDir.getName(), result);
             return result;
         } else {
             return true;
@@ -206,10 +212,10 @@ public class FileService {
                     if (!imageSet.isEmpty()) {
                         images.get(imagesDirectoryName).addAll(imageSet);
                         imagesDirs.add(ImageFileInfo.builder().name(imagesDirectoryName).hash(getStringHash(imagesDirectoryName)).count(imageSet.size()).build());
-                        checkAndCreadDirectory(props.getResultsLocation() + "/" + imagesDirectoryName, "results");
-                        checkAndCreadDirectory(props.getThumbnailLocation() + "/" + imagesDirectoryName, "thumbnail");
-                        checkAndCreadDirectory(props.getHistogramLocation() + "/" + imagesDirectoryName, "histogram");
-                        checkAndCreadDirectory(props.getCloudMaskLocation() + "/" + imagesDirectoryName, "cloudMask");
+                        checkAndCreateDirectory(props.getResultsLocation() + "/" + imagesDirectoryName);
+                        checkAndCreateDirectory(props.getThumbnailLocation() + "/" + imagesDirectoryName);
+                        checkAndCreateDirectory(props.getHistogramLocation() + "/" + imagesDirectoryName);
+                        checkAndCreateDirectory(props.getCloudMaskLocation() + "/" + imagesDirectoryName);
                     }
                 }
             });
@@ -238,36 +244,41 @@ public class FileService {
         return images.get(directory);
     }
     
-    public String getStringHash(String name) {
+    public String getStringHash(final String name) {
         //return Base64.encode(name).replaceAll("=", "-");
         //return DigestUtils.md5Hex(name);
         return URLEncoder.encode(name, Charsets.UTF_8);
     }
     
-    public String getStringFromHash(String hash) {
+    public String getStringFromHash(final String hash) {
         //return Base64.decode(hash.replaceAll("-", "="));
         return URLDecoder.decode(hash, Charsets.UTF_8);
     }
     
-    public void clean(String directory, List<Integer> tasks) {
+    public void clean(final String directory, final List<Integer> tasks) {
         File filesDir = new File(props.getFilesLocation());
         File filesSubDir = new File(filesDir, directory);
         final List<File> fileList = new ArrayList<>();
         Arrays.stream(Objects.requireNonNull(filesSubDir.listFiles())).filter(file -> file.getName().endsWith(".tif")).forEach(fileList::add);
-        for (final File file : fileList) {
-            cleanFileResults(directory, file);
+        for (Integer task : tasks) {
+            for (final File file : fileList) {
+                cleanFileResults(directory, file, task);
+            }
         }
     }
     
-    private void cleanFileResults(String directory, File file) {
+    private void cleanFileResults(final String directory, final File file, final int task) {
         File resultsDir = new File(props.getResultsLocation(), directory);
-        for (int task = 0; task < 10; task++) {
-            File f = new File(resultsDir, FileNameUtils.getResultName(file, task));
-            f.delete();
+        new File(resultsDir, FileNameUtils.getResultName(file, task)).delete();
+        if (task == 4) {
+            new File(FileNameUtils.getImageCloudCoverMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())).delete();
+        }
+        if (task == 5) {
+            new File(FileNameUtils.getImageHistogramFilename(props.getHistogramLocation(), file.getParentFile().getName(), file.getName())).delete();
         }
     }
     
-    public List<FileJobResult> getImageResults(String decodedImageDir, String decodedImage) {
+    public List<FileJobResult> getImageResults(final String decodedImageDir, final String decodedImage) {
         File resultsDir = new File(props.getResultsLocation(), decodedImageDir);
         File image = new File(resultsDir, decodedImage);
         List<FileJobResult> results = new ArrayList<>();
@@ -284,7 +295,7 @@ public class FileService {
         return results;
     }
     
-    private FileJobResult parseResult(File f) throws IOException {
+    private FileJobResult parseResult(final File f) throws IOException {
         return new ObjectMapper().readValue(f, FileJobResult.class);
     }
     

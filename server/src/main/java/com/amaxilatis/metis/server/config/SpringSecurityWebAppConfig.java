@@ -1,5 +1,6 @@
 package com.amaxilatis.metis.server.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -10,17 +11,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
 
-import javax.sql.DataSource;
-
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SpringSecurityWebAppConfig extends WebSecurityConfigurerAdapter {
-    @Autowired
-    private DataSource dataSource;
-    @Autowired
-    private SimpleAuthenticationSuccessHandler successHandler;
-    @Autowired
-    PasswordEncoder encoder;
+    
+    private final SimpleAuthenticationSuccessHandler successHandler;
+    final PasswordEncoder encoder;
     
     @Value("${metis.ldap.domain:none}")
     private String ldapDomain;
@@ -45,11 +42,9 @@ public class SpringSecurityWebAppConfig extends WebSecurityConfigurerAdapter {
                     .authenticationProvider(activeDirectoryLdapAuthenticationProvider);
         } else {
             auth //inmemmory details
-                    .inMemoryAuthentication()
-                    .passwordEncoder(encoder)
-                    .withUser("metis")
-                    .password(encoder.encode("password"))
-                    .roles("ADMIN");
+                    .inMemoryAuthentication().passwordEncoder(encoder)
+                    //user details
+                    .withUser("metis").password(encoder.encode("password")).roles("ADMIN");
         }
     }
     

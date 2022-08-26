@@ -7,7 +7,7 @@ import java.awt.*;
 @Slf4j
 public class ColorUtils {
     
-    public static enum LAYERS {
+    public enum LAYERS {
         RED, GREEN, BLUE, NIR, LUM, COLORS
     }
     
@@ -35,7 +35,8 @@ public class ColorUtils {
     }
     
     /**
-     * Get the brightness value of a pixel
+     * Get the brightness value of a pixel, using the following coefficients: 0.299 * red + 0.587 * green + 0.114 * blue
+     * Value is in accordance with <a href="https://en.wikipedia.org/wiki/Relative_luminance">Relative_luminance - Wikipedia</a>
      *
      * @param red   the pixel's red value
      * @param green the pixel's green value
@@ -43,15 +44,7 @@ public class ColorUtils {
      * @return the calculated brightness value
      */
     public static double getBrightness(final int red, final int green, final int blue) {
-        //        https://en.wikipedia.org/wiki/Relative_luminance
-        //        return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
-        //        photoshop?
-        //        return 0.59 * red + 0.30 * green + 0.11 * blue;
         return 0.299 * red + 0.587 * green + 0.114 * blue;
-        //        double vR = red / 255.0;
-        //        double vG = green / 255.0;
-        //        double vB = blue / 255.0;
-        //        return (0.2126 * sRGBtoLin(vR) + 0.7152 * sRGBtoLin(vG) + 0.0722 * sRGBtoLin(vB));
     }
     
     public static double sRGBtoLin(final double colorChannel) {

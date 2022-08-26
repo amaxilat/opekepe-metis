@@ -2,7 +2,6 @@ package com.amaxilatis.metis.server.web.controller;
 
 import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
-import com.amaxilatis.metis.server.model.UserDTO;
 import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
 import com.amaxilatis.metis.server.service.JobService;

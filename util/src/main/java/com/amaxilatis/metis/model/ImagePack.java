@@ -68,19 +68,17 @@ public class ImagePack {
     @Getter
     private BufferedImage maskImage;
     private BufferedImage tensorflowMaskImage;
-    private String histogramDir;
-    private String cloudMaskDir;
+    private final String cloudMaskDir;
     
-    private DetectorApiClient detectorApiClient = new DetectorApiClient();
+    private final DetectorApiClient detectorApiClient = new DetectorApiClient();
     
     /**
      * Creates an object that represents and Image file and acts as a helper for storing image properties across different tests.
      *
      * @param file         the file of the image.
-     * @param histogramDir the directory where the histogram of the image needs to be stored.
      * @throws IOException
      */
-    public ImagePack(final File file, final String histogramDir, final String cloudMaskDir) throws IOException {
+    public ImagePack(final File file, final String cloudMaskDir) throws IOException {
         this.ioMetadata = null;
         this.image = null;
         this.metadata = new Metadata();
@@ -89,7 +87,6 @@ public class ImagePack {
         this.inputStream = new FileInputStream(file);
         this.context = new ParseContext();
         this.file = file;
-        this.histogramDir = histogramDir;
         this.cloudMaskDir = cloudMaskDir;
         
         this.loaded = false;
@@ -166,23 +163,10 @@ public class ImagePack {
         this.maskImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         this.tensorflowMaskImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         
-        //        //do a first pass for cloud, histogram and contrast data
-        //        parseImagePixels(width, height, jImage, false, false, true);
-        //
-        //        //check for single cloud pixels that are probably incorrect
-        //        int removedPixels = cleanupCloudsBasedOnNearby(maskImage, width, height, 2);
-        //        cloudPixels -= removedPixels;
-        //
-        //        removedPixels = cleanupCloudsBasedOnTiles(maskImage, width, height, 100, 3);
-        //        cloudPixels -= removedPixels;
-        //
-        //        //write mask file to storage
-        //        ImageIO.write(maskImage, "png", new File(cloudMaskDir + "/" + this.file.getParentFile().getName(), this.file.getName() + "-nai.mask.png"));
-        
         final long start = System.currentTimeMillis();
         log.info(String.format("[%20s] starting TF cloud detection...", file.getName()));
         
-        ImageDetectionResultDTO detectionResult = null;
+        ImageDetectionResultDTO detectionResult;
         
         if (segmented) {
             detectionResult = detectCloudsInTilesOfImage(jImage, width, height);
@@ -209,8 +193,6 @@ public class ImagePack {
                 tensorflowMaskImage.setRGB(w, h, GRAY_RGB);
             }
         }
-        //write mask file to storage
-        updateMaskImage();
         
         int widthTiles = width / TILE_WIDTH;
         int heightTiles = height / TILE_HEIGHT;
@@ -225,8 +207,6 @@ public class ImagePack {
             tfCheckedPixels += (TILE_WIDTH * (height - heightTiles * TILE_HEIGHT));
             tfCloudPixels += checkTileData(image, w * TILE_WIDTH, height - TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, components);
             
-            //write mask file to storage
-            updateMaskImage();
         }
         for (int h = 0; h < heightTiles; h++) {
             //last tile in each row
@@ -244,14 +224,11 @@ public class ImagePack {
         removedPixels = cleanupCloudsBasedOnTiles(tensorflowMaskImage, width, height, 100, 3);
         tfCloudPixels -= removedPixels;
         
-        //write mask file to storage
-        updateMaskImage();
-        
         return new ImageDetectionResultDTO(null, null, (int) tfCheckedPixels, (int) tfCloudPixels, tfCloudPixels / tfCheckedPixels);
     }
     
-    private void updateMaskImage() throws IOException {
-        ImageIO.write(tensorflowMaskImage, "png", new File(FileNameUtils.getImageCloudCoverMaskFilename(cloudMaskDir, this.file.getParentFile().getName(), this.file.getName())));
+    public void saveTensorflowMaskImage(final File file) throws IOException {
+        ImageIO.write(tensorflowMaskImage, "png", file);
     }
     
     private int checkTileData(final BufferedImage image, final int startWidth, final int startHeight, final int tileWidth, final int tileHeight, final int components) {
@@ -302,7 +279,7 @@ public class ImagePack {
                 break;
             }
             final int size = width * heightStep;
-            int dnValues[] = new int[size];
+            int[] dnValues = new int[size];
             dnValues = jImage.getRGB(0, heightStart, width, currentStep, dnValues, 0, width);
             for (int i = 0; i < size; i++) {
                 final Color color = new Color(dnValues[i], true);

@@ -13,7 +13,7 @@ import java.util.List;
 public class DetectorApiClient implements DetectorApiClientInterface {
     
     private final String baseUrl;
-    RestTemplate restTemplate;
+    final RestTemplate restTemplate;
     
     public DetectorApiClient() {
         this("http://localhost:5000");

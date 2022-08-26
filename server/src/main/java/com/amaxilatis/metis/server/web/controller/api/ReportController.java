@@ -26,9 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.File;
-import java.io.IOException;
 
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.*;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_REPORTS;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_REPORT_DELETE;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_REPORT_DOWNLOAD;
 
 @Slf4j
 @RestController
@@ -52,7 +53,7 @@ public class ReportController extends BaseController {
     }
     
     @GetMapping(value = API_REPORT_DOWNLOAD, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<Resource> download(HttpServletResponse response, @PathVariable final Long reportId) throws IOException {
+    public ResponseEntity<Resource> download(HttpServletResponse response, @PathVariable final Long reportId) {
         log.info("get:{}, reportId:{}", API_REPORT_DOWNLOAD, reportId);
         final String fullFileName = props.getReportLocation() + "/metis-" + reportId + ".csv";
         final String xlsxName = fileService.csv2xlsx(fullFileName);

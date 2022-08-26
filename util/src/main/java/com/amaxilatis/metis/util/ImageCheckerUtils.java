@@ -32,7 +32,6 @@ import static com.drew.metadata.exif.ExifDirectoryBase.TAG_COMPRESSION;
 
 @Slf4j
 public class ImageCheckerUtils {
-    public static final String NAME = "METIS";
     public static final ObjectMapper mapper = new ObjectMapper();
     
     public static List<FileJobResult> parseDir(final File directory, final List<Integer> tasks) throws IOException, TikaException, SAXException, ImageProcessingException {
@@ -48,7 +47,7 @@ public class ImageCheckerUtils {
         
         if (file.getName().endsWith(".tif") || file.getName().endsWith(".jpf")) {
             log.info("[{}] parsing...", file.getName());
-            ImagePack image = new ImagePack(file, histogramDir, cloudMaskDir);
+            ImagePack image = new ImagePack(file, cloudMaskDir);
             
             if (tasks.contains(1)) {
                 try {
@@ -192,7 +191,7 @@ public class ImageCheckerUtils {
                         result = mapper.readValue(resultFile, FileJobResult.class);
                     } else {
                         log.info("running test 4 for {}", file);
-                        result = ImageCheckerUtils.testN4(file, image);
+                        result = ImageCheckerUtils.testN4(file, image, cloudMaskDir);
                         if (resultsDir != null) {
                             mapper.writeValue(resultFile, result);
                         }
@@ -332,15 +331,19 @@ public class ImageCheckerUtils {
      * @param file
      * @return
      */
-    public static FileJobResult testN4(final File file, final ImagePack image) throws IOException {
+    public static FileJobResult testN4(final File file, final ImagePack image, final String cloudMaskDir) throws IOException {
         image.detectClouds(true);
-        double percentage = ((double) image.getCloudPixels() / (double) image.getValidPixels()) * 100;
+        double percentage = (image.getCloudPixels() / image.getValidPixels()) * 100;
         
         boolean result = percentage < 5;
         
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(4);
         
-        resultBuilder.note(String.format("Εικονοστοιχεία με Συννεφα %.0f, Συνολικά Εικονοστοιχεία %.0f, Ποσοστό: %.2f%%", image.getCloudPixels(), image.getValidPixels(), percentage));
+        resultBuilder.note(String.format("Εικονοστοιχεία με Σύννεφα %.0f, Συνολικά Εικονοστοιχεία %.0f, Ποσοστό: %.2f%%", image.getCloudPixels(), image.getValidPixels(), percentage));
+    
+        if (cloudMaskDir != null) {
+            image.saveTensorflowMaskImage(new File(FileNameUtils.getImageCloudCoverMaskFilename(cloudMaskDir, file.getParentFile().getName(), file.getName())));
+        }
         
         return resultBuilder.result(result).build();
     }
@@ -359,8 +362,8 @@ public class ImageCheckerUtils {
         final double pixelsCount = image.getHistogram().getTotalPixels(ColorUtils.LAYERS.LUM);
         final Set<HistogramBin> top = image.getHistogram().getTop5Bins(ColorUtils.LAYERS.LUM);
         final Set<HistogramBin> bottom = image.getHistogram().getBottom5Bins(ColorUtils.LAYERS.LUM);
-        long totalItemsInTop = top.stream().mapToLong(histogramBin -> histogramBin.getValuesCount()).sum();
-        long totalItemsInBottom = bottom.stream().mapToLong(histogramBin -> histogramBin.getValuesCount()).sum();
+        long totalItemsInTop = top.stream().mapToLong(HistogramBin::getValuesCount).sum();
+        long totalItemsInBottom = bottom.stream().mapToLong(HistogramBin::getValuesCount).sum();
         double topClipping = (totalItemsInTop / pixelsCount) * 100;
         double bottomClipping = (totalItemsInBottom / pixelsCount) * 100;
         log.info("[N5] top[{} - {}]: {}", totalItemsInTop, (totalItemsInTop / pixelsCount) * 100, top);
@@ -510,7 +513,7 @@ public class ImageCheckerUtils {
      * όπου προκύπτει αφενός ως η διαφορά μεταξύ του ελάχιστου και του μέγιστου ψηφιακού συνόλου στην τριάδα
      * υπολογιζόμενη σε σχεδόν «ουδέτερα» αντικείμενα (όπως άσφαλτος ή ταράτσες κτιρίων - δεν εφαρμόζεται σε
      * παγχρωματικές εικόνες) και αφετέρου ως η αναλογία σήματος προς θόρυβο (SNR) που καθορίζεται σαν τον
-     * λόγο της μέσης ψηφιακής τιμής (DN) του pixel (DN Value) προς την μεταβλητότητα (standard deviation) των
+     * λόγο της μέσης ψηφιακής τιμής (DN) του pixel (DN Value) προς τη μεταβλητότητα (standard deviation) των
      * ψηφιακών τιμών (υπολογισμένη σε περιοχές με ομοιόμορφη πυκνότητα μέσων τιμών) και σύμφωνα με τις
      * προδιαγραφές(*).
      *

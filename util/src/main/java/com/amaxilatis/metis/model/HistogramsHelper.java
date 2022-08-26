@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-import org.jfree.chart.ChartColor;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
@@ -168,12 +167,12 @@ public class HistogramsHelper {
     }
     
     public void saveHistogramImage(final File destFile) {
-        final JFreeChart xylineChart = ChartFactory.createXYLineChart(null, "Τιμή Pixel", "Σύνολο τιμών", createDataset(), PlotOrientation.VERTICAL, true, true, false);
-        xylineChart.getXYPlot().getRangeAxis().setVisible(false);
-        xylineChart.getXYPlot().getRenderer().setSeriesPaint(3, new Color(0x00, 0x00, 0x00));
-        xylineChart.getXYPlot().getRenderer().setSeriesStroke(3, new BasicStroke(2));
+        final JFreeChart xyLineChart = ChartFactory.createXYLineChart(null, "Τιμή Pixel", "Σύνολο τιμών", createDataset(), PlotOrientation.VERTICAL, true, true, false);
+        xyLineChart.getXYPlot().getRangeAxis().setVisible(false);
+        xyLineChart.getXYPlot().getRenderer().setSeriesPaint(3, new Color(0x00, 0x00, 0x00));
+        xyLineChart.getXYPlot().getRenderer().setSeriesStroke(3, new BasicStroke(2));
         try {
-            ChartUtils.saveChartAsPNG(destFile, xylineChart, 1024, 768);
+            ChartUtils.saveChartAsPNG(destFile, xyLineChart, 1024, 768);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -16,7 +16,6 @@ import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,8 +26,6 @@ import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_IMAGE_DI
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_LOGIN;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_SETTINGS;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_USER;
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_USERS;
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_USERS_ADD;
 
 @SuppressWarnings({"SameReturnValue"})
 @Slf4j

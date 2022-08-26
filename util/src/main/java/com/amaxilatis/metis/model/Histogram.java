@@ -51,32 +51,12 @@ public class Histogram {
         return getBinsByDescendingContentsSize().first();
     }
     
-    public Set<HistogramBin> getTop5Bins() {
-        final SortedSet<HistogramBin> bins = getBinsByDescendingContentsSize();
-        final Set<HistogramBin> topBins = new HashSet<>();
-        Iterator<HistogramBin> it = bins.iterator();
-        for (int i = 0; i < 5; i++) {
-            topBins.add(it.next());
-        }
-        return topBins;
-    }
-    
     public Set<HistogramBin> getFirstBins(int count) {
         final SortedSet<HistogramBin> firstBins = new TreeSet<>((o1, o2) -> (int) (o2.getValuesCount() - o1.getValuesCount()));
         for (int i = 0; i < count; i++) {
             firstBins.add(new HistogramBin(i, data[i]));
         }
         return firstBins;
-    }
-    
-    public Set<HistogramBin> getBottom5Bins() {
-        final SortedSet<HistogramBin> bins = getBinsByAscendingContentsSize();
-        final Set<HistogramBin> botBins = new HashSet<>();
-        Iterator<HistogramBin> it = bins.iterator();
-        for (int i = 0; i < 5; i++) {
-            botBins.add(it.next());
-        }
-        return botBins;
     }
     
     public Set<HistogramBin> getLastBins(int count) {
