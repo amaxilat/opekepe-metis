@@ -59,6 +59,18 @@ public class FileNameUtils {
     }
     
     /**
+     * Returns the full path to the image's uncompressed file.
+     *
+     * @param location the location where uncompressed images are stored.
+     * @param dir      the directory of the image.
+     * @param name     the name of the image.
+     * @return the full  path to the image's uncompressed file.
+     */
+    public static String getImageUncompressedFilename(final String location, final String dir, final String name) {
+        return String.format("%s/%s/%s", location, dir, name);
+    }
+    
+    /**
      * Returns the full path to the image's thumbnail.
      *
      * @param dir  the directory of the image.

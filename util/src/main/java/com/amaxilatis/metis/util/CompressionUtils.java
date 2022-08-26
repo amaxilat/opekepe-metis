@@ -6,6 +6,7 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.COMPRESSION_CCITT_RL
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.COMPRESSION_CCITT_T_4;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.COMPRESSION_CCITT_T_6;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.COMPRESSION_DEFLATE;
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.COMPRESSION_JPEG;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.COMPRESSION_LZW;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.COMPRESSION_NONE;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.COMPRESSION_PACKBITS;
@@ -31,12 +32,17 @@ public class CompressionUtils {
             case COMPRESSION_PACKBITS:
                 return "PACKBITS";
             case COMPRESSION_DEFLATE:
-                return "";
+                return "DEFLATE";
+            case COMPRESSION_JPEG:
+                return "JPEG";
             default:
                 return String.valueOf(compressionExifValue);
         }
     }
     
+    public static boolean isCompressed(final int compressionExifValue) {
+        return compressionExifValue != COMPRESSION_NONE;
+    }
     public static boolean isLossless(final int compressionExifValue) {
         return compressionExifValue == COMPRESSION_NONE || compressionExifValue == COMPRESSION_CCITT_RLE || compressionExifValue == COMPRESSION_CCITT_T_4 || compressionExifValue == COMPRESSION_CCITT_T_6 || compressionExifValue == COMPRESSION_LZW || compressionExifValue == COMPRESSION_ZLIB || compressionExifValue == COMPRESSION_PACKBITS || compressionExifValue == COMPRESSION_DEFLATE;
     }

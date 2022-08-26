@@ -45,7 +45,7 @@ public class ImageParsingTest {
                 results.addAll(ImageCheckerUtils.parseDir(directory1T, tasks));
             } else {
                 log.warn("Input not a directory");
-                results.addAll(ImageCheckerUtils.parseFile(directory1T, tasks, null, null, null));
+                results.addAll(ImageCheckerUtils.parseFile(directory1T, tasks, null, null, null, null));
             }
             for (final FileJobResult result : results) {
                 Assertions.assertEquals(result.getTask(), tasks.get(0));
@@ -65,7 +65,7 @@ public class ImageParsingTest {
                 results.addAll(ImageCheckerUtils.parseDir(directory2F, tasks));
             } else {
                 log.warn("Input not a directory");
-                results.addAll(ImageCheckerUtils.parseFile(directory2F, tasks, null, null, null));
+                results.addAll(ImageCheckerUtils.parseFile(directory2F, tasks, null, null, null, null));
             }
             for (final FileJobResult result : results) {
                 Assertions.assertEquals(result.getTask(), tasks.get(0));
@@ -85,7 +85,7 @@ public class ImageParsingTest {
                 results.addAll(ImageCheckerUtils.parseDir(directory3T, tasks));
             } else {
                 log.warn("Input not a directory");
-                results.addAll(ImageCheckerUtils.parseFile(directory3T, tasks, null, null, null));
+                results.addAll(ImageCheckerUtils.parseFile(directory3T, tasks, null, null, null, null));
             }
             for (final FileJobResult result : results) {
                 Assertions.assertEquals(result.getTask(), tasks.get(0));
@@ -105,7 +105,7 @@ public class ImageParsingTest {
                 results.addAll(ImageCheckerUtils.parseDir(directory4, tasks));
             } else {
                 log.warn("Input not a directory");
-                results.addAll(ImageCheckerUtils.parseFile(directory4, tasks, null, null, directory4.getParent()));
+                results.addAll(ImageCheckerUtils.parseFile(directory4, tasks, null, null, directory4.getParent(), null));
             }
             //            for (final FileJobResult result : results) {
             //                Assertions.assertEquals(result.getTask(), tasks.get(0));
@@ -126,7 +126,7 @@ public class ImageParsingTest {
                 results.addAll(ImageCheckerUtils.parseDir(directory6F, tasks));
             } else {
                 log.warn("Input not a directory");
-                results.addAll(ImageCheckerUtils.parseFile(directory6F, tasks, null, null, null));
+                results.addAll(ImageCheckerUtils.parseFile(directory6F, tasks, null, null, null, null));
             }
             for (final FileJobResult result : results) {
                 log.info(result.toString());
@@ -147,7 +147,7 @@ public class ImageParsingTest {
                 results.addAll(ImageCheckerUtils.parseDir(directory8, tasks));
             } else {
                 log.warn("Input not a directory");
-                results.addAll(ImageCheckerUtils.parseFile(directory8, tasks, null, null, null));
+                results.addAll(ImageCheckerUtils.parseFile(directory8, tasks, null, null, null, null));
             }
             for (final FileJobResult result : results) {
                 log.info(result.toString());

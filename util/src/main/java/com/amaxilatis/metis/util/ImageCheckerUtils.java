@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.exception.TikaException;
 import org.xml.sax.SAXException;
 
+import javax.imageio.IIOException;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -37,18 +38,37 @@ public class ImageCheckerUtils {
     public static List<FileJobResult> parseDir(final File directory, final List<Integer> tasks) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
         for (final File file : Objects.requireNonNull(directory.listFiles())) {
-            results.addAll(parseFile(file, tasks, null, null, null));
+            results.addAll(parseFile(file, tasks, null, null, null, null));
         }
         return results;
     }
     
-    public static List<FileJobResult> parseFile(final File file, final List<Integer> tasks, final String resultsDir, final String histogramDir, final String cloudMaskDir) throws IOException, TikaException, SAXException, ImageProcessingException {
+    public static List<FileJobResult> parseFile(final File file, final List<Integer> tasks, final String resultsDir, final String histogramDir, final String cloudMaskDir, final String uncompressedLocation) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
         
         if (file.getName().endsWith(".tif") || file.getName().endsWith(".jpf")) {
             log.info("[{}] parsing...", file.getName());
-            ImagePack image = new ImagePack(file, cloudMaskDir);
+            ImagePack image = new ImagePack(file, cloudMaskDir, uncompressedLocation);
             
+            if (tasks.contains(8)) {
+                try {
+                    final File resultFile = getResultFile(resultsDir, file, 8);
+                    final FileJobResult result;
+                    if (resultsDir != null && resultFile.exists()) {
+                        log.info("loading test 8 result for {}", file);
+                        result = mapper.readValue(resultFile, FileJobResult.class);
+                    } else {
+                        log.info("running test 8 for {}", file);
+                        result = ImageCheckerUtils.testN8(file, image);
+                        if (resultsDir != null) {
+                            mapper.writeValue(resultFile, result);
+                        }
+                    }
+                    results.add(result);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
             if (tasks.contains(1)) {
                 try {
                     final File resultFile = getResultFile(resultsDir, file, 1);
@@ -163,25 +183,6 @@ public class ImageCheckerUtils {
                     log.error(e.getMessage(), e);
                 }
             }
-            if (tasks.contains(8)) {
-                try {
-                    final File resultFile = getResultFile(resultsDir, file, 8);
-                    final FileJobResult result;
-                    if (resultsDir != null && resultFile.exists()) {
-                        log.info("loading test 8 result for {}", file);
-                        result = mapper.readValue(resultFile, FileJobResult.class);
-                    } else {
-                        log.info("running test 8 for {}", file);
-                        result = ImageCheckerUtils.testN8(file, image);
-                        if (resultsDir != null) {
-                            mapper.writeValue(resultFile, result);
-                        }
-                    }
-                    results.add(result);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
             if (tasks.contains(4)) {
                 try {
                     final File resultFile = getResultFile(resultsDir, file, 4);
@@ -220,6 +221,8 @@ public class ImageCheckerUtils {
                     log.error(e.getMessage(), e);
                 }
             }
+            
+            image.cleanup();
         }
         return results;
     }
@@ -232,7 +235,7 @@ public class ImageCheckerUtils {
      * @param file
      * @return
      */
-    public static FileJobResult testN1(final File file, final ImagePack image) throws TikaException, IOException, SAXException {
+    public static FileJobResult testN1(final File file, final ImagePack image) throws TikaException, IOException, SAXException, ImageProcessingException {
         image.loadImage();
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(1);
         
@@ -275,31 +278,34 @@ public class ImageCheckerUtils {
      * @return
      */
     public static FileJobResult testN2(final File file, final ImagePack image) throws IOException, ImageProcessingException {
-        final BufferedImage jImage = image.getImage();
-        
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(2);
-        
-        final ExifIFD0Directory directory = image.getIoMetadata().getFirstDirectoryOfType(ExifIFD0Directory.class);
-        final String metadataValue = directory.getString(TAG_BITS_PER_SAMPLE).replaceAll("[^0-9 ]", "");
-        log.info("[N2] bitPerSample {}", metadataValue);
-        final String[] bitsCounts = metadataValue.split(" ");
-        boolean metadataTest = true;
-        for (final String bitsCount : bitsCounts) {
-            int bitsCountInt = Integer.parseInt(bitsCount);
-            if (bitsCountInt < N2_BIT_SIZE) {
-                metadataTest = false;
+        try {
+            final BufferedImage jImage = image.getImage();
+            
+            final ExifIFD0Directory directory = image.getIoMetadata().getFirstDirectoryOfType(ExifIFD0Directory.class);
+            final String metadataValue = directory.getString(TAG_BITS_PER_SAMPLE).replaceAll("[^0-9 ]", "");
+            log.info("[N2] bitPerSample {}", metadataValue);
+            final String[] bitsCounts = metadataValue.split(" ");
+            boolean metadataTest = true;
+            for (final String bitsCount : bitsCounts) {
+                int bitsCountInt = Integer.parseInt(bitsCount);
+                if (bitsCountInt < N2_BIT_SIZE) {
+                    metadataTest = false;
+                }
             }
+            
+            log.debug("[N2] colorModelComponents: {}", jImage.getColorModel().getNumComponents());
+            log.debug("[N2] colorModelPixelSize: {}", jImage.getColorModel().getPixelSize());
+            final int pixelSize = jImage.getColorModel().getPixelSize() / jImage.getColorModel().getNumComponents();
+            log.debug("[N2] bitPerPixel: {}", pixelSize);
+            
+            final String note = String.format("%d Κανάλια, Μέγεθος Pixel: %d bit, Μέγεθος/Κανάλι: %d bit | Exif Μέγεθος Pixels: %s bit", jImage.getColorModel().getNumComponents(), jImage.getColorModel().getPixelSize(), pixelSize, metadataValue);
+            
+            resultBuilder.note(note).result(metadataTest && (pixelSize >= N2_BIT_SIZE));
+        } catch (IIOException e) {
+            resultBuilder.result(false);
+            resultBuilder.note(e.getMessage());
         }
-        
-        log.debug("[N2] colorModelComponents: {}", jImage.getColorModel().getNumComponents());
-        log.debug("[N2] colorModelPixelSize: {}", jImage.getColorModel().getPixelSize());
-        final int pixelSize = jImage.getColorModel().getPixelSize() / jImage.getColorModel().getNumComponents();
-        log.debug("[N2] bitPerPixel: {}", pixelSize);
-        
-        final String note = String.format("%d Κανάλια, Μέγεθος Pixel: %d bit, Μέγεθος/Κανάλι: %d bit | Exif Μέγεθος Pixels: %s bit", jImage.getColorModel().getNumComponents(), jImage.getColorModel().getPixelSize(), pixelSize, metadataValue);
-        
-        resultBuilder.note(note).result(metadataTest && (pixelSize >= N2_BIT_SIZE));
-        
         return resultBuilder.build();
     }
     
@@ -311,17 +317,20 @@ public class ImageCheckerUtils {
      * @return
      */
     public static FileJobResult testN3(final File file, final ImagePack image) throws IOException {
-        final BufferedImage jImage = image.getImage();
-        
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(3);
-        
-        log.debug("[N3] colorModelComponents: {}", jImage.getColorModel().getNumComponents());
-        log.debug("[N3] colorModelColorComponents: {}", jImage.getColorModel().getNumColorComponents());
-        log.debug("[N3] colorModelHasAlpha: {}", jImage.getColorModel().hasAlpha());
-        final String note = String.format("%d Κανάλια, %d Χρώματα, Alpha: %s", jImage.getColorModel().getNumComponents(), jImage.getColorModel().getNumColorComponents(), jImage.getColorModel().hasAlpha() ? "Ναι" : "Όχι");
-        boolean result = jImage.getColorModel().getNumComponents() == N3_SAMPLES_PER_PIXEL && jImage.getColorModel().getNumColorComponents() == N3_SAMPLES_PER_PIXEL - 1 && jImage.getColorModel().hasAlpha();
-        resultBuilder.result(result).note(note).build();
-        
+        try {
+            final BufferedImage jImage = image.getImage();
+            
+            log.debug("[N3] colorModelComponents: {}", jImage.getColorModel().getNumComponents());
+            log.debug("[N3] colorModelColorComponents: {}", jImage.getColorModel().getNumColorComponents());
+            log.debug("[N3] colorModelHasAlpha: {}", jImage.getColorModel().hasAlpha());
+            final String note = String.format("%d Κανάλια, %d Χρώματα, Alpha: %s", jImage.getColorModel().getNumComponents(), jImage.getColorModel().getNumColorComponents(), jImage.getColorModel().hasAlpha() ? "Ναι" : "Όχι");
+            boolean result = jImage.getColorModel().getNumComponents() == N3_SAMPLES_PER_PIXEL && jImage.getColorModel().getNumColorComponents() == N3_SAMPLES_PER_PIXEL - 1 && jImage.getColorModel().hasAlpha();
+            resultBuilder.result(result).note(note).build();
+        } catch (IIOException e) {
+            resultBuilder.result(false);
+            resultBuilder.note(e.getMessage());
+        }
         return resultBuilder.build();
     }
     
@@ -332,20 +341,23 @@ public class ImageCheckerUtils {
      * @return
      */
     public static FileJobResult testN4(final File file, final ImagePack image, final String cloudMaskDir) throws IOException {
-        image.detectClouds(true);
-        double percentage = (image.getCloudPixels() / image.getValidPixels()) * 100;
-        
-        boolean result = percentage < 5;
-        
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(4);
-        
-        resultBuilder.note(String.format("Εικονοστοιχεία με Σύννεφα %.0f, Συνολικά Εικονοστοιχεία %.0f, Ποσοστό: %.2f%%", image.getCloudPixels(), image.getValidPixels(), percentage));
-    
-        if (cloudMaskDir != null) {
-            image.saveTensorflowMaskImage(new File(FileNameUtils.getImageCloudCoverMaskFilename(cloudMaskDir, file.getParentFile().getName(), file.getName())));
+        try {
+            image.detectClouds(true);
+            double percentage = (image.getCloudPixels() / image.getValidPixels()) * 100;
+            
+            boolean result = percentage < 5;
+            resultBuilder.result(result);
+            resultBuilder.note(String.format("Εικονοστοιχεία με Σύννεφα %.0f, Συνολικά Εικονοστοιχεία %.0f, Ποσοστό: %.2f%%", image.getCloudPixels(), image.getValidPixels(), percentage));
+            
+            if (cloudMaskDir != null) {
+                image.saveTensorflowMaskImage(new File(FileNameUtils.getImageCloudCoverMaskFilename(cloudMaskDir, file.getParentFile().getName(), file.getName())));
+            }
+        } catch (IIOException e) {
+            resultBuilder.result(false);
+            resultBuilder.note(e.getMessage());
         }
-        
-        return resultBuilder.result(result).build();
+        return resultBuilder.build();
     }
     
     /**
@@ -355,25 +367,30 @@ public class ImageCheckerUtils {
      * @param file
      * @return
      */
-    public static FileJobResult testN5(final File file, final ImagePack image) throws TikaException, IOException, SAXException {
-        image.loadImage();
-        image.loadHistogram();
-        
-        final double pixelsCount = image.getHistogram().getTotalPixels(ColorUtils.LAYERS.LUM);
-        final Set<HistogramBin> top = image.getHistogram().getTop5Bins(ColorUtils.LAYERS.LUM);
-        final Set<HistogramBin> bottom = image.getHistogram().getBottom5Bins(ColorUtils.LAYERS.LUM);
-        long totalItemsInTop = top.stream().mapToLong(HistogramBin::getValuesCount).sum();
-        long totalItemsInBottom = bottom.stream().mapToLong(HistogramBin::getValuesCount).sum();
-        double topClipping = (totalItemsInTop / pixelsCount) * 100;
-        double bottomClipping = (totalItemsInBottom / pixelsCount) * 100;
-        log.info("[N5] top[{} - {}]: {}", totalItemsInTop, (totalItemsInTop / pixelsCount) * 100, top);
-        log.info("[N5] bottom[{} - {}]: {}", totalItemsInBottom, (totalItemsInBottom / pixelsCount) * 100, bottom);
-        
-        boolean result = topClipping < 0.5 && bottomClipping < 0.5;
-        
+    public static FileJobResult testN5(final File file, final ImagePack image) throws TikaException, IOException, SAXException, ImageProcessingException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(5);
-        resultBuilder.note(String.format("Πρώτα: %.3f%% , Τελευταία: %.3f%%", topClipping, bottomClipping));
-        return resultBuilder.result(result).build();
+        image.loadImage();
+        try {
+            image.loadHistogram();
+            
+            final double pixelsCount = image.getHistogram().getTotalPixels(ColorUtils.LAYERS.LUM);
+            final Set<HistogramBin> top = image.getHistogram().getTop5Bins(ColorUtils.LAYERS.LUM);
+            final Set<HistogramBin> bottom = image.getHistogram().getBottom5Bins(ColorUtils.LAYERS.LUM);
+            long totalItemsInTop = top.stream().mapToLong(HistogramBin::getValuesCount).sum();
+            long totalItemsInBottom = bottom.stream().mapToLong(HistogramBin::getValuesCount).sum();
+            double topClipping = (totalItemsInTop / pixelsCount) * 100;
+            double bottomClipping = (totalItemsInBottom / pixelsCount) * 100;
+            log.info("[N5] top[{} - {}]: {}", totalItemsInTop, (totalItemsInTop / pixelsCount) * 100, top);
+            log.info("[N5] bottom[{} - {}]: {}", totalItemsInBottom, (totalItemsInBottom / pixelsCount) * 100, bottom);
+            
+            boolean result = topClipping < 0.5 && bottomClipping < 0.5;
+            resultBuilder.result(result);
+            resultBuilder.note(String.format("Πρώτα: %.3f%% , Τελευταία: %.3f%%", topClipping, bottomClipping));
+        } catch (IIOException e) {
+            resultBuilder.result(false);
+            resultBuilder.note(e.getMessage());
+        }
+        return resultBuilder.build();
     }
     
     /**
@@ -384,30 +401,36 @@ public class ImageCheckerUtils {
      * @return
      */
     public static FileJobResult testN6(final File file, final ImagePack image, final String histogramDir) throws IOException {
-        image.loadHistogram();
-        
-        int histMinLimit = (int) (128 * 0.85);
-        int histMaxLimit = (int) (128 * 1.15);
-        log.info("[N6] brightness: {}< mean:{} <{} std: {}", histMinLimit, image.getHistogram().getMean(ColorUtils.LAYERS.LUM), histMaxLimit, image.getHistogram().getStandardDeviation(ColorUtils.LAYERS.LUM));
-        final int majorBinCenterLum = image.getHistogram().majorBin(ColorUtils.LAYERS.LUM);
-        log.info("[N6] histogramBr center: {}", majorBinCenterLum);
-        
-        final int majorBinCenterR = image.getHistogram().majorBin(ColorUtils.LAYERS.RED);
-        log.info("[N6] histogramR center: {}", majorBinCenterR);
-        final int majorBinCenterG = image.getHistogram().majorBin(ColorUtils.LAYERS.GREEN);
-        log.info("[N6] histogramG center: {}", majorBinCenterG);
-        final int majorBinCenterB = image.getHistogram().majorBin(ColorUtils.LAYERS.BLUE);
-        log.info("[N6] histogramB center: {}", majorBinCenterB);
-        
-        if (histogramDir != null) {
-            image.getHistogram().saveHistogramImage(new File(FileNameUtils.getImageHistogramFilename(histogramDir, file.getParentFile().getName(), file.getName())));
-        }
-        
-        boolean result = histMinLimit < majorBinCenterLum && majorBinCenterLum < histMaxLimit;
-        
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(6);
-        resultBuilder.note(String.format("Κέντρο Ιστογράμματος: %d, όρια +/-15%%: [%d,%d], Κέντρα Ιστογράμματος Χρωμάτων: [R:%d,G:%d,B:%d]", majorBinCenterLum, histMinLimit, histMaxLimit, majorBinCenterR, majorBinCenterG, majorBinCenterB));
-        return resultBuilder.result(result).build();
+        try {
+            
+            image.loadHistogram();
+            
+            int histMinLimit = (int) (128 * 0.85);
+            int histMaxLimit = (int) (128 * 1.15);
+            log.info("[N6] brightness: {}< mean:{} <{} std: {}", histMinLimit, image.getHistogram().getMean(ColorUtils.LAYERS.LUM), histMaxLimit, image.getHistogram().getStandardDeviation(ColorUtils.LAYERS.LUM));
+            final int majorBinCenterLum = image.getHistogram().majorBin(ColorUtils.LAYERS.LUM);
+            log.info("[N6] histogramBr center: {}", majorBinCenterLum);
+            
+            final int majorBinCenterR = image.getHistogram().majorBin(ColorUtils.LAYERS.RED);
+            log.info("[N6] histogramR center: {}", majorBinCenterR);
+            final int majorBinCenterG = image.getHistogram().majorBin(ColorUtils.LAYERS.GREEN);
+            log.info("[N6] histogramG center: {}", majorBinCenterG);
+            final int majorBinCenterB = image.getHistogram().majorBin(ColorUtils.LAYERS.BLUE);
+            log.info("[N6] histogramB center: {}", majorBinCenterB);
+            
+            if (histogramDir != null) {
+                image.getHistogram().saveHistogramImage(new File(FileNameUtils.getImageHistogramFilename(histogramDir, file.getParentFile().getName(), file.getName())));
+            }
+            
+            boolean result = histMinLimit < majorBinCenterLum && majorBinCenterLum < histMaxLimit;
+            resultBuilder.result(result);
+            resultBuilder.note(String.format("Κέντρο Ιστογράμματος: %d, όρια +/-15%%: [%d,%d], Κέντρα Ιστογράμματος Χρωμάτων: [R:%d,G:%d,B:%d]", majorBinCenterLum, histMinLimit, histMaxLimit, majorBinCenterR, majorBinCenterG, majorBinCenterB));
+        } catch (IIOException e) {
+            resultBuilder.result(false);
+            resultBuilder.note(e.getMessage());
+        }
+        return resultBuilder.build();
     }
     
     /**
@@ -418,19 +441,24 @@ public class ImageCheckerUtils {
      * @return
      */
     public static FileJobResult testN7(final File file, final ImagePack image) throws IOException {
-        image.loadHistogram();
-        double mean = image.getDnValuesStatistics().getMean();
-        double std = image.getDnValuesStatistics().getStandardDeviation();
-        double coefficientOfVariation = std / mean;
-        double variance = image.getDnValuesStatistics().getVariance();
-        
-        boolean result = coefficientOfVariation > 0.1 && coefficientOfVariation < 0.2;
-        
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(7);
+        try {
+            image.loadHistogram();
+            double mean = image.getDnValuesStatistics().getMean();
+            double std = image.getDnValuesStatistics().getStandardDeviation();
+            double coefficientOfVariation = std / mean;
+            double variance = image.getDnValuesStatistics().getVariance();
+            
+            boolean result = coefficientOfVariation > 0.1 && coefficientOfVariation < 0.2;
+            resultBuilder.result(result);
+            resultBuilder.note(String.format("Μέση Τιμή: %.2f, Τυπική Απόκλιση: %.2f, Διασπορά: %.2f, Συντελεστής Διακύμανσης: %.2f", mean, std, variance, coefficientOfVariation));
+        } catch (IIOException e) {
+            resultBuilder.result(false);
+            resultBuilder.note(e.getMessage());
+        }
         
-        resultBuilder.note(String.format("Μέση Τιμή: %.2f, Τυπική Απόκλιση: %.2f, Διασπορά: %.2f, Συντελεστής Διακύμανσης: %.2f", mean, std, variance, coefficientOfVariation));
         
-        return resultBuilder.result(result).build();
+        return resultBuilder.build();
     }
     
     /**
@@ -440,15 +468,13 @@ public class ImageCheckerUtils {
      * @param file
      * @return
      */
-    public static FileJobResult testN8(final File file, final ImagePack image) throws IOException, ImageProcessingException {
-        final ExifIFD0Directory directory = image.getIoMetadata().getFirstDirectoryOfType(ExifIFD0Directory.class);
-        int compressionExifValue = Integer.parseInt(directory.getString(TAG_COMPRESSION));
+    public static FileJobResult testN8(final File file, final ImagePack image) {
+        int compressionExifValue = image.getCompressionExifValue();
         log.info("[N8] compressionExifValue: {}", compressionExifValue);
         
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(8);
         
         if (file.getName().endsWith(".tif")) {
-            
             resultBuilder.note("Συμπίεση: " + CompressionUtils.toText(compressionExifValue));
             resultBuilder.result(CompressionUtils.isLossless(compressionExifValue));
             return resultBuilder.build();
@@ -520,7 +546,7 @@ public class ImageCheckerUtils {
      * @param file
      * @return
      */
-    public static FileJobResult testN9(final File file, final ImagePack image) throws TikaException, IOException, SAXException {
+    public static FileJobResult testN9(final File file, final ImagePack image) throws TikaException, IOException, SAXException, ImageProcessingException {
         if (!image.isLoaded()) {
             image.loadImage();
         }

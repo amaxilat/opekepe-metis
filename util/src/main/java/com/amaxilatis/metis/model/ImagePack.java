@@ -7,10 +7,14 @@ import com.amaxilatis.metis.detector.client.dto.DetectionsDTO;
 import com.amaxilatis.metis.detector.client.dto.ImageDetectionResultDTO;
 import com.amaxilatis.metis.util.CloudUtils;
 import com.amaxilatis.metis.util.ColorUtils;
+import com.amaxilatis.metis.util.CompressionUtils;
 import com.amaxilatis.metis.util.FileNameUtils;
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.github.jaiimageio.impl.plugins.tiff.TIFFImageReaderSpi;
+import com.github.jaiimageio.impl.plugins.tiff.TIFFImageWriterSpi;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -21,7 +25,13 @@ import org.apache.tika.parser.image.TiffParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -36,6 +46,7 @@ import static com.amaxilatis.metis.util.CloudUtils.cleanupCloudsBasedOnTiles;
 import static com.amaxilatis.metis.util.ImageDataUtils.getImageTileDataFromCoordinates;
 import static com.amaxilatis.metis.util.ImageDataUtils.isEmptyTile;
 import static com.amaxilatis.metis.util.ImageDataUtils.isValidPixel;
+import static com.drew.metadata.exif.ExifDirectoryBase.TAG_COMPRESSION;
 import static org.apache.tika.mime.MimeTypes.OCTET_STREAM;
 
 @Slf4j
@@ -47,12 +58,12 @@ public class ImagePack {
     private BufferedImage image;
     @Getter
     private final Metadata metadata;
-    private final File file;
-    @Getter
+    private final File uncompressedImageFile;
+    private final String name;
+    private final String parentDirName;
+    private final File dataFile;
     private final BodyContentHandler handler;
-    @Getter
     private final FileInputStream inputStream;
-    @Getter
     private final ParseContext context;
     @Getter
     private HistogramsHelper histogram;
@@ -67,6 +78,8 @@ public class ImagePack {
     private double cloudPixels = 0;
     @Getter
     private BufferedImage maskImage;
+    @Getter
+    private final int compressionExifValue;
     private BufferedImage tensorflowMaskImage;
     private final String cloudMaskDir;
     
@@ -75,34 +88,69 @@ public class ImagePack {
     /**
      * Creates an object that represents and Image file and acts as a helper for storing image properties across different tests.
      *
-     * @param file         the file of the image.
+     * @param file the file of the image.
      * @throws IOException
      */
-    public ImagePack(final File file, final String cloudMaskDir) throws IOException {
-        this.ioMetadata = null;
+    public ImagePack(final File file, final String cloudMaskDir, final String uncompressedLocation) throws IOException, ImageProcessingException {
+        this.cloudMaskDir = cloudMaskDir;
+        this.name = file.getName();
+        
+        this.ioMetadata = ImageMetadataReader.readMetadata(file);
+        this.parentDirName = file.getParentFile().getName();
+        
+        compressionExifValue = Integer.parseInt(ioMetadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getString(TAG_COMPRESSION));
+        if (CompressionUtils.isCompressed(compressionExifValue) && CompressionUtils.isLossless(compressionExifValue)) {
+            this.uncompressedImageFile = new File(FileNameUtils.getImageUncompressedFilename(uncompressedLocation, file.getParentFile().getName(), file.getName()));
+            log.info("[{}] is compressed and need to be uncompressed as {}", file.getName(), uncompressedImageFile);
+            
+            if (!uncompressedImageFile.getParentFile().exists()) {
+                uncompressedImageFile.getParentFile().mkdir();
+            }
+            
+            final TIFFImageReaderSpi readerSpi = new TIFFImageReaderSpi();
+            final ImageReader imageReader = readerSpi.createReaderInstance();
+            final ImageInputStream imageInputStream = ImageIO.createImageInputStream(file);
+            imageReader.setInput(imageInputStream);
+            
+            final TIFFImageWriterSpi writerSpi = new TIFFImageWriterSpi();
+            final ImageWriter imageWriter = writerSpi.createWriterInstance();
+            final ImageWriteParam imageWriteParam = imageWriter.getDefaultWriteParam();
+            imageWriteParam.setCompressionMode(ImageWriteParam.MODE_DISABLED);
+            //bufferFile is created in the constructor
+            final ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(uncompressedImageFile);
+            imageWriter.setOutput(imageOutputStream);
+            
+            //Now read the bitmap
+            final BufferedImage bufferedImage = imageReader.read(0);
+            IIOImage iIOImage = new IIOImage(bufferedImage, null, null);
+            //and write it
+            imageWriter.write(null, iIOImage, imageWriteParam);
+            imageWriter.dispose();
+            imageOutputStream.flush();
+            imageOutputStream.close();
+            this.dataFile = uncompressedImageFile;
+        } else {
+            this.dataFile = file;
+            this.uncompressedImageFile = null;
+        }
         this.image = null;
         this.metadata = new Metadata();
         metadata.set(Metadata.CONTENT_TYPE, OCTET_STREAM);
         this.handler = new BodyContentHandler();
-        this.inputStream = new FileInputStream(file);
+        this.inputStream = new FileInputStream(dataFile);
         this.context = new ParseContext();
-        this.file = file;
-        this.cloudMaskDir = cloudMaskDir;
         
         this.loaded = false;
         this.histogramLoaded = false;
     }
     
-    public com.drew.metadata.Metadata getIoMetadata() throws ImageProcessingException, IOException {
-        if (this.ioMetadata == null) {
-            this.ioMetadata = ImageMetadataReader.readMetadata(file);
-        }
+    public com.drew.metadata.Metadata getIoMetadata() {
         return ioMetadata;
     }
     
     public BufferedImage getImage() throws IOException {
         if (this.image == null) {
-            this.image = ImageIO.read(file);
+            this.image = ImageIO.read(dataFile);
         }
         return image;
     }
@@ -114,12 +162,12 @@ public class ImagePack {
      * @throws TikaException
      * @throws SAXException
      */
-    public void loadImage() throws IOException, TikaException, SAXException {
+    public void loadImage() throws IOException, TikaException, SAXException, ImageProcessingException {
         if (!loaded) {
             long start = System.currentTimeMillis();
-            final TiffParser JpegParser = new TiffParser();
-            JpegParser.parse(this.getInputStream(), this.getHandler(), this.getMetadata(), this.getContext());
-            log.info("[{}] jpegParser took {}ms", file.getName(), (System.currentTimeMillis() - start));
+            final TiffParser imageParser = new TiffParser();
+            imageParser.parse(inputStream, handler, metadata, context);
+            log.info("[{}] jpegParser took {}ms", name, (System.currentTimeMillis() - start));
             this.loaded = true;
         }
     }
@@ -132,7 +180,7 @@ public class ImagePack {
     public void loadHistogram() throws IOException {
         if (!histogramLoaded) {
             
-            final BufferedImage jImage = ImageIO.read(file);
+            final BufferedImage jImage = ImageIO.read(dataFile);
             //histogram
             this.histogram = new HistogramsHelper();
             //image information
@@ -154,7 +202,7 @@ public class ImagePack {
      * @throws IOException
      */
     public void detectClouds(boolean segmented) throws IOException {
-        final BufferedImage jImage = ImageIO.read(file);
+        final BufferedImage jImage = ImageIO.read(dataFile);
         //image information
         final int width = jImage.getWidth();
         final int height = jImage.getHeight();
@@ -164,7 +212,7 @@ public class ImagePack {
         this.tensorflowMaskImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         
         final long start = System.currentTimeMillis();
-        log.info(String.format("[%20s] starting TF cloud detection...", file.getName()));
+        log.info(String.format("[%20s] starting TF cloud detection...", name));
         
         ImageDetectionResultDTO detectionResult;
         
@@ -179,7 +227,7 @@ public class ImagePack {
         cloudPixels = detectionResult.getCloudy();
         
         double percentage = validPixels / cloudPixels;
-        log.info(String.format("[%20s] TF cloud detection result: %1.3f took: %d sec", file.getName(), percentage, (System.currentTimeMillis() - start) / 1000));
+        log.info(String.format("[%20s] TF cloud detection result: %1.3f took: %d sec", name, percentage, (System.currentTimeMillis() - start) / 1000));
     }
     
     private ImageDetectionResultDTO detectCloudsInTilesOfImage(final BufferedImage image, final int width, final int height) throws IOException {
@@ -235,14 +283,14 @@ public class ImagePack {
         int thisTileCloudPixels = 0;
         int[] dnValues = getImageTileDataFromCoordinates(image, tileWidth, tileHeight, components, startWidth, startHeight);
         if (isEmptyTile(dnValues)) {
-            log.trace(String.format("[%20s] tile_l:[%04d,%04d] skipping...", file.getName(), startWidth, startHeight));
+            log.trace(String.format("[%20s] tile_l:[%04d,%04d] skipping...", name, startWidth, startHeight));
             for (int j = 0; j < TILE_WIDTH; j++) {
                 for (int k = 0; k < TILE_HEIGHT; k++) {
                     tensorflowMaskImage.setRGB(startWidth + k, startHeight + j, BLACK_RGB);
                 }
             }
         } else {
-            log.trace(String.format("[%20s] tile_l:[%04d,%04d] detecting...", file.getName(), startWidth, startHeight));
+            log.trace(String.format("[%20s] tile_l:[%04d,%04d] detecting...", name, startWidth, startHeight));
             
             DetectionsDTO detectionsDTO;
             do {
@@ -263,7 +311,7 @@ public class ImagePack {
     
     private ImageDetectionResultDTO detectCloudsInWholeImage() {
         //make a call to the cloud detection server for the whole image
-        return detectorApiClient.checkImageFile(file.getAbsolutePath(), new File(FileNameUtils.getImageCloudCoverMaskFilename(cloudMaskDir, this.file.getParentFile().getName(), this.file.getName())).getAbsolutePath());
+        return detectorApiClient.checkImageFile(dataFile.getAbsolutePath(), new File(FileNameUtils.getImageCloudCoverMaskFilename(cloudMaskDir, parentDirName, name)).getAbsolutePath());
     }
     
     
@@ -330,5 +378,13 @@ public class ImagePack {
         }
         maskImage.setRGB(x, y, isCloud ? WHITE_RGB : BLACK_RGB);
         validPixels++;
+    }
+    
+    public void cleanup() {
+        if (uncompressedImageFile != null) {
+            if (!uncompressedImageFile.delete()) {
+                log.warn("[{}] failed to delete uncompressed image file!", name);
+            }
+        }
     }
 }

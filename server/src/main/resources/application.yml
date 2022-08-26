@@ -59,6 +59,7 @@ metis:
   filesLocation: files
   version: ^project.version^
   dbBackupLocation: backup
+  uncompressedLocation: unc
   processing:
     threads: -1
   ldap:

@@ -66,6 +66,10 @@ public class FileService {
         return props.getCloudMaskLocation();
     }
     
+    public String getUncompressedLocation() {
+        return props.getUncompressedLocation();
+    }
+    
     public String getFilesLocation() {
         return props.getFilesLocation();
     }
@@ -166,6 +170,7 @@ public class FileService {
         checkAndCreateDirectory(props.getThumbnailLocation());
         checkAndCreateDirectory(props.getHistogramLocation());
         checkAndCreateDirectory(props.getCloudMaskLocation());
+        checkAndCreateDirectory(props.getUncompressedLocation());
         updateImageDirs(true);
     }
     
@@ -216,6 +221,7 @@ public class FileService {
                         checkAndCreateDirectory(props.getThumbnailLocation() + "/" + imagesDirectoryName);
                         checkAndCreateDirectory(props.getHistogramLocation() + "/" + imagesDirectoryName);
                         checkAndCreateDirectory(props.getCloudMaskLocation() + "/" + imagesDirectoryName);
+                        checkAndCreateDirectory(props.getUncompressedLocation() + "/" + imagesDirectoryName);
                     }
                 }
             });
