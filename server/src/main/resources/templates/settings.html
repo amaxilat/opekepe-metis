@@ -71,6 +71,27 @@
                                                            aria-describedby="histogramLocation" disabled
                                                            th:value="${metisProperties.histogramLocation}">
                                                 </div>
+
+                                                <div class="form-group">
+                                                    <label for="cloudMaskLocation">Διαδρομή Αρχείων Νεφοκάλυψης</label>
+                                                    <input type="text" class="form-control" id="cloudMaskLocation"
+                                                           aria-describedby="cloudMaskLocation" disabled
+                                                           th:value="${metisProperties.cloudMaskLocation}">
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="uncompressedLocation">Διαδρομή Αποσυμπίεσης Αρχείων</label>
+                                                    <input type="text" class="form-control" id="uncompressedLocation"
+                                                           aria-describedby="uncompressedLocation" disabled
+                                                           th:value="${metisProperties.uncompressedLocation}">
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label for="backupLocation">Διαδρομή Αντιγράφων Ασφαλείας</label>
+                                                    <input type="text" class="form-control" id="backupLocation"
+                                                           aria-describedby="backupLocation" disabled
+                                                           th:value="${metisProperties.dbBackupLocation}">
+                                                </div>
                                             </form>
                                         </div>
                                     </div>
