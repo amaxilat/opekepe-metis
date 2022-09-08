@@ -88,7 +88,10 @@ public class ImagePack {
     /**
      * Creates an object that represents and Image file and acts as a helper for storing image properties across different tests.
      *
-     * @param file the file of the image.
+     * @param file                 the file of the image.
+     * @param cloudMaskDir         location where cloudMasks are stored
+     * @param uncompressedLocation location where uncompressed images are stored
+     * @param workers              concurrency used when calculating cloud coverage
      * @throws IOException
      */
     public ImagePack(final File file, final String cloudMaskDir, final String uncompressedLocation) throws IOException, ImageProcessingException {
