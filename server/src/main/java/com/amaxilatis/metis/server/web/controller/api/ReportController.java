@@ -27,9 +27,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.File;
 
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_DIRECTORY_REPORT_DOWNLOAD;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_REPORTS;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_REPORT_DELETE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_REPORT_DOWNLOAD;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.IMAGE_DIR_HASH;
 
 @Slf4j
 @RestController
@@ -65,6 +67,14 @@ public class ReportController extends BaseController {
         log.info("get:{}, reportId:{}", API_REPORT_DELETE, reportId);
         reportService.delete(reportId);
         return "redirect:/";
+    }
+    
+    @GetMapping(value = API_DIRECTORY_REPORT_DOWNLOAD, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public ResponseEntity<Resource> downloadDirectoryReport(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash) {
+        log.info("get:{}, imageDirectoryHash:{}", API_DIRECTORY_REPORT_DOWNLOAD, imageDirectoryHash);
+        final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
+        final File xlsxFile = fileService.generateDirectoryReportXlsx(decodedImageDir);
+        return FileUtils.sendFile(response, xlsxFile, xlsxFile.getName());
     }
     
 }
