@@ -28,8 +28,15 @@ function connect() {
 
 function connect_cloud_detection() {
     $.get("/v1/api/cloud", function (data) {
-        $("#dot-cloud").css("color", "#49660e");
-        $("#cloud-model").text(data['model']);
+        console.log(data);
+        if (data['model'] === None) {
+            $("#dot-cloud").css("color", "#bbb");
+            $("#cloud-model").text('');
+        } else {
+            $("#dot-cloud").css("color", "#49660e");
+            $("#cloud-model").text(data['model']);
+        }
+
     }).fail(function () {
         $("#dot-cloud").css("color", "#bbb");
         $("#cloud-model").text('');

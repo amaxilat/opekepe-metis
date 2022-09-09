@@ -2,6 +2,7 @@ package com.amaxilatis.metis.server.service;
 
 import com.amaxilatis.metis.detector.client.DetectorApiClient;
 import com.amaxilatis.metis.detector.client.dto.PingDataDTO;
+import com.amaxilatis.metis.server.config.ProcessingQueueConfiguration;
 import com.amaxilatis.metis.server.model.ImageProcessingTask;
 import com.amaxilatis.metis.server.model.PoolInfo;
 import com.amaxilatis.metis.server.model.TestDescription;
@@ -23,6 +24,7 @@ import java.util.TreeSet;
 @RequiredArgsConstructor
 public class ImageProcessingService {
     
+    private final ProcessingQueueConfiguration processingQueueConfiguration;
     private final FileService fileService;
     private final SimpMessagingTemplate webSocketService;
     
@@ -56,7 +58,7 @@ public class ImageProcessingService {
     }
     
     public void processFile(final String outFileName, final String filename, final List<Integer> tasks) {
-        taskExecutor.execute(new ImageProcessingTask(fileService, outFileName, filename, tasks));
+        taskExecutor.execute(new ImageProcessingTask(processingQueueConfiguration, fileService, outFileName, filename, tasks));
     }
     
     public PoolInfo getPoolInfo() {

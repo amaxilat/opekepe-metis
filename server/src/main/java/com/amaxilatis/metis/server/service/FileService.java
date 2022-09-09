@@ -45,11 +45,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import static com.amaxilatis.metis.util.FileNameUtils.getResultFile;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileService {
     
+    public static final String FOLDER_TITLE = "Φάκελος";
+    public static final String CHECKS_TITLE = "Έλεγχοι";
+    public static final String FILE_TITLE = "ΑΡΧΕΙΟ";
+    public static final String CHECK_TITLE = "ΕΛΕΓΧΟΣ %d";
+    public static final String NOTES_TITLE = "ΠΑΡΑΤΗΡΗΣΕΙΣ %d";
+    public static final String CHECK_OK = "ΟΚ";
+    public static final String CHECK_NOK = "ΛΑΘΟΣ";
     private final MetisProperties props;
     
     final ExecutorService tpe = Executors.newFixedThreadPool(1);
@@ -431,5 +440,74 @@ public class FileService {
         } else {
             return null;
         }
+    }
+    
+    public File generateDirectoryReportXlsx(final String name) {
+        final String xlsxFileName = "report_metis-" + name + "-" + System.currentTimeMillis() + ".xlsx";
+        final File outFile = new File(props.getReportLocation(), xlsxFileName);
+        try (final FileOutputStream fos = new FileOutputStream(outFile)) {
+            final Workbook wb = new XSSFWorkbook();
+            final Sheet sheet = wb.createSheet("report");
+            
+            final Row folderRow = appendRow(sheet, 1);
+            appendCell(folderRow, FOLDER_TITLE);
+            appendCell(folderRow, name);
+            
+            final Row checksRow = appendRow(sheet, 1);
+            appendCell(checksRow, CHECKS_TITLE);
+            appendCell(checksRow, "1-2-3-4-5-6-7-8-9");
+            
+            final Row titleRow = appendRow(sheet, 1);
+            appendCell(titleRow, FILE_TITLE);
+            for (int i = 1; i < 10; i++) {
+                appendCell(titleRow, String.format(CHECK_TITLE, i));
+            }
+            for (int i = 1; i < 10; i++) {
+                appendCell(titleRow, String.format(NOTES_TITLE, i));
+            }
+            
+            final HashMap<String, List<Integer>> files = new HashMap<>();
+            
+            Arrays.stream(new File(props.getResultsLocation(), name).listFiles()).forEach(allFile -> {
+                final String[] parts = allFile.getName().split("\\.");
+                final String imageName = parts[0] + "." + parts[1];
+                final int check = Integer.parseInt(parts[2]);
+                if (!files.containsKey(imageName)) {
+                    files.put(imageName, new ArrayList<>());
+                }
+                files.get(imageName).add(check);
+            });
+            
+            for (final Map.Entry<String, List<Integer>> fileEntry : files.entrySet()) {
+                final Row fileRow = appendRow(sheet, 1);
+                appendCell(fileRow, fileEntry.getKey());
+                for (int i = 1; i < 10; i++) {
+                    final File resultFile = getResultFile(props.getResultsLocation(), new File(props.getFilesLocation() + "/" + name + "/", fileEntry.getKey()), i);
+                    final FileJobResult result;
+                    if (resultFile.exists()) {
+                        result = new ObjectMapper().readValue(resultFile, FileJobResult.class);
+                        appendCell(fileRow, result.getResult() ? CHECK_OK : CHECK_NOK);
+                    } else {
+                        appendCell(fileRow, "");
+                    }
+                }
+                for (int i = 1; i < 10; i++) {
+                    final File resultFile = getResultFile(props.getResultsLocation(), new File(props.getFilesLocation() + "/" + name + "/", fileEntry.getKey()), i);
+                    final FileJobResult result;
+                    if (resultFile.exists()) {
+                        result = new ObjectMapper().readValue(resultFile, FileJobResult.class);
+                        appendCell(fileRow, result.getNote());
+                    } else {
+                        appendCell(fileRow, "");
+                    }
+                }
+            }
+            wb.write(fos);
+            wb.close();
+            return outFile;
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return null;
     }
 }

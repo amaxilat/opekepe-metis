@@ -37,6 +37,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static com.amaxilatis.metis.util.CloudUtils.BLACK_RGB;
 import static com.amaxilatis.metis.util.CloudUtils.GRAY_RGB;
@@ -82,16 +88,21 @@ public class ImagePack {
     private final int compressionExifValue;
     private BufferedImage tensorflowMaskImage;
     private final String cloudMaskDir;
+    private final int workers;
     
     private final DetectorApiClient detectorApiClient = new DetectorApiClient();
     
     /**
      * Creates an object that represents and Image file and acts as a helper for storing image properties across different tests.
      *
-     * @param file the file of the image.
+     * @param file                 the file of the image.
+     * @param cloudMaskDir         location where cloudMasks are stored
+     * @param uncompressedLocation location where uncompressed images are stored
+     * @param workers              concurrency used when calculating cloud coverage
      * @throws IOException
      */
-    public ImagePack(final File file, final String cloudMaskDir, final String uncompressedLocation) throws IOException, ImageProcessingException {
+    public ImagePack(final File file, final String cloudMaskDir, final String uncompressedLocation, final Integer workers) throws IOException, ImageProcessingException {
+        this.workers = workers;
         this.cloudMaskDir = cloudMaskDir;
         this.name = file.getName();
         
@@ -242,29 +253,70 @@ public class ImagePack {
             }
         }
         
+        final ExecutorService executorService = Executors.newFixedThreadPool(workers);
+        final ArrayList<Future<Integer>> futures = new ArrayList<>();
+        
         int widthTiles = width / TILE_WIDTH;
         int heightTiles = height / TILE_HEIGHT;
+        
         for (int w = 0; w < widthTiles; w++) {
             for (int h = 0; h < heightTiles; h++) {
-                //all tiles in the TILE_WIDTH x TILE_HEIGHT grid
+                
                 tfCheckedPixels += (TILE_WIDTH * TILE_HEIGHT);
-                tfCloudPixels += checkTileData(image, w * TILE_WIDTH, h * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, components);
+                int finalW = w;
+                int finalH = h;
+                futures.add(executorService.submit(() -> {
+                    //all tiles in the TILE_WIDTH x TILE_HEIGHT grid
+                    return checkTileData(image, finalW * TILE_WIDTH, finalH * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, components);
+                }));
             }
             
             //last tile in each column
             tfCheckedPixels += (TILE_WIDTH * (height - heightTiles * TILE_HEIGHT));
-            tfCloudPixels += checkTileData(image, w * TILE_WIDTH, height - TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, components);
-            
+            int finalW1 = w;
+            futures.add(executorService.submit(() -> {
+                //all tiles in the TILE_WIDTH x TILE_HEIGHT grid
+                return checkTileData(image, finalW1 * TILE_WIDTH, height - TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, components);
+            }));
         }
         for (int h = 0; h < heightTiles; h++) {
             //last tile in each row
             tfCheckedPixels += ((width - widthTiles * TILE_WIDTH) * TILE_HEIGHT);
-            tfCloudPixels += checkTileData(image, width - TILE_WIDTH, h * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, components);
+            int finalH = h;
+            futures.add(executorService.submit(() -> {
+                //all tiles in the TILE_WIDTH x TILE_HEIGHT grid
+                return checkTileData(image, width - TILE_WIDTH, finalH * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, components);
+            }));
         }
         
         //last tile in last row and column
         tfCheckedPixels += ((width - widthTiles * TILE_WIDTH) * (height - heightTiles * TILE_HEIGHT));
-        tfCloudPixels += checkTileData(image, width - TILE_WIDTH, height - TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, components);
+        futures.add(executorService.submit(() -> {
+            //all tiles in the TILE_WIDTH x TILE_HEIGHT grid
+            return checkTileData(image, width - TILE_WIDTH, height - TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, components);
+        }));
+        
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(1, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+        }
+        for (final Future<Integer> future : futures) {
+            // Process each `future` object. Get the result of each task's calculation. Sum total.
+            if (future.isCancelled()) {
+                log.error("Oops, this future is canceled.");
+            } else if (future.isDone()) {
+                
+                try {
+                    tfCloudPixels += future.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    log.error(e.getMessage());
+                }
+            } else {
+                log.error("future is not cancelled or done???");
+            }
+        }
         
         int removedPixels = cleanupCloudsBasedOnNearby(tensorflowMaskImage, width, height, 2);
         tfCloudPixels -= removedPixels;

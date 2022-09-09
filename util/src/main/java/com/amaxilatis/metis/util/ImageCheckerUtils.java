@@ -29,7 +29,6 @@ import static com.amaxilatis.metis.util.WorldFileUtils.evaluateWorldFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.getWorldFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.parseWorldFile;
 import static com.drew.metadata.exif.ExifDirectoryBase.TAG_BITS_PER_SAMPLE;
-import static com.drew.metadata.exif.ExifDirectoryBase.TAG_COMPRESSION;
 
 @Slf4j
 public class ImageCheckerUtils {
@@ -38,17 +37,17 @@ public class ImageCheckerUtils {
     public static List<FileJobResult> parseDir(final File directory, final List<Integer> tasks) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
         for (final File file : Objects.requireNonNull(directory.listFiles())) {
-            results.addAll(parseFile(file, tasks, null, null, null, null));
+            results.addAll(parseFile(1, file, tasks, null, null, null, null));
         }
         return results;
     }
     
-    public static List<FileJobResult> parseFile(final File file, final List<Integer> tasks, final String resultsDir, final String histogramDir, final String cloudMaskDir, final String uncompressedLocation) throws IOException, TikaException, SAXException, ImageProcessingException {
+    public static List<FileJobResult> parseFile(final Integer concurrency, final File file, final List<Integer> tasks, final String resultsDir, final String histogramDir, final String cloudMaskDir, final String uncompressedLocation) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
         
         if (file.getName().endsWith(".tif") || file.getName().endsWith(".jpf")) {
             log.info("[{}] parsing...", file.getName());
-            ImagePack image = new ImagePack(file, cloudMaskDir, uncompressedLocation);
+            final ImagePack image = new ImagePack(file, cloudMaskDir, uncompressedLocation, concurrency);
             
             if (tasks.contains(8)) {
                 try {
@@ -232,8 +231,9 @@ public class ImageCheckerUtils {
      * προς την απόσταση δειγματοληψίας εδάφους (απόσταση μεταξύ δύο διαδοχικών κέντρων εικονοστοιχείων
      * που μετριούνται στο έδαφος) είναι σύμφωνα με τις προδιαγραφές(*),
      *
-     * @param file
-     * @return
+     * @param file  the file containing the image to check
+     * @param image an object containing details for the provided image
+     * @return the result of the checks performed
      */
     public static FileJobResult testN1(final File file, final ImagePack image) throws TikaException, IOException, SAXException, ImageProcessingException {
         image.loadImage();
@@ -274,8 +274,9 @@ public class ImageCheckerUtils {
      * 2. Έλεγχος της ραδιομετρικής ανάλυσης όπου θα επαληθευτεί ότι είναι 11-12 bits ανά κανάλι σύμφωνα με τις
      * προδιαγραφές(*),
      *
-     * @param file
-     * @return
+     * @param file  the file containing the image to check
+     * @param image an object containing details for the provided image
+     * @return the result of the checks performed
      */
     public static FileJobResult testN2(final File file, final ImagePack image) throws IOException, ImageProcessingException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(2);
@@ -313,8 +314,9 @@ public class ImageCheckerUtils {
      * * 3. Έλεγχος της φασματικής ανάλυσης όπου θα διαπιστωθεί ότι το πλήθος των καναλιών είναι σύμφωνο με τα
      * στοιχεία παράδοσης και της προδιαγραφές(*),
      *
-     * @param file
-     * @return
+     * @param file  the file containing the image to check
+     * @param image an object containing details for the provided image
+     * @return the result of the checks performed
      */
     public static FileJobResult testN3(final File file, final ImagePack image) throws IOException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(3);
@@ -337,8 +339,9 @@ public class ImageCheckerUtils {
     /**
      * * 4. Έλεγχος νεφοκάλυψης ανά εικόνα και συνολικά σε συμφωνία με τις προδιαγραφές(*),
      *
-     * @param file
-     * @return
+     * @param file  the file containing the image to check
+     * @param image an object containing details for the provided image
+     * @return the result of the checks performed
      */
     public static FileJobResult testN4(final File file, final ImagePack image, final String cloudMaskDir) throws IOException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(4);
@@ -364,8 +367,9 @@ public class ImageCheckerUtils {
      * * 5. Έλεγχος ολικού clipping το οποίο υπολογίζεται στο ιστόγραμμα φωτεινότητας σύμφωνα με τις
      * προδιαγραφές(*),
      *
-     * @param file
-     * @return
+     * @param file  the file containing the image to check
+     * @param image an object containing details for the provided image
+     * @return the result of the checks performed
      */
     public static FileJobResult testN5(final File file, final ImagePack image) throws TikaException, IOException, SAXException, ImageProcessingException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(5);
@@ -397,8 +401,9 @@ public class ImageCheckerUtils {
      * * 6. Έλεγχος κορυφής ιστογράμματος από την τυπική μέση τιμή (πχ 8bit 128) και σύμφωνα με τις
      * προδιαγραφές(*),
      *
-     * @param file
-     * @return
+     * @param file  the file containing the image to check
+     * @param image an object containing details for the provided image
+     * @return the result of the checks performed
      */
     public static FileJobResult testN6(final File file, final ImagePack image, final String histogramDir) throws IOException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(6);
@@ -437,8 +442,9 @@ public class ImageCheckerUtils {
      * * 7. Έλεγχος αντίθεσης ανά κανάλι ως έλεγχος της μεταβλητότητας των ψηφιακών τιμών (DN) σαν ποσοστό των
      * διαθεσίμων επιπέδων του γκρι και σύμφωνα με τις προδιαγραφές(*),
      *
-     * @param file
-     * @return
+     * @param file  the file containing the image to check
+     * @param image an object containing details for the provided image
+     * @return the result of the checks performed
      */
     public static FileJobResult testN7(final File file, final ImagePack image) throws IOException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(7);
@@ -465,8 +471,9 @@ public class ImageCheckerUtils {
      * * 8. Έλεγχος συμπίεσης στον μορφότυπο των αρχείων (GeoTiff ή/και JPEG2000) και σύμφωνα με τις
      * προδιαγραφές(*),
      *
-     * @param file
-     * @return
+     * @param file  the file containing the image to check
+     * @param image an object containing details for the provided image
+     * @return the result of the checks performed
      */
     public static FileJobResult testN8(final File file, final ImagePack image) {
         int compressionExifValue = image.getCompressionExifValue();
@@ -543,8 +550,9 @@ public class ImageCheckerUtils {
      * ψηφιακών τιμών (υπολογισμένη σε περιοχές με ομοιόμορφη πυκνότητα μέσων τιμών) και σύμφωνα με τις
      * προδιαγραφές(*).
      *
-     * @param file
-     * @return
+     * @param file  the file containing the image to check
+     * @param image an object containing details for the provided image
+     * @return the result of the checks performed
      */
     public static FileJobResult testN9(final File file, final ImagePack image) throws TikaException, IOException, SAXException, ImageProcessingException {
         if (!image.isLoaded()) {

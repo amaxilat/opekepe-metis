@@ -41,6 +41,8 @@ t_prepare = []
 t_predict = []
 t_reply = []
 
+TILE_WIDTH = 256
+TILE_HEIGHT = 256
 
 def avg(lst):
     if len(lst) == 0:
@@ -53,7 +55,7 @@ def load_request_data(req):
     if CONTENT_ENCODING_KEY in req.headers and req.headers[CONTENT_ENCODING_KEY] == 'gzip':
         compressed = True
     logger.debug(
-        f"path: {req.path} type: {req.headers['Content-Type']} size: {req.headers.get('Content-Length')} compressed: {compressed}")
+        f"path: {req.path} type: {req.headers['Content-Type']} size: {int(req.headers.get('Content-Length')) / 1024}KB compressed: {compressed}")
     if compressed:
         return json.loads(gzip.decompress(req.data))
     else:
@@ -117,8 +119,8 @@ def detect_clouds_in_image_file(image_file, mask_file):
 
     (im_height, im_width, num_components) = image_data_array.shape
 
-    im_height_parts = int(im_height / 256)
-    im_width_parts = int(im_width / 256)
+    im_height_parts = int(im_height / TILE_HEIGHT)
+    im_width_parts = int(im_width / TILE_WIDTH)
 
     mask_img = np.zeros([im_height, im_width], dtype=np.uint8)
     mask_img.fill(40)
@@ -131,10 +133,10 @@ def detect_clouds_in_image_file(image_file, mask_file):
     for h in range(im_height_parts):
         for w in range(im_width_parts):
             tile_data = []
-            for t_h in range(256):
-                for t_w in range(256):
+            for t_h in range(TILE_HEIGHT):
+                for t_w in range(TILE_WIDTH):
                     # check if we need to take into account the nir value
-                    tile_data.extend(image_data_array[h * 256 + t_h][w * 256 + t_w][0:4])
+                    tile_data.extend(image_data_array[h * TILE_HEIGHT + t_h][w * TILE_WIDTH + t_w][0:4])
                     # print(image_data_array[h * 256 + t_h][w * 256 + t_w][0:4])
             tile = {'data': tile_data, 'h': h, 'w': w}
             (a1, a2, a3, mask_img, tile_cloud_pixels) = predict_tile(tile, mask_img)
@@ -161,7 +163,7 @@ def predict_tile(tile, mask_img=None):
     del tile['data'][3::4]
     rd = [float(i) / 255.0 for i in tile['data']]
     aa = [rd[i:i + 3] for i in range(0, len(rd), 3)]
-    oo = [aa[i:i + 256] for i in range(0, len(aa), 256)]
+    oo = [aa[i:i + TILE_WIDTH] for i in range(0, len(aa), TILE_WIDTH)]
     # rank_3_tensor = tf.Tensor(o, dtype=tf.float32)
     rank_3_tensor = tf.convert_to_tensor([oo])
     # print('prepare', (time.time() - n))
@@ -179,19 +181,19 @@ def predict_tile(tile, mask_img=None):
 
     # reply
     predictions_bin = []
-    for x in range(256):
+    for x in range(TILE_WIDTH):
         predictions_row = []
-        for y in range(256):
+        for y in range(TILE_HEIGHT):
             cloud_prediction = 1 if predictions[x][y][0] > threshold and (
                     oo[x][y][0] > 0 or oo[x][y][1] > 0 or oo[x][y][2] > 0) and (
                                             oo[x][y][0] < 255 or oo[x][y][1] < 255 or oo[x][y][2] < 255) else 0
             predictions_row.append(cloud_prediction)
             if mask_img is not None:
                 if cloud_prediction == 1:
-                    mask_img[h * 256 + x][w * 256 + y] = 255
+                    mask_img[h * TILE_HEIGHT + x][w * TILE_WIDTH + y] = 255
                     cloudy_pixels = cloudy_pixels + 1
                 else:
-                    mask_img[h * 256 + x][w * 256 + y] = 0
+                    mask_img[h * TILE_HEIGHT + x][w * TILE_WIDTH + y] = 0
         predictions_bin.append(predictions_row)
     # print('reply', (time.time() - n))
     t_reply.append((time.time() - n))
@@ -203,4 +205,4 @@ def predict_tile(tile, mask_img=None):
 if __name__ == '__main__':
     from waitress import serve
 
-    serve(app, host='0.0.0.0', port=5000)
+    serve(app, host='0.0.0.0', port=5000, threads=6)

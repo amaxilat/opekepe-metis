@@ -1,4 +1,7 @@
 server:
+  servlet:
+    session:
+      timeout: 8h
   ssl:
     key-store: file:metis.p12
     key-store-password: password

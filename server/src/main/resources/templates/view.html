@@ -48,6 +48,12 @@
                                 </a>
                             </div>
                         </div>
+                        <a type="button" id="downloadDirReport"
+                           data-toggle="modal" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm">
+                            <span class="icon"><i class="fas fa-file-export text-white-50"></i></span>
+                            <span class="text">Αναφορά Φακέλου</span>
+                            <span class="text">&nbsp;</span>
+                        </a>
                         <button type="button"
                                 data-toggle="modal" th:attr="data-target='#modal-clean-'+${imageDirectoryHash}"
                                 class="d-none d-sm-inline-block btn btn-sm btn-danger shadow-sm">
@@ -174,6 +180,7 @@
                 const thumbnail_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_THUMBNAIL_DIRECTORY_IMAGE}]];
                 const histogram_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_HISTOGRAM_DIRECTORY_IMAGE}]];
                 const cloudcover_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_CLOUD_COVER_DIRECTORY_IMAGE}]];
+                const directoryReport_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_DIRECTORY_REPORT_DOWNLOAD}]];
                 const imageDirectoryHash = /*[[${imageDirectoryHash}]]*/ '';
 
                 /*]]>*/
@@ -214,6 +221,24 @@
                 $(document).ready(function () {
                     connect_cloud_detection();
                 });
+                $(document).ready(function () {
+                    $('#downloadDirReport').click(function () {
+                        $($("#downloadDirReport span")[2]).html('<i class="fa-solid fa-spinner fa-spin"></i>');
+                        fetch(directoryReport_url.replace("{imageDirectoryHash}", imageDirectoryHash))
+                            .then((res) => {
+                                window.report_name = res.headers.get('Content-Disposition').split("\"")[1];
+                                return res.blob();
+                            })
+                            .then((data) => {
+                                const a = document.createElement("a");
+                                a.href = window.URL.createObjectURL(data);
+                                a.download = window.report_name;
+                                a.click();
+                                $($("#downloadDirReport span")[2]).html('');
+                            });
+                    });
+                });
+
             </script>
         </div>
         <!-- End of Main Content -->

@@ -16,6 +16,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import static com.amaxilatis.metis.server.service.FileService.CHECKS_TITLE;
+import static com.amaxilatis.metis.server.service.FileService.CHECK_TITLE;
+import static com.amaxilatis.metis.server.service.FileService.FILE_TITLE;
+import static com.amaxilatis.metis.server.service.FileService.FOLDER_TITLE;
+import static com.amaxilatis.metis.server.service.FileService.NOTES_TITLE;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -42,12 +48,12 @@ public class JobService {
             fileList.add(targetFile);
         }
         
-        fileService.append(getOutputFileName(report), "\"Φάκελος\",\"" + fileJob.getName() + "\"");
-        fileService.append(getOutputFileName(report), "\"Έλεγχοι\",\"" + StringUtils.join(fileJob.getTasks(), "-") + "\"");
+        fileService.append(getOutputFileName(report), String.format("\"%s\",\"%s\"", FOLDER_TITLE, fileJob.getName()));
+        fileService.append(getOutputFileName(report), String.format("\"%s\",\"%s\"", CHECKS_TITLE, StringUtils.join(fileJob.getTasks(), "-")));
         // add header
-        final List<String> titles = new ArrayList<>(List.of("ΑΡΧΕΙΟ"));
-        fileJob.getTasks().stream().map(integer -> String.format("ΕΛΕΓΧΟΣ %d", integer)).forEach(titles::add);
-        fileJob.getTasks().stream().map(integer -> String.format("ΠΑΡΑΤΗΡΗΣΕΙΣ %d", integer)).forEach(titles::add);
+        final List<String> titles = new ArrayList<>(List.of(FILE_TITLE));
+        fileJob.getTasks().stream().map(integer -> String.format(CHECK_TITLE, integer)).forEach(titles::add);
+        fileJob.getTasks().stream().map(integer -> String.format(NOTES_TITLE, integer)).forEach(titles::add);
         fileService.append(getOutputFileName(report), titles);
         log.info("processing start {}", System.currentTimeMillis());
         fileList.forEach(file -> imageProcessingService.processFile(getOutputFileName(report), file.getPath(), fileJob.getTasks()));
