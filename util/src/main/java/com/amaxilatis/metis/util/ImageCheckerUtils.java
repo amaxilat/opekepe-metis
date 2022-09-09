@@ -29,7 +29,6 @@ import static com.amaxilatis.metis.util.WorldFileUtils.evaluateWorldFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.getWorldFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.parseWorldFile;
 import static com.drew.metadata.exif.ExifDirectoryBase.TAG_BITS_PER_SAMPLE;
-import static com.drew.metadata.exif.ExifDirectoryBase.TAG_COMPRESSION;
 
 @Slf4j
 public class ImageCheckerUtils {
@@ -38,17 +37,17 @@ public class ImageCheckerUtils {
     public static List<FileJobResult> parseDir(final File directory, final List<Integer> tasks) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
         for (final File file : Objects.requireNonNull(directory.listFiles())) {
-            results.addAll(parseFile(file, tasks, null, null, null, null));
+            results.addAll(parseFile(1, file, tasks, null, null, null, null));
         }
         return results;
     }
     
-    public static List<FileJobResult> parseFile(final File file, final List<Integer> tasks, final String resultsDir, final String histogramDir, final String cloudMaskDir, final String uncompressedLocation) throws IOException, TikaException, SAXException, ImageProcessingException {
+    public static List<FileJobResult> parseFile(final Integer concurrency, final File file, final List<Integer> tasks, final String resultsDir, final String histogramDir, final String cloudMaskDir, final String uncompressedLocation) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
         
         if (file.getName().endsWith(".tif") || file.getName().endsWith(".jpf")) {
             log.info("[{}] parsing...", file.getName());
-            ImagePack image = new ImagePack(file, cloudMaskDir, uncompressedLocation);
+            final ImagePack image = new ImagePack(file, cloudMaskDir, uncompressedLocation, concurrency);
             
             if (tasks.contains(8)) {
                 try {

@@ -16,15 +16,18 @@ public class ProcessingQueueConfiguration {
     @Bean
     public ThreadPoolTaskExecutor taskExecutor() {
         final ThreadPoolTaskExecutor tp = new ThreadPoolTaskExecutor();
-        if (processingProperties.getThreads() == -1) {
-            tp.setCorePoolSize(getCpuCountBasedThreads());
-            tp.setMaxPoolSize(getCpuCountBasedThreads());
-        } else {
-            tp.setCorePoolSize(processingProperties.getThreads());
-            tp.setMaxPoolSize(processingProperties.getThreads());
-        }
+        tp.setCorePoolSize(getConcurrencySize());
+        tp.setMaxPoolSize(getConcurrencySize());
         tp.initialize();
         return tp;
+    }
+    
+    public int getConcurrencySize() {
+        if (processingProperties.getThreads() == -1) {
+            return getCpuCountBasedThreads();
+        } else {
+            return processingProperties.getThreads();
+        }
     }
     
     private int getCpuCountBasedThreads() {
