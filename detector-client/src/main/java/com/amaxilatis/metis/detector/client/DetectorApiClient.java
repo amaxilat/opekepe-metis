@@ -2,6 +2,7 @@ package com.amaxilatis.metis.detector.client;
 
 import com.amaxilatis.metis.detector.client.dto.*;
 import com.amaxilatis.metis.detector.client.interceptor.CompressingClientHttpRequestInterceptor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
+@Slf4j
 public class DetectorApiClient implements DetectorApiClientInterface {
     
     private final String baseUrl;
@@ -54,10 +56,15 @@ public class DetectorApiClient implements DetectorApiClientInterface {
     }
     
     public PingDataDTO getPingData() {
-        final ResponseEntity<PingDataDTO> response = restTemplate.getForEntity(baseUrl + API_PING, PingDataDTO.class);
-        if (!response.getStatusCode().is2xxSuccessful()) {
-            throw new RestClientException(response.toString());
+        try {
+            final ResponseEntity<PingDataDTO> response = restTemplate.getForEntity(baseUrl + API_PING, PingDataDTO.class);
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                throw new RestClientException(response.toString());
+            }
+            return response.getBody();
+        } catch (NullPointerException e) {
+            log.error(e.getMessage());
+            return new PingDataDTO();
         }
-        return response.getBody();
     }
 }
