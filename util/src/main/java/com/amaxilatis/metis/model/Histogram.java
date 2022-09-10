@@ -23,12 +23,12 @@ public class Histogram {
     private final long[] data;
     
     public Histogram(int size) {
-        this.data = new long[256];
+        this.data = new long[size];
         Arrays.fill(data, 0);
     }
     
     public void add(double value) {
-        this.data[(int) value] += 1L;
+        this.data[(int) Math.round(value)] += 1L;
     }
     
     private SortedSet<HistogramBin> getSortedBins(final Comparator<HistogramBin> comparator) {

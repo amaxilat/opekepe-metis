@@ -50,9 +50,9 @@ public class ImageDataUtils {
      * @param pixelValues the pixel values
      * @return true if all the pixels are empty and false if at least one is not.
      */
-    public static boolean isEmptyTile(final int[] pixelValues) {
+    public static boolean isEmptyTile(final int maxValue, final int[] pixelValues) {
         for (int i = 0; i < pixelValues.length; i += 4) {
-            if (isValidPixel(pixelValues[i], pixelValues[i + 1], pixelValues[i + 2], pixelValues[i + 3])) {
+            if (isValidPixel(maxValue, pixelValues[i], pixelValues[i + 1], pixelValues[i + 2], pixelValues[i + 3])) {
                 return false;
             }
         }
@@ -65,8 +65,8 @@ public class ImageDataUtils {
      * @param pixelColor the pixel's color
      * @return true if the pixel is non-white and non-black, false else.
      */
-    public static boolean isValidPixel(final Color pixelColor) {
-        return isValidPixel(pixelColor.getRed(), pixelColor.getGreen(), pixelColor.getBlue(), pixelColor.getAlpha());
+    public static boolean isValidPixel(final int maxValue, final Color pixelColor) {
+        return isValidPixel(maxValue, pixelColor.getRed(), pixelColor.getGreen(), pixelColor.getBlue(), pixelColor.getAlpha());
     }
     
     /**
@@ -78,7 +78,9 @@ public class ImageDataUtils {
      * @param nir the nir component of the pixel
      * @return true if the pixel is non-white and non-black, false else.
      */
-    public static boolean isValidPixel(final int r, final int g, final int b, final int nir) {
-        return (255 != r || 255 != g || 255 != b || 255 != nir) && (0 != r || 0 != g || 0 != b || 0 != nir);
+    public static boolean isValidPixel(final int maxValue, final int r, final int g, final int b, final int nir) {
+        final int maxThresh = maxValue - 1;
+        return (maxThresh != r || maxThresh != g || maxThresh != b) && (0 != r || 0 != g || 0 != b);
+        //removed nir
     }
 }

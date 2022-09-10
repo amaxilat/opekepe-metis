@@ -190,8 +190,9 @@ public class HistogramsHelper {
     
     private XYSeries createSeries(final ColorUtils.LAYERS layer, final String title) {
         final XYSeries series = new XYSeries(title);
-        for (int i = 0; i < bins.get(layer).getData().length; i++) {
-            series.add(i, bins.get(layer).getData()[i]);
+        final long[] binLayerData = bins.get(layer).getData();
+        for (int i = 0; i < binLayerData.length; i++) {
+            series.add(i, binLayerData[i]);
         }
         return series;
     }

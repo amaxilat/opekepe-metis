@@ -91,6 +91,9 @@ public class ImagePack {
     private final int workers;
     
     private final DetectorApiClient detectorApiClient = new DetectorApiClient();
+    private int componentSize;
+    @Getter
+    private int componentMaxValue;
     
     /**
      * Creates an object that represents and Image file and acts as a helper for storing image properties across different tests.
@@ -179,6 +182,7 @@ public class ImagePack {
             final TiffParser imageParser = new TiffParser();
             imageParser.parse(inputStream, handler, metadata, context);
             log.info("[{}] jpegParser took {}ms", name, (System.currentTimeMillis() - start));
+            getImage();
             this.loaded = true;
         }
     }
@@ -188,12 +192,17 @@ public class ImagePack {
      *
      * @throws IOException
      */
-    public void loadHistogram() throws IOException {
+    public void loadHistogram() throws IOException, ImageProcessingException, TikaException, SAXException {
+        loadImage();
         if (!histogramLoaded) {
             
             final BufferedImage jImage = ImageIO.read(dataFile);
+    
+            componentSize = image.getColorModel().getPixelSize() / image.getColorModel().getNumComponents();
+            componentMaxValue = (int) Math.pow(2, componentSize);
+            
             //histogram
-            this.histogram = new HistogramsHelper();
+            this.histogram = new HistogramsHelper(componentMaxValue);
             //image information
             final int width = jImage.getWidth();
             final int height = jImage.getHeight();
@@ -334,7 +343,7 @@ public class ImagePack {
     private int checkTileData(final BufferedImage image, final int startWidth, final int startHeight, final int tileWidth, final int tileHeight, final int components) {
         int thisTileCloudPixels = 0;
         int[] dnValues = getImageTileDataFromCoordinates(image, tileWidth, tileHeight, components, startWidth, startHeight);
-        if (isEmptyTile(dnValues)) {
+        if (isEmptyTile(componentMaxValue, dnValues)) {
             log.trace(String.format("[%20s] tile_l:[%04d,%04d] skipping...", name, startWidth, startHeight));
             for (int j = 0; j < TILE_WIDTH; j++) {
                 for (int k = 0; k < TILE_HEIGHT; k++) {
@@ -367,25 +376,17 @@ public class ImagePack {
     }
     
     
-    private void parseImagePixels(final int width, final int height, final BufferedImage jImage, final boolean updateHistogram, final boolean updateContrast, final boolean detectClouds) {
-        int heightStep = height / 10;
-        int heightStart = 0;
-        int currentStep = heightStep;
-        do {
-            if (heightStart + currentStep > height) {
-                currentStep = height - heightStart;
-            }
-            if (currentStep == 0) {
-                break;
-            }
+    private void parseImagePixels( int width, final int height, final BufferedImage jImage, final boolean updateHistogram, final boolean updateContrast, final boolean detectClouds) {
+        int heightStep = 100;
+        for (int heightStart = 0; heightStart < height; heightStart += heightStep) {
             final int size = width * heightStep;
             int[] dnValues = new int[size];
-            dnValues = jImage.getRGB(0, heightStart, width, currentStep, dnValues, 0, width);
+            dnValues = jImage.getRGB(0, heightStart, width, heightStep, dnValues, 0, width);
             for (int i = 0; i < size; i++) {
-                final Color color = new Color(dnValues[i], true);
+                final Color color = new Color(dnValues[i], false);
                 final int x = (i) % width;
                 final int y = (i) / width + heightStart;
-                if (isValidPixel(color)) {
+                if (isValidPixel(componentMaxValue, color)) {
                     if (detectClouds) {
                         //update the cloud data for check 4
                         updateCloudData(x, y, color);
@@ -400,8 +401,7 @@ public class ImagePack {
                     }
                 }
             }
-            heightStart += heightStep;
-        } while (heightStart <= height);
+        }
     }
     
     

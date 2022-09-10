@@ -405,14 +405,14 @@ public class ImageCheckerUtils {
      * @param image an object containing details for the provided image
      * @return the result of the checks performed
      */
-    public static FileJobResult testN6(final File file, final ImagePack image, final String histogramDir) throws IOException {
+    public static FileJobResult testN6(final File file, final ImagePack image, final String histogramDir) throws IOException, ImageProcessingException, TikaException, SAXException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(6);
         try {
             
             image.loadHistogram();
-            
-            int histMinLimit = (int) (128 * 0.85);
-            int histMaxLimit = (int) (128 * 1.15);
+            final int centerValue = image.getComponentMaxValue() / 2;
+            int histMinLimit = (int) (centerValue * 0.85);
+            int histMaxLimit = (int) (centerValue * 1.15);
             log.info("[N6] brightness: {}< mean:{} <{} std: {}", histMinLimit, image.getHistogram().getMean(ColorUtils.LAYERS.LUM), histMaxLimit, image.getHistogram().getStandardDeviation(ColorUtils.LAYERS.LUM));
             final int majorBinCenterLum = image.getHistogram().majorBin(ColorUtils.LAYERS.LUM);
             log.info("[N6] histogramBr center: {}", majorBinCenterLum);
@@ -430,7 +430,7 @@ public class ImageCheckerUtils {
             
             boolean result = histMinLimit < majorBinCenterLum && majorBinCenterLum < histMaxLimit;
             resultBuilder.result(result);
-            resultBuilder.note(String.format("Κέντρο Ιστογράμματος: %d, όρια +/-15%%: [%d,%d], Κέντρα Ιστογράμματος Χρωμάτων: [R:%d,G:%d,B:%d]", majorBinCenterLum, histMinLimit, histMaxLimit, majorBinCenterR, majorBinCenterG, majorBinCenterB));
+            resultBuilder.note(String.format("Κορυφή Ιστογράμματος: %d, όρια +/-15%%: [%d,%d], Κέντρα Ιστογράμματος Χρωμάτων: [R:%d,G:%d,B:%d]", majorBinCenterLum, histMinLimit, histMaxLimit, majorBinCenterR, majorBinCenterG, majorBinCenterB));
         } catch (IIOException e) {
             resultBuilder.result(false);
             resultBuilder.note(e.getMessage());
@@ -446,7 +446,7 @@ public class ImageCheckerUtils {
      * @param image an object containing details for the provided image
      * @return the result of the checks performed
      */
-    public static FileJobResult testN7(final File file, final ImagePack image) throws IOException {
+    public static FileJobResult testN7(final File file, final ImagePack image) throws IOException, ImageProcessingException, TikaException, SAXException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(7);
         try {
             image.loadHistogram();
