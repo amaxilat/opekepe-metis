@@ -205,13 +205,13 @@ public class FileService {
         long start = System.currentTimeMillis();
         imagesDirs.clear();
         images.clear();
-        log.debug("[updateImageDirs] filesLocation: {}", props.getFilesLocation());
+        log.debug("[updateImageDirs] filesLocation[{}]: {}", new File(props.getFilesLocation()).exists(), props.getFilesLocation());
         final File[] imageDirectoryList = new File(props.getFilesLocation()).listFiles(File::isDirectory);
         log.debug("[updateImageDirs] imageDirectoryList: {}", Arrays.toString(imageDirectoryList));
         if (imageDirectoryList != null) {
             Arrays.stream(imageDirectoryList).forEach(imagesDirectory -> {
                 final String imagesDirectoryName = imagesDirectory.getName();
-                log.trace("[updateImageDirs] imagesDirectory: {}", imagesDirectoryName);
+                log.debug("[updateImageDirs] imagesDirectory: {}", imagesDirectoryName);
                 images.put(imagesDirectoryName, new TreeSet<>());
                 final File[] filesList = imagesDirectory.listFiles((dir, name) -> StringUtils.endsWithAny(name.toLowerCase(), ".tif", "jpf"));
                 if (filesList != null) {
@@ -234,6 +234,24 @@ public class FileService {
                     }
                 }
             });
+            
+            //cleanup results from deleted files
+            Arrays.stream(imageDirectoryList).forEach(imagesDirectory -> {
+                final String imagesDirectoryName = imagesDirectory.getName();
+                final File files = new File(props.getResultsLocation(), imagesDirectoryName);
+                Arrays.stream(Objects.requireNonNull(files.listFiles())).forEach(file -> {
+                    if (file.getName().endsWith(".result")) {
+                        final String[] parts = file.getName().split("\\.");
+                        final String filename = parts[0] + "." + parts[1];
+                        if (!new File(new File(props.getFilesLocation(), imagesDirectoryName), filename).exists()) {
+                            final boolean deleted = file.delete();
+                            log.warn("removed[{}] old result[{}] for file {}", deleted, file.getName(), filename);
+                        }
+                    }
+                });
+            });
+        } else {
+            log.warn("[updateImageDirs] imageDirectoryList is null!!!");
         }
         log.info("[updateImageDirs] time:{}", (System.currentTimeMillis() - start));
     }
