@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 import static com.amaxilatis.metis.util.WorldFileUtils.getWorldFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.parseWorldFile;
@@ -51,7 +52,7 @@ public class WorldFileParsingTest {
     }
     
     @Test
-    void testParseWorldFile() {
+    void testParseWorldFile() throws FileNotFoundException {
         final File f = new File("0452039030.tfw");
         final WorldFile worldFile = parseWorldFile(f);
         Assertions.assertEquals(0.5, worldFile.getXPixelSize());

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,13 +50,15 @@ public class WorldFileUtils {
         }
     }
     
-    public static WorldFile parseWorldFile(final File wFile) {
+    public static WorldFile parseWorldFile(final File wFile) throws FileNotFoundException {
         final List<Object> lines = new ArrayList<>();
         try (final BufferedReader br = new BufferedReader(new FileReader(wFile))) {
             String line;
             while ((line = br.readLine()) != null) {
                 lines.add(line);
             }
+        } catch (FileNotFoundException e) {
+            throw e;
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }

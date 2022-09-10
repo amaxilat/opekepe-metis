@@ -15,6 +15,7 @@ import org.xml.sax.SAXException;
 import javax.imageio.IIOException;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -240,16 +241,22 @@ public class ImageCheckerUtils {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(1);
         
         final File worldFileFile = getWorldFile(file);
-        final WorldFile worldFile = parseWorldFile(worldFileFile);
-        
-        final WorldFileResult worldConditionRes = evaluateWorldFile(worldFile);
-        boolean metadataRes = true;
-        
-        log.info("[N1] file:{}, n1:{} world", file.getName(), worldConditionRes.isOk());
-        StringBuilder note = new StringBuilder();
+        final StringBuilder note = new StringBuilder();
         note.append("WorldFile: ");
-        note.append(worldConditionRes.getNote());
+        boolean worldRes = true;
+        try {
+            final WorldFile worldFile = parseWorldFile(worldFileFile);
+            final WorldFileResult worldConditionRes = evaluateWorldFile(worldFile);
+            log.info("[N1] file:{}, n1:{} world", file.getName(), worldConditionRes.isOk());
+            note.append(worldConditionRes.getNote());
+            worldRes = worldConditionRes.isOk();
+        } catch (FileNotFoundException e) {
+            note.append(String.format("Δεν βρέθηκε το αρχείο world της εικόνας %s", file.getName()));
+            worldRes = false;
+        }
+        
         note.append(" | Exif: ");
+        boolean metadataRes = true;
         for (final String metadataName : image.getMetadata().names()) {
             log.debug("metadataName: " + metadataName);
             if (metadataName.contains("0x830e")) {
@@ -267,7 +274,7 @@ public class ImageCheckerUtils {
                 resultBuilder.note(note.toString());
             }
         }
-        return resultBuilder.result(worldConditionRes.isOk() && metadataRes).build();
+        return resultBuilder.result(worldRes && metadataRes).build();
     }
     
     /**
