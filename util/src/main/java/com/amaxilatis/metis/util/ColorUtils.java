@@ -37,6 +37,8 @@ public class ColorUtils {
     /**
      * Get the brightness value of a pixel, using the following coefficients: 0.299 * red + 0.587 * green + 0.114 * blue
      * Value is in accordance with <a href="https://en.wikipedia.org/wiki/Relative_luminance">Relative_luminance - Wikipedia</a>
+     * Gimp uses 0.22 * red + 0.72 * green + 0.06 * blue
+     * Photoshop uses almost the same weights as ours
      *
      * @param red   the pixel's red value
      * @param green the pixel's green value
