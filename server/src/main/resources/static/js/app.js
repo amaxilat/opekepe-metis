@@ -28,7 +28,7 @@ function connect() {
 
 function connect_cloud_detection() {
     $.get("/v1/api/cloud", function (data) {
-        if (data['model'] === undefined) {
+        if (data['model'] === undefined || data['model'] === null) {
             $("#dot-cloud").css("color", "#bbb");
             $("#cloud-model").text('');
         } else {
