@@ -396,7 +396,7 @@ public class ImageCheckerUtils {
             
             boolean result = topClipping < 0.5 && bottomClipping < 0.5;
             resultBuilder.result(result);
-            resultBuilder.note(String.format("Πρώτα: %.3f%% , Τελευταία: %.3f%%", topClipping, bottomClipping));
+            resultBuilder.note(String.format("Πρώτα: %.3f%% , Τελευταία: %.3f%%", bottomClipping, topClipping));
         } catch (IIOException e) {
             resultBuilder.result(false);
             resultBuilder.note(e.getMessage());
@@ -417,7 +417,7 @@ public class ImageCheckerUtils {
         try {
             
             image.loadHistogram();
-            final int centerValue = image.getComponentMaxValue() / 2;
+            final int centerValue = image.getHistogram().getBinCount() / 2;
             int histMinLimit = (int) (centerValue * 0.85);
             int histMaxLimit = (int) (centerValue * 1.15);
             log.info("[N6] brightness: {}< mean:{} <{} std: {}", histMinLimit, image.getHistogram().getMean(ColorUtils.LAYERS.LUM), histMaxLimit, image.getHistogram().getStandardDeviation(ColorUtils.LAYERS.LUM));

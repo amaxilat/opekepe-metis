@@ -38,12 +38,14 @@ public class HistogramsHelper {
     
     private final Map<ColorUtils.LAYERS, Histogram> bins;
     private final Map<ColorUtils.LAYERS, SummaryStatistics> stats;
+    private final int binCount;
     
     public HistogramsHelper() {
         this(256);
     }
     
     public HistogramsHelper(final int binCount) {
+        this.binCount = binCount;
         this.bins = new HashMap<>();
         this.bins.put(RED, new Histogram(binCount));
         this.bins.put(GREEN, new Histogram(binCount));

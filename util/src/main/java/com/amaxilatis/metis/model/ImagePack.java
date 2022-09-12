@@ -202,7 +202,8 @@ public class ImagePack {
             componentMaxValue = (int) Math.pow(2, componentSize);
             
             //histogram
-            this.histogram = new HistogramsHelper(componentMaxValue);
+            //values added to histogram are always scaled to 0-256
+            this.histogram = new HistogramsHelper(256);
             //image information
             final int width = jImage.getWidth();
             final int height = jImage.getHeight();
@@ -381,12 +382,13 @@ public class ImagePack {
         for (int heightStart = 0; heightStart < height; heightStart += heightStep) {
             final int size = width * heightStep;
             int[] dnValues = new int[size];
+            log.info("{} {}", jImage.getSampleModel(), jImage.getSampleModel().getClass());
             dnValues = jImage.getRGB(0, heightStart, width, heightStep, dnValues, 0, width);
             for (int i = 0; i < size; i++) {
                 final Color color = new Color(dnValues[i], false);
                 final int x = (i) % width;
                 final int y = (i) / width + heightStart;
-                if (isValidPixel(componentMaxValue, color)) {
+                if (isValidPixel(256, color)) {
                     if (detectClouds) {
                         //update the cloud data for check 4
                         updateCloudData(x, y, color);
