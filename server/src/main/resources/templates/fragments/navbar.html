@@ -328,12 +328,14 @@
 
             /*]]>*/
             function updateFiles() {
+                $("#reload-files").addClass("fa-spin");
                 $.get(image_scan_url, function (result) {
                     location.reload();
                 });
             }
         </script>
-        <button class="rounded-circle border-0" id="sidebarToggle" onclick="updateFiles()" title="Ανανέωση Εικόνων">
+        <button class="btn btn-primary" onclick="updateFiles()" title="Ανανέωση Εικόνων" style="margin-bottom: 20px;">
+            <i id="reload-files" class="fas fa-2x fa-sync-alt"></i>
         </button>
     </div>
 

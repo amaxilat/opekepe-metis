@@ -11247,13 +11247,6 @@ a:focus {
     cursor: pointer;
 }
 
-.sidebar #sidebarToggle::after {
-    font-weight: 900;
-    content: '\f021';
-    font-family: 'Font Awesome 5 Free';
-    margin-right: 0.1rem;
-}
-
 .sidebar #sidebarToggle:hover {
     text-decoration: none;
 }
