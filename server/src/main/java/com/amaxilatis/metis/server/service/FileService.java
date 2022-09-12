@@ -201,6 +201,11 @@ public class FileService {
         }
     }
     
+    /**
+     * Updates the list of available image directories and image files.
+     *
+     * @param generateThumbnails flag to generate or not thumbnails for the detected images.
+     */
     public void updateImageDirs(final boolean generateThumbnails) {
         long start = System.currentTimeMillis();
         imagesDirs.clear();
@@ -237,23 +242,35 @@ public class FileService {
             
             //cleanup results from deleted files
             Arrays.stream(imageDirectoryList).forEach(imagesDirectory -> {
-                final String imagesDirectoryName = imagesDirectory.getName();
-                final File files = new File(props.getResultsLocation(), imagesDirectoryName);
-                Arrays.stream(Objects.requireNonNull(files.listFiles())).forEach(file -> {
-                    if (file.getName().endsWith(".result")) {
-                        final String[] parts = file.getName().split("\\.");
-                        final String filename = parts[0] + "." + parts[1];
-                        if (!new File(new File(props.getFilesLocation(), imagesDirectoryName), filename).exists()) {
-                            final boolean deleted = file.delete();
-                            log.warn("removed[{}] old result[{}] for file {}", deleted, file.getName(), filename);
-                        }
-                    }
-                });
+                cleanupDirectoryResults(imagesDirectory);
             });
         } else {
             log.warn("[updateImageDirs] imageDirectoryList is null!!!");
         }
         log.info("[updateImageDirs] time:{}", (System.currentTimeMillis() - start));
+    }
+    
+    /**
+     * Cleans old result files from the specified directory.
+     *
+     * @param imagesDirectory the directory contains the images results.
+     */
+    private void cleanupDirectoryResults(final File imagesDirectory) {
+        final String imagesDirectoryName = imagesDirectory.getName();
+        final File files = new File(props.getResultsLocation(), imagesDirectoryName);
+        final File[] flist = files.listFiles();
+        if (flist != null) {
+            Arrays.stream(flist).forEach(file -> {
+                if (file.getName().endsWith(".result")) {
+                    final String[] parts = file.getName().split("\\.");
+                    final String filename = parts[0] + "." + parts[1];
+                    if (!new File(new File(props.getFilesLocation(), imagesDirectoryName), filename).exists()) {
+                        final boolean deleted = file.delete();
+                        log.warn("removed[{}] old result[{}] for file {}", deleted, file.getName(), filename);
+                    }
+                }
+            });
+        }
     }
     
     
