@@ -382,7 +382,7 @@ public class ImagePack {
         for (int heightStart = 0; heightStart < height; heightStart += heightStep) {
             final int size = width * heightStep;
             int[] dnValues = new int[size];
-            log.info("{} {}", jImage.getSampleModel(), jImage.getSampleModel().getClass());
+            log.debug("{} {}", jImage.getSampleModel(), jImage.getSampleModel().getClass());
             dnValues = jImage.getRGB(0, heightStart, width, heightStep, dnValues, 0, width);
             for (int i = 0; i < size; i++) {
                 final Color color = new Color(dnValues[i], false);

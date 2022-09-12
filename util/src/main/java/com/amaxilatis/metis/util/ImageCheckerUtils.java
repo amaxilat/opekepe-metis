@@ -48,7 +48,7 @@ public class ImageCheckerUtils {
         
         if (file.getName().endsWith(".tif") || file.getName().endsWith(".jpf")) {
             log.info("[{}] parsing...", file.getName());
-            final ImagePack image = new ImagePack(file, cloudMaskDir, uncompressedLocation, concurrency);
+            ImagePack image = null;
             
             if (tasks.contains(8)) {
                 try {
@@ -59,6 +59,7 @@ public class ImageCheckerUtils {
                         result = mapper.readValue(resultFile, FileJobResult.class);
                     } else {
                         log.info("running test 8 for {}", file);
+                        image = loadImage(null, file, cloudMaskDir, uncompressedLocation, concurrency);
                         result = ImageCheckerUtils.testN8(file, image);
                         if (resultsDir != null) {
                             mapper.writeValue(resultFile, result);
@@ -78,6 +79,7 @@ public class ImageCheckerUtils {
                         result = mapper.readValue(resultFile, FileJobResult.class);
                     } else {
                         log.info("running test 1 for {}", file);
+                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
                         result = ImageCheckerUtils.testN1(file, image);
                         if (resultsDir != null) {
                             mapper.writeValue(resultFile, result);
@@ -97,6 +99,7 @@ public class ImageCheckerUtils {
                         result = mapper.readValue(resultFile, FileJobResult.class);
                     } else {
                         log.info("running test 2 for {}", file);
+                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
                         result = ImageCheckerUtils.testN2(file, image);
                         if (resultsDir != null) {
                             mapper.writeValue(resultFile, result);
@@ -116,6 +119,7 @@ public class ImageCheckerUtils {
                         result = mapper.readValue(resultFile, FileJobResult.class);
                     } else {
                         log.info("running test 3 for {}", file);
+                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
                         result = ImageCheckerUtils.testN3(file, image);
                         if (resultsDir != null) {
                             mapper.writeValue(resultFile, result);
@@ -135,6 +139,7 @@ public class ImageCheckerUtils {
                         result = mapper.readValue(resultFile, FileJobResult.class);
                     } else {
                         log.info("running test 5 for {}", file);
+                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
                         result = ImageCheckerUtils.testN5(file, image);
                         if (resultsDir != null) {
                             mapper.writeValue(resultFile, result);
@@ -154,6 +159,7 @@ public class ImageCheckerUtils {
                         result = mapper.readValue(resultFile, FileJobResult.class);
                     } else {
                         log.info("running test 6 for {}", file);
+                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
                         result = ImageCheckerUtils.testN6(file, image, histogramDir);
                         if (resultsDir != null) {
                             mapper.writeValue(resultFile, result);
@@ -173,6 +179,7 @@ public class ImageCheckerUtils {
                         result = mapper.readValue(resultFile, FileJobResult.class);
                     } else {
                         log.info("running test 7 for {}", file);
+                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
                         result = ImageCheckerUtils.testN7(file, image);
                         if (resultsDir != null) {
                             mapper.writeValue(resultFile, result);
@@ -192,6 +199,7 @@ public class ImageCheckerUtils {
                         result = mapper.readValue(resultFile, FileJobResult.class);
                     } else {
                         log.info("running test 4 for {}", file);
+                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
                         result = ImageCheckerUtils.testN4(file, image, cloudMaskDir);
                         if (resultsDir != null) {
                             mapper.writeValue(resultFile, result);
@@ -211,6 +219,7 @@ public class ImageCheckerUtils {
                         result = mapper.readValue(resultFile, FileJobResult.class);
                     } else {
                         log.info("running test 9 for {}", file);
+                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
                         result = ImageCheckerUtils.testN9(file, image);
                         if (resultsDir != null) {
                             mapper.writeValue(resultFile, result);
@@ -222,7 +231,9 @@ public class ImageCheckerUtils {
                 }
             }
             
-            image.cleanup();
+            if (image != null) {
+                image.cleanup();
+            }
         }
         return results;
     }
@@ -568,5 +579,13 @@ public class ImageCheckerUtils {
         
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(9);
         return resultBuilder.result(false).build();
+    }
+    
+    private static ImagePack loadImage(final ImagePack image, final File imageFile, final String cloudMaskDir, final String uncompressedLocation, final Integer concurrency) throws ImageProcessingException, IOException {
+        if (image == null) {
+            return new ImagePack(imageFile, cloudMaskDir, uncompressedLocation, concurrency);
+        } else {
+            return image;
+        }
     }
 }
