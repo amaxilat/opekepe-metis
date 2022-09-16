@@ -192,8 +192,9 @@
             tour.addStep(generateStep('#sidebar-reports', 'Αναφορές από την ανάλυση ορθοφωτοχαρτών.', 'right'));
             tour.addStep(generateStep('#sidebar-dirs', 'Φάκελοι με ορθοφωτοχάρτες για έλεγχο και επισκόπηση.', 'right'));
             tour.addStep(generateStep('#sidebar-reloadimages', 'Ανανέωση των ορθοφωτοχαρτών που έχουν ανιχνευθεί.', 'right'));
+            tour.addStep(generateStep('#sidebar-log', 'Ροή ελέγχων.', 'right'));
             tour.addStep(generateStep('#sidebar-settings', 'Ρυθμίσεις εφαρμογής.', 'right'));
-            tour.addStep(generateStep('#sidebar-userguide', 'Λήψη εγχειριδίου χρήσης της εφαρμογής..', 'right'));
+            tour.addStep(generateStep('#sidebar-userguide', 'Λήψη εγχειριδίου χρήσης της εφαρμογής.', 'right'));
             tour.start();
         }
     </script>
@@ -338,6 +339,17 @@
             <i id="reload-files" class="fas fa-2x fa-sync-alt"></i>
         </button>
     </div>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider my-0">
+
+    <!-- Nav Item - Log -->
+    <li class="nav-item" th:classappend="${#request.requestURI=='/log' ? 'active':''}" id="sidebar-log">
+        <a class="nav-link" href="/log">
+            <i class="fas fa-stream"></i>
+            <span>Ροή Ελέγχων</span>
+        </a>
+    </li>
 
     <!-- Divider -->
     <hr class="sidebar-divider my-0">

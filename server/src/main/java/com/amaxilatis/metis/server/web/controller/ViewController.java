@@ -7,6 +7,7 @@ import com.amaxilatis.metis.server.service.ImageProcessingService;
 import com.amaxilatis.metis.server.service.JobService;
 import com.amaxilatis.metis.server.service.ReportService;
 import com.amaxilatis.metis.server.service.UserService;
+import com.amaxilatis.metis.util.ImageCheckerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -23,6 +24,7 @@ import javax.servlet.http.HttpSession;
 
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_HOME;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_IMAGE_DIRECTORY;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_LOG;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_LOGIN;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_SETTINGS;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_USER;
@@ -85,5 +87,13 @@ public class ViewController extends BaseController {
         log.info("get:{}", VIEW_USER);
         prepareModel(model);
         return "user";
+    }
+    
+    @GetMapping(VIEW_LOG)
+    public String logPage(final Model model) {
+        log.info("get:{}", VIEW_LOG);
+        prepareModel(model);
+        model.addAttribute("theLogs", ImageCheckerUtils.getActionNotes());
+        return "log";
     }
 }

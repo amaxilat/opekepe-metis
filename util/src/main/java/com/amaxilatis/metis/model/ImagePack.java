@@ -5,7 +5,6 @@ import com.amaxilatis.metis.detector.client.DetectorApiClient;
 import com.amaxilatis.metis.detector.client.dto.DataDTO;
 import com.amaxilatis.metis.detector.client.dto.DetectionsDTO;
 import com.amaxilatis.metis.detector.client.dto.ImageDetectionResultDTO;
-import com.amaxilatis.metis.util.CloudUtils;
 import com.amaxilatis.metis.util.ColorUtils;
 import com.amaxilatis.metis.util.CompressionUtils;
 import com.amaxilatis.metis.util.FileNameUtils;
@@ -65,7 +64,9 @@ public class ImagePack {
     @Getter
     private final Metadata metadata;
     private final File uncompressedImageFile;
+    @Getter
     private final String name;
+    @Getter
     private final String parentDirName;
     private final File dataFile;
     private final BodyContentHandler handler;
@@ -197,7 +198,7 @@ public class ImagePack {
         if (!histogramLoaded) {
             
             final BufferedImage jImage = ImageIO.read(dataFile);
-    
+            
             componentSize = image.getColorModel().getPixelSize() / image.getColorModel().getNumComponents();
             componentMaxValue = (int) Math.pow(2, componentSize);
             
@@ -210,8 +211,8 @@ public class ImagePack {
             // pixel value statistics
             this.dnValuesStatistics = new SummaryStatistics();
             
-            //do a first pass for cloud, histogram and contrast data
-            parseImagePixels(width, height, jImage, true, true, false);
+            //do a pass for histogram and contrast data
+            parseImagePixels(width, height, jImage);
             
             this.histogramLoaded = true;
         }
@@ -308,7 +309,7 @@ public class ImagePack {
         
         executorService.shutdown();
         try {
-            executorService.awaitTermination(1, TimeUnit.HOURS);
+            executorService.awaitTermination(24, TimeUnit.HOURS);
         } catch (InterruptedException e) {
             log.error(e.getMessage());
         }
@@ -377,7 +378,7 @@ public class ImagePack {
     }
     
     
-    private void parseImagePixels( int width, final int height, final BufferedImage jImage, final boolean updateHistogram, final boolean updateContrast, final boolean detectClouds) {
+    private void parseImagePixels(int width, final int height, final BufferedImage jImage) {
         int heightStep = 100;
         for (int heightStart = 0; heightStart < height; heightStart += heightStep) {
             final int size = width * heightStep;
@@ -386,21 +387,11 @@ public class ImagePack {
             dnValues = jImage.getRGB(0, heightStart, width, heightStep, dnValues, 0, width);
             for (int i = 0; i < size; i++) {
                 final Color color = new Color(dnValues[i], false);
-                final int x = (i) % width;
-                final int y = (i) / width + heightStart;
                 if (isValidPixel(256, color)) {
-                    if (detectClouds) {
-                        //update the cloud data for check 4
-                        updateCloudData(x, y, color);
-                    }
-                    if (updateHistogram) {
-                        //update histogram for check 5,6
-                        updateHistogram(color);
-                    }
-                    if (updateContrast) {
-                        //update the cloud data for check 7
-                        updateContrastData(color);
-                    }
+                    //update histogram for check 5,6
+                    updateHistogram(color);
+                    //update the cloud data for check 7
+                    updateContrastData(color);
                 }
             }
         }
@@ -414,24 +405,6 @@ public class ImagePack {
     private void updateContrastData(final Color color) {
         final double brightness = ColorUtils.getBrightness(color);
         dnValuesStatistics.addValue(brightness);
-    }
-    
-    private void updateCloudData(final int x, final int y, final Color color) {
-        final float[] hsv = new float[3];
-        
-        double colorRed = ((1 - color.getAlpha() / 255.0) * color.getRed() / 255.0) + (color.getAlpha() / 255.0 * color.getRed() / 255.0);
-        double colorGreen = ((1 - color.getAlpha() / 255.0) * color.getGreen() / 255.0) + (color.getAlpha() / 255.0 * color.getGreen() / 255.0);
-        double colorBlue = ((1 - color.getAlpha() / 255.0) * color.getBlue() / 255.0) + (color.getAlpha() / 255.0 * color.getBlue() / 255.0);
-        
-        //Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsv);
-        Color.RGBtoHSB((int) (colorRed * 255), (int) (colorGreen * 255), (int) (colorBlue * 255), hsv);
-        final boolean isCloud = CloudUtils.isCloud(hsv[0] * 255, hsv[1] * 255, hsv[2] * 255);
-        //log.info("h: {} s: {} v: {} | cloudProbability:{}", hsv[0] * 255, hsv[1] * 255, hsv[2] * 255, cloudProbability);
-        if (isCloud) {
-            cloudPixels++;
-        }
-        maskImage.setRGB(x, y, isCloud ? WHITE_RGB : BLACK_RGB);
-        validPixels++;
     }
     
     public void cleanup() {

@@ -1,5 +1,6 @@
 package com.amaxilatis.metis.util;
 
+import com.amaxilatis.metis.model.ActionNote;
 import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.model.HistogramBin;
 import com.amaxilatis.metis.model.ImagePack;
@@ -8,7 +9,10 @@ import com.amaxilatis.metis.model.WorldFileResult;
 import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.tika.exception.TikaException;
 import org.xml.sax.SAXException;
 
@@ -18,9 +22,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import static com.amaxilatis.metis.config.Conditions.N1_PIXEL_SIZE;
 import static com.amaxilatis.metis.config.Conditions.N2_BIT_SIZE;
@@ -33,7 +40,10 @@ import static com.drew.metadata.exif.ExifDirectoryBase.TAG_BITS_PER_SAMPLE;
 
 @Slf4j
 public class ImageCheckerUtils {
-    public static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
+    
+    @Getter
+    private static final Deque<ActionNote> actionNotes = new ConcurrentLinkedDeque<>();
     
     public static List<FileJobResult> parseDir(final File directory, final List<Integer> tasks) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
@@ -49,193 +59,72 @@ public class ImageCheckerUtils {
         if (file.getName().endsWith(".tif") || file.getName().endsWith(".jpf")) {
             log.info("[{}] parsing...", file.getName());
             ImagePack image = null;
-            
-            if (tasks.contains(8)) {
-                try {
-                    final File resultFile = getResultFile(resultsDir, file, 8);
-                    final FileJobResult result;
-                    if (resultsDir != null && resultFile.exists()) {
-                        log.info("loading test 8 result for {}", file);
-                        result = mapper.readValue(resultFile, FileJobResult.class);
-                    } else {
-                        log.info("running test 8 for {}", file);
-                        image = loadImage(null, file, cloudMaskDir, uncompressedLocation, concurrency);
-                        result = ImageCheckerUtils.testN8(file, image);
-                        if (resultsDir != null) {
-                            mapper.writeValue(resultFile, result);
-                        }
-                    }
-                    results.add(result);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
+            int[] orderedTests = new int[]{8, 1, 2, 3, 5, 6, 7, 4, 9};
+            for (int orderedTest : orderedTests) {
+                final Pair<ImagePack, FileJobResult> pair = tryRunTest(orderedTest, tasks, image, resultsDir, file, cloudMaskDir, uncompressedLocation, histogramDir, concurrency);
+                image = pair.getLeft();
+                if (pair.getRight() != null) {
+                    results.add(pair.getRight());
                 }
             }
-            if (tasks.contains(1)) {
-                try {
-                    final File resultFile = getResultFile(resultsDir, file, 1);
-                    final FileJobResult result;
-                    if (resultsDir != null && resultFile.exists()) {
-                        log.info("loading test 1 result for {}", file);
-                        result = mapper.readValue(resultFile, FileJobResult.class);
-                    } else {
-                        log.info("running test 1 for {}", file);
-                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
-                        result = ImageCheckerUtils.testN1(file, image);
-                        if (resultsDir != null) {
-                            mapper.writeValue(resultFile, result);
-                        }
-                    }
-                    results.add(result);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-            if (tasks.contains(2)) {
-                try {
-                    final File resultFile = getResultFile(resultsDir, file, 2);
-                    final FileJobResult result;
-                    if (resultsDir != null && resultFile.exists()) {
-                        log.info("loading test 2 result for {}", file);
-                        result = mapper.readValue(resultFile, FileJobResult.class);
-                    } else {
-                        log.info("running test 2 for {}", file);
-                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
-                        result = ImageCheckerUtils.testN2(file, image);
-                        if (resultsDir != null) {
-                            mapper.writeValue(resultFile, result);
-                        }
-                    }
-                    results.add(result);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-            if (tasks.contains(3)) {
-                try {
-                    final File resultFile = getResultFile(resultsDir, file, 3);
-                    final FileJobResult result;
-                    if (resultsDir != null && resultFile.exists()) {
-                        log.info("loading test 3 result for {}", file);
-                        result = mapper.readValue(resultFile, FileJobResult.class);
-                    } else {
-                        log.info("running test 3 for {}", file);
-                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
-                        result = ImageCheckerUtils.testN3(file, image);
-                        if (resultsDir != null) {
-                            mapper.writeValue(resultFile, result);
-                        }
-                    }
-                    results.add(result);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-            if (tasks.contains(5)) {
-                try {
-                    final File resultFile = getResultFile(resultsDir, file, 5);
-                    final FileJobResult result;
-                    if (resultsDir != null && resultFile.exists()) {
-                        log.info("loading test 5 result for {}", file);
-                        result = mapper.readValue(resultFile, FileJobResult.class);
-                    } else {
-                        log.info("running test 5 for {}", file);
-                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
-                        result = ImageCheckerUtils.testN5(file, image);
-                        if (resultsDir != null) {
-                            mapper.writeValue(resultFile, result);
-                        }
-                    }
-                    results.add(result);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-            if (tasks.contains(6)) {
-                try {
-                    final File resultFile = getResultFile(resultsDir, file, 6);
-                    final FileJobResult result;
-                    if (resultsDir != null && resultFile.exists()) {
-                        log.info("loading test 6 result for {}", file);
-                        result = mapper.readValue(resultFile, FileJobResult.class);
-                    } else {
-                        log.info("running test 6 for {}", file);
-                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
-                        result = ImageCheckerUtils.testN6(file, image, histogramDir);
-                        if (resultsDir != null) {
-                            mapper.writeValue(resultFile, result);
-                        }
-                    }
-                    results.add(result);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-            if (tasks.contains(7)) {
-                try {
-                    final File resultFile = getResultFile(resultsDir, file, 7);
-                    final FileJobResult result;
-                    if (resultsDir != null && resultFile.exists()) {
-                        log.info("loading test 7 result for {}", file);
-                        result = mapper.readValue(resultFile, FileJobResult.class);
-                    } else {
-                        log.info("running test 7 for {}", file);
-                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
-                        result = ImageCheckerUtils.testN7(file, image);
-                        if (resultsDir != null) {
-                            mapper.writeValue(resultFile, result);
-                        }
-                    }
-                    results.add(result);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-            if (tasks.contains(4)) {
-                try {
-                    final File resultFile = getResultFile(resultsDir, file, 4);
-                    final FileJobResult result;
-                    if (resultsDir != null && resultFile.exists()) {
-                        log.info("loading test 4 result for {}", file);
-                        result = mapper.readValue(resultFile, FileJobResult.class);
-                    } else {
-                        log.info("running test 4 for {}", file);
-                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
-                        result = ImageCheckerUtils.testN4(file, image, cloudMaskDir);
-                        if (resultsDir != null) {
-                            mapper.writeValue(resultFile, result);
-                        }
-                    }
-                    results.add(result);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-            if (tasks.contains(9)) {
-                try {
-                    final File resultFile = getResultFile(resultsDir, file, 9);
-                    final FileJobResult result;
-                    if (resultsDir != null && resultFile.exists()) {
-                        log.info("loading test 9 result for {}", file);
-                        result = mapper.readValue(resultFile, FileJobResult.class);
-                    } else {
-                        log.info("running test 9 for {}", file);
-                        image = loadImage(image, file, cloudMaskDir, uncompressedLocation, concurrency);
-                        result = ImageCheckerUtils.testN9(file, image);
-                        if (resultsDir != null) {
-                            mapper.writeValue(resultFile, result);
-                        }
-                    }
-                    results.add(result);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-            
             if (image != null) {
                 image.cleanup();
             }
         }
         return results;
+    }
+    
+    private static Pair<ImagePack, FileJobResult> tryRunTest(final int test, final List<Integer> tasks, ImagePack image, final String resultsDir, final File file, final String cloudMaskDir, final String uncompressedLocation, final String histogramDir, final Integer concurrency) {
+        if (tasks.contains(test)) {
+            try {
+                final File resultFile = getResultFile(resultsDir, file, test);
+                FileJobResult result = null;
+                if (resultsDir != null && resultFile.exists()) {
+                    note(test, file.getParentFile().getName(), file.getName(), true, null, null);
+                    log.info("loading test {} result for {}", test, file);
+                    result = mapper.readValue(resultFile, FileJobResult.class);
+                    note(test, file.getParentFile().getName(), file.getName(), false, result.getResult(), null);
+                } else {
+                    if (image == null) {
+                        final long start = System.currentTimeMillis();
+                        note(0, file.getParentFile().getName(), file.getName(), true, null, null);
+                        image = loadImage(file, cloudMaskDir, uncompressedLocation, concurrency);
+                        note(0, file.getParentFile().getName(), file.getName(), false, true, System.currentTimeMillis() - start);
+                    }
+    
+                    log.info("running test {} for {}", test, file);
+                    note(test, file.getParentFile().getName(), file.getName(), true, null, null);
+                    final long start = System.currentTimeMillis();
+                    if (test == 1) {
+                        result = testN1(file, image);
+                    } else if (test == 2) {
+                        result = testN2(file, image);
+                    } else if (test == 3) {
+                        result = testN3(file, image);
+                    } else if (test == 4) {
+                        result = testN4(file, image, cloudMaskDir);
+                    } else if (test == 5) {
+                        result = testN5(file, image);
+                    } else if (test == 6) {
+                        result = testN6(file, image, histogramDir);
+                    } else if (test == 7) {
+                        result = testN7(file, image);
+                    } else if (test == 8) {
+                        result = testN8(file, image);
+                    } else if (test == 9) {
+                        result = testN9(file, image);
+                    }
+                    note(test, file.getParentFile().getName(), file.getName(), false, result.getResult(), System.currentTimeMillis() - start);
+                    if (resultsDir != null) {
+                        mapper.writeValue(resultFile, result);
+                    }
+                }
+                return new ImmutablePair<>(image, result);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+        return new ImmutablePair<>(image, null);
     }
     
     /**
@@ -441,8 +330,10 @@ public class ImageCheckerUtils {
             log.info("[N6] histogramG center: {}", majorBinCenterG);
             final int majorBinCenterB = image.getHistogram().majorBin(ColorUtils.LAYERS.BLUE);
             log.info("[N6] histogramB center: {}", majorBinCenterB);
-            
+    
+            log.info("[N6] histogram dir {}", histogramDir);
             if (histogramDir != null) {
+                
                 image.getHistogram().saveHistogramImage(new File(FileNameUtils.getImageHistogramFilename(histogramDir, file.getParentFile().getName(), file.getName())));
             }
             
@@ -581,11 +472,14 @@ public class ImageCheckerUtils {
         return resultBuilder.result(false).build();
     }
     
-    private static ImagePack loadImage(final ImagePack image, final File imageFile, final String cloudMaskDir, final String uncompressedLocation, final Integer concurrency) throws ImageProcessingException, IOException {
-        if (image == null) {
-            return new ImagePack(imageFile, cloudMaskDir, uncompressedLocation, concurrency);
-        } else {
-            return image;
+    private static ImagePack loadImage(final File imageFile, final String cloudMaskDir, final String uncompressedLocation, final Integer concurrency) throws ImageProcessingException, IOException {
+        return new ImagePack(imageFile, cloudMaskDir, uncompressedLocation, concurrency);
+    }
+    
+    private static void note(final int testId, final String dirName, final String fileName, final boolean start, final Boolean result, final Long time) {
+        if (actionNotes.size() > 1000) {
+            actionNotes.removeLast();
         }
+        actionNotes.addFirst(new ActionNote(dirName, fileName, testId, new Date(), start, result, time));
     }
 }
