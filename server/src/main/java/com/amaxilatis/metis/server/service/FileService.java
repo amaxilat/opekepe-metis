@@ -32,6 +32,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -171,6 +172,7 @@ public class FileService {
     
     final Map<String, SortedSet<ImageFileInfo>> images = new HashMap<>();
     final SortedSet<ImageFileInfo> imagesDirs = new TreeSet<>();
+    final ObjectMapper mapper = new ObjectMapper();
     
     @PostConstruct
     public void init() {
@@ -218,7 +220,7 @@ public class FileService {
                 final String imagesDirectoryName = imagesDirectory.getName();
                 log.debug("[updateImageDirs] imagesDirectory: {}", imagesDirectoryName);
                 images.put(imagesDirectoryName, new TreeSet<>());
-                final File[] filesList = imagesDirectory.listFiles((dir, name) -> StringUtils.endsWithAny(name.toLowerCase(), ".tif", "jpf"));
+                final File[] filesList = imagesDirectory.listFiles((dir, name) -> StringUtils.endsWithAny(name.toLowerCase(), ".tif", "jp2"));
                 if (filesList != null) {
                     final Set<ImageFileInfo> imageSet = Arrays.stream(filesList).map(image -> {
                         final String imageName = image.getName();
@@ -276,14 +278,11 @@ public class FileService {
     
     @Scheduled(fixedRate = 600000L)
     public void runAllImages() {
-        for (final Map.Entry<String, SortedSet<ImageFileInfo>> stringSortedSetEntry : images.entrySet()) {
-            for (final ImageFileInfo imageFileInfo : stringSortedSetEntry.getValue()) {
-                final File thumbnailFile = new File(getImageThumbnailFilename(stringSortedSetEntry.getKey(), imageFileInfo.getName()));
-                if (!thumbnailFile.exists()) {
-                    tpe.execute(() -> getImageThumbnail(stringSortedSetEntry.getKey(), imageFileInfo.getName()));
-                }
+        images.forEach((directoryName, value) -> value.forEach(imageFileInfo -> {
+            if (!Files.exists(Paths.get(getImageThumbnailFilename(directoryName, imageFileInfo.getName())))) {
+                tpe.execute(() -> getImageThumbnail(directoryName, imageFileInfo.getName()));
             }
-        }
+        }));
     }
     
     public SortedSet<ImageFileInfo> getImagesDirs() {
@@ -310,11 +309,7 @@ public class FileService {
         File filesSubDir = new File(filesDir, directory);
         final List<File> fileList = new ArrayList<>();
         Arrays.stream(Objects.requireNonNull(filesSubDir.listFiles())).filter(file -> file.getName().endsWith(".tif")).forEach(fileList::add);
-        for (Integer task : tasks) {
-            for (final File file : fileList) {
-                cleanFileResults(directory, file, task);
-            }
-        }
+        tasks.forEach(task -> fileList.forEach(file -> cleanFileResults(directory, file, task)));
     }
     
     private void cleanFileResults(final String directory, final File file, final int task) {
@@ -346,7 +341,7 @@ public class FileService {
     }
     
     private FileJobResult parseResult(final File f) throws IOException {
-        return new ObjectMapper().readValue(f, FileJobResult.class);
+        return mapper.readValue(f, FileJobResult.class);
     }
     
     @Async
@@ -501,42 +496,46 @@ public class FileService {
                 appendCell(titleRow, String.format(NOTES_TITLE, i));
             }
             
-            final HashMap<String, List<Integer>> files = new HashMap<>();
-            
-            Arrays.stream(new File(props.getResultsLocation(), name).listFiles()).forEach(allFile -> {
-                final String[] parts = allFile.getName().split("\\.");
-                final String imageName = parts[0] + "." + parts[1];
-                final int check = Integer.parseInt(parts[2]);
-                if (!files.containsKey(imageName)) {
-                    files.put(imageName, new ArrayList<>());
-                }
-                files.get(imageName).add(check);
-            });
-            
-            for (final Map.Entry<String, List<Integer>> fileEntry : files.entrySet()) {
-                final Row fileRow = appendRow(sheet, 1);
-                appendCell(fileRow, fileEntry.getKey());
-                for (int i = 1; i < 10; i++) {
-                    final File resultFile = getResultFile(props.getResultsLocation(), new File(props.getFilesLocation() + "/" + name + "/", fileEntry.getKey()), i);
-                    final FileJobResult result;
-                    if (resultFile.exists()) {
-                        result = new ObjectMapper().readValue(resultFile, FileJobResult.class);
-                        appendCell(fileRow, result.getResult() ? CHECK_OK : CHECK_NOK);
-                    } else {
-                        appendCell(fileRow, "");
-                    }
-                }
-                for (int i = 1; i < 10; i++) {
-                    final File resultFile = getResultFile(props.getResultsLocation(), new File(props.getFilesLocation() + "/" + name + "/", fileEntry.getKey()), i);
-                    final FileJobResult result;
-                    if (resultFile.exists()) {
-                        result = new ObjectMapper().readValue(resultFile, FileJobResult.class);
-                        appendCell(fileRow, result.getNote());
-                    } else {
-                        appendCell(fileRow, "");
-                    }
-                }
+            final File[] fileList = new File(props.getResultsLocation(), name).listFiles();
+            if (fileList != null) {
+                Arrays.stream(fileList) //for all files
+                        .map(File::getName) //extract name
+                        .map(FileNameUtils::extractImageNameFromResult) //extract image name
+                        .distinct() //unique
+                        .forEach(filename -> {
+                            final Row fileRow = appendRow(sheet, 1);
+                            appendCell(fileRow, filename);
+                            for (int i = 1; i < 10; i++) {
+                                final File resultFile = getResultFile(props.getResultsLocation(), new File(props.getFilesLocation() + "/" + name + "/", filename), i);
+                                final FileJobResult result;
+                                if (resultFile.exists()) {
+                                    try {
+                                        result = mapper.readValue(resultFile, FileJobResult.class);
+                                        appendCell(fileRow, result.getResult() ? CHECK_OK : CHECK_NOK);
+                                    } catch (IOException e) {
+                                        appendCell(fileRow, "");
+                                    }
+                                } else {
+                                    appendCell(fileRow, "");
+                                }
+                            }
+                            for (int i = 1; i < 10; i++) {
+                                final File resultFile = getResultFile(props.getResultsLocation(), new File(props.getFilesLocation() + "/" + name + "/", filename), i);
+                                final FileJobResult result;
+                                if (resultFile.exists()) {
+                                    try {
+                                        result = mapper.readValue(resultFile, FileJobResult.class);
+                                        appendCell(fileRow, result.getNote());
+                                    } catch (IOException e) {
+                                        appendCell(fileRow, "");
+                                    }
+                                } else {
+                                    appendCell(fileRow, "");
+                                }
+                            }
+                        });
             }
+            
             wb.write(fos);
             wb.close();
             return outFile;

@@ -12,9 +12,13 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import static com.amaxilatis.metis.server.service.FileService.CHECKS_TITLE;
 import static com.amaxilatis.metis.server.service.FileService.CHECK_TITLE;
@@ -41,9 +45,9 @@ public class JobService {
         Report report = reportService.createReport(props, fileJob);
         fileService.createTempReport(getOutputFileName(report));
         
-        final List<File> fileList = new ArrayList<>();
+        SortedSet<File> fileList = new TreeSet<>();
         if (targetFile.isDirectory()) {
-            Arrays.stream(Objects.requireNonNull(targetFile.listFiles())).filter(file -> file.getName().endsWith(".tif")).forEach(fileList::add);
+            fileList = Arrays.stream(Objects.requireNonNull(targetFile.listFiles())).filter(file -> StringUtils.endsWithAny(file.getName(), ".tif", ".jp2")).collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(File::getName))));
         } else {
             fileList.add(targetFile);
         }

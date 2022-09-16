@@ -104,4 +104,8 @@ public class FileNameUtils {
     }
     
     
+    public static String extractImageNameFromResult(final String name) {
+        final String[] parts = name.split("\\.");
+        return parts[0] + "." + parts[1];
+    }
 }
