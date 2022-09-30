@@ -28,6 +28,9 @@ public class SpringSecurityWebAppConfig extends WebSecurityConfigurerAdapter {
     @Value("${metis.ldap.use:false}")
     private boolean useLdap;
     
+    @Value("${metis.user.authority:METIS}")
+    private String userAuthority;
+    
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         if (useLdap) {
@@ -44,7 +47,7 @@ public class SpringSecurityWebAppConfig extends WebSecurityConfigurerAdapter {
             auth //inmemmory details
                     .inMemoryAuthentication().passwordEncoder(encoder)
                     //user details
-                    .withUser("metis").password(encoder.encode("password")).roles("ADMIN");
+                    .withUser("metis").password(encoder.encode("password")).authorities(userAuthority);
         }
     }
     
@@ -54,13 +57,15 @@ public class SpringSecurityWebAppConfig extends WebSecurityConfigurerAdapter {
                 //public
                 .antMatchers("/login", "/do_login", "/webjars/**", "/js/**", "/img/**", "/css/**", "/files/**", "/icons/**").permitAll()
                 //authorized
-                .antMatchers("/**").fullyAuthenticated()
+                .antMatchers("/**").hasAnyAuthority(userAuthority)
                 //login
                 .and().formLogin()
                 //login info
                 .loginPage("/login").usernameParameter("username").passwordParameter("password").loginProcessingUrl("/login").defaultSuccessUrl("/").successHandler(successHandler)
                 //failure
                 .failureUrl("/login")
+                .and()
+                .exceptionHandling().accessDeniedPage("/403")
                 //logout
                 .and().logout().logoutUrl("/do_logout").logoutSuccessUrl("/login").deleteCookies("JSESSIONID");
     }
