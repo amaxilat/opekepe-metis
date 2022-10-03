@@ -333,7 +333,6 @@ public class ImageCheckerUtils {
     
             log.info("[N6] histogram dir {}", histogramDir);
             if (histogramDir != null) {
-                
                 image.getHistogram().saveHistogramImage(new File(FileNameUtils.getImageHistogramFilename(histogramDir, file.getParentFile().getName(), file.getName())));
             }
             
@@ -359,12 +358,12 @@ public class ImageCheckerUtils {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(7);
         try {
             image.loadHistogram();
-            double mean = image.getDnValuesStatistics().getMean();
-            double std = image.getDnValuesStatistics().getStandardDeviation();
-            double coefficientOfVariation = std / mean;
-            double variance = image.getDnValuesStatistics().getVariance();
-            
-            boolean result = coefficientOfVariation > 0.1 && coefficientOfVariation < 0.2;
+            final double mean = image.getDnValuesStatistics().getMean();
+            final double std = image.getDnValuesStatistics().getStandardDeviation();
+            final double coefficientOfVariation = std / mean;
+            final double variance = image.getDnValuesStatistics().getVariance();
+    
+            final boolean result = coefficientOfVariation > 0.1 && coefficientOfVariation < 0.2;
             resultBuilder.result(result);
             resultBuilder.note(String.format("Μέση Τιμή: %.2f, Τυπική Απόκλιση: %.2f, Διασπορά: %.2f, Συντελεστής Διακύμανσης: %.2f", mean, std, variance, coefficientOfVariation));
         } catch (IIOException e) {
