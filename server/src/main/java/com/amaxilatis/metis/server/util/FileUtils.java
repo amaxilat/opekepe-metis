@@ -35,7 +35,10 @@ public class FileUtils {
     }
     
     public static void makeThumbnail(final File input, final File output, final int width, final int height) throws IOException {
-        Thumbnails.of(input).size(width, height).toFile(output);
+        if (input.getName().endsWith("jp2")) {
+        } else {
+            Thumbnails.of(input).size(width, height).toFile(output);
+        }
     }
     
     
