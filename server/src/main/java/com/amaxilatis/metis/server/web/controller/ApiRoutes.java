@@ -36,6 +36,7 @@ public interface ApiRoutes {
     
     String VIEW_USER = "/user";
     String VIEW_LOG = "/log";
+    String VIEW_TASKS = "/tasks";
     String VIEW_SETTINGS = "/settings";
     String VIEW_IMAGE_DIRECTORY = "/view";
     

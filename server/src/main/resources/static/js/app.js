@@ -49,8 +49,6 @@ function disconnect() {
 }
 
 function updatePoolInfo(message) {
-    $("#pool-active").text(message.active);
-    $("#pool-max").text(message.max);
     $("#pool-pending").text(message.pending);
 }
 

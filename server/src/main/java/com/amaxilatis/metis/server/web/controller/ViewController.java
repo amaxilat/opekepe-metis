@@ -28,6 +28,7 @@ import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_IMAGE_DI
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_LOG;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_LOGIN;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_SETTINGS;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_TASKS;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_USER;
 
 @SuppressWarnings({"SameReturnValue"})
@@ -96,6 +97,14 @@ public class ViewController extends BaseController {
         prepareModel(model);
         model.addAttribute("theLogs", ImageCheckerUtils.getActionNotes());
         return "log";
+    }
+    
+    @GetMapping(VIEW_TASKS)
+    public String tasksPage(final Model model) {
+        log.info("get:{}", VIEW_TASKS);
+        prepareModel(model);
+        model.addAttribute("theTasks", imageProcessingService.getTasks());
+        return "tasks";
     }
     
     @RequestMapping("/403")

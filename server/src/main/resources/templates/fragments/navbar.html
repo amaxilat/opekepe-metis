@@ -85,10 +85,8 @@
         </li>
 
         <li class="nav-item no-arrow mx-1">
-            <a class="nav-link" style="color: #5a5c69; font-weight: bold">
+            <a class="nav-link" style="color: #5a5c69; font-weight: bold" href="/tasks">
                 Ουρά:&nbsp;&nbsp;
-                <span id="pool-active" th:text="${pool.active}">0</span>
-                /
                 <span id="pool-pending" th:text="${pool.pending}">0</span>
             </a>
         </li>
@@ -192,7 +190,8 @@
             tour.addStep(generateStep('#sidebar-reports', 'Αναφορές από την ανάλυση ορθοφωτοχαρτών.', 'right'));
             tour.addStep(generateStep('#sidebar-dirs', 'Φάκελοι με ορθοφωτοχάρτες για έλεγχο και επισκόπηση.', 'right'));
             tour.addStep(generateStep('#sidebar-reloadimages', 'Ανανέωση των ορθοφωτοχαρτών που έχουν ανιχνευθεί.', 'right'));
-            tour.addStep(generateStep('#sidebar-log', 'Ροή ελέγχων.', 'right'));
+            tour.addStep(generateStep('#sidebar-log', 'Ροή των 1000 τελευταίων ελέγχων που έχουν ξεκινήσει ή ολοκληρωθεί.', 'right'));
+            tour.addStep(generateStep('#sidebar-checks', 'Ουρά επεξεργασίας εικόνων που πρόκειται να ελεγχθούν από το σύστημα.', 'right'));
             tour.addStep(generateStep('#sidebar-settings', 'Ρυθμίσεις εφαρμογής.', 'right'));
             tour.addStep(generateStep('#sidebar-userguide', 'Λήψη εγχειριδίου χρήσης της εφαρμογής.', 'right'));
             tour.start();
@@ -348,6 +347,14 @@
         <a class="nav-link" href="/log">
             <i class="fas fa-stream"></i>
             <span>Ροή Ελέγχων</span>
+        </a>
+    </li>
+
+    <!-- Nav Item - Checks -->
+    <li class="nav-item" th:classappend="${#request.requestURI=='/tasks' ? 'active':''}" id="sidebar-checks">
+        <a class="nav-link" href="/tasks">
+            <i class="fas fa-list"></i>
+            <span>Ουρά Επεξεργασίας</span>
         </a>
     </li>
 
