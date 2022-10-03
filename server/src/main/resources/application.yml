@@ -39,7 +39,7 @@ spring:
     locations: classpath:db/migration
     table: flyway_schema_history
   datasource:
-    url: jdbc:derby:directory:metisdb;create=true
+    url: jdbc:derby:directory:metisdb
     username: sa
     password: password
     driverClassName: org.apache.derby.jdbc.EmbeddedDriver
