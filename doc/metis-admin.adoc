@@ -1,7 +1,7 @@
 = METIS - Εφαρμογή Για Το Μαζικό Έλεγχο Ορθοφωτοχαρτών
 :author: ΦΩΤΟΠΟ ΑΝΩΝΥΜΟΣ ΕΤΑΙΡΕΙΑ ΜΕΛΕΤΩΝ ΑΝΑΠΤΥΞΗΣ & ΓΕΩΓΡΑΦΙΚΩΝ ΣΥΣΤΗΜΑΤΩΝ ΠΛΗΡΟΦΟΡΙΩΝ
-:revnumber: 0.10.0
-:description: Ο οδηγός αυτός περιγράφει τη παραμετροποίηση / διαχείριση της εφαρμογής Metis για τον μαζικό έλεγχο ορθοφωτοχαρτών από τον διαχειριστή του συστήματος.
+:revnumber: 0.12.0
+:description: Ο οδηγός αυτός περιγράφει την παραμετροποίηση / διαχείριση της εφαρμογής Metis για τον μαζικό έλεγχο ορθοφωτοχαρτών από τον διαχειριστή του συστήματος.
 :doctype: book
 :sectanchors:
 :sectlinks:
@@ -34,25 +34,75 @@ ifdef::preface-title[:preface-title: Πρόλογος]
 
 == Εκτέλεση Εφαρμογής
 
-Η εφαρμογή εκτελείται ως Window Service ακολουθώντας τα βήματα περιγράφονται παρακάτω για την εγκατάστασή της, την διαχείρησή της καθώς και την λήψη αντιγράφων ασφαλείας από αυτήν.
+Η εφαρμογή εκτελείται ως Window Service ακολουθώντας τα βήματα περιγράφονται παρακάτω για την εγκατάστασή της, τη διαχείρισή της καθώς και τη λήψη αντιγράφων ασφαλείας από αυτήν.
 
 
 === Windows Service
 
 Η εφαρμογή `Metis` εκτελείται ως Windows Service και για την εγκατάστασή της απαιτείται η εκτέλεση της παρακάτω εντολής μέσα στον αντίστοιχο φάκελο του release πακέτου της εφαρμογής.
 
-
 ```
 Metis.exe install Metis.xml
 ```
 
+Το αρχείο `Metis.xml` περιέχει παραμέτρους για τον τρόπο εκτέλεσης και τα δικαιώματα πρόσβασης της εφαρμογής στο σύστημα.
+Τα στοιχεία εκτέλεσης για την εφαρμογή Metis φαίνονται παρακάτω:
+
+```
+<service>
+    <id>Metis</id>
+    <name>Metis</name>
+    <description>This runs Metis Spring Boot as a Service.</description>
+    <env name="MYAPP_HOME" value="C:\Users\user\MetisApp\"/> (!change with actual home)
+    <executable>java</executable>
+    <arguments>-Xmx15256m -D"spring.profiles.active=opekepe" -D"spring.config.import=optional:file:settings.yml" -jar "metis-server.jar"</arguments>
+    <logmode>rotate</logmode>
+    <serviceaccount>
+      <username>username</username> (!change with actual username)
+      <password>password</password> (!change with actual password)
+      <allowservicelogon>true</allowservicelogon>
+    </serviceaccount>
+    <sharedDirectoryMapping>
+      <map label="Z:" uncpath="\\ope3filesrv\FOTOPO" />
+    </sharedDirectoryMapping>
+</service>
+
+```
+
 == Παραμετροποίηση Εφαρμογής
 
-Για την παραμετροποίηση της εφαρμογής χρησιμοποιείται το αρχείο `local.yml` το οποίο μας επιτρέπει να τροποποιήσουμε παραμέτρους όπως:
+Για την παραμετροποίηση της εφαρμογής χρησιμοποιείται το αρχείο `settings.yml` το οποίο μας επιτρέπει να τροποποιήσουμε παραμέτρους όπως:
 
-1.
+. Αρχείο SSL Certificate για ασφαλή πρόσβαση (`server.ssl.key-store`).
+. Κωδικός αρχείου SSL Certificate (`server.ssl.key-store-password`) - δείτε την παρακάτω ενότητα.
+. Κωδικός κλειδιού SSL Certificate (`server.ssl.key-password`) - δείτε την παρακάτω ενότητα.
+. Διαδρομή Αρχείων Ορθοφωτοχαρτών (`metis.filesLocation`).
+. Διαδρομή Αντιγράφων Ασφαλείας Συστήματος (`metis.dbBackupLocation`).
+. Στοιχεία Σύνδεσης Active Directory (`metis.ldap.*`).
+. Αριθμός Θέσεων Επεξεργασίας (`metis.processing.threads`).
 
-Μετά από κάθε αλλαγή στις παραμέτρους της εφαρμογής απαιτείται επανεκκίνηση της με την διαδικασία που περιγράφεται παρακάτω.
+Παράδειγμα αρχείου `settings.yml`
+```
+server:
+  ssl:
+    key-store: file:metiscert.p12
+    key-store-password: password (!change with actual password)
+    key-store-type: pkcs12
+    key-alias: 1
+    key-password: password (!change with actual password)
+metis:
+  filesLocation: "Z:\\"
+  dbBackupLocation: "Z:\\serverbackups\\"
+  ldap:
+    domain: opekepe.gr
+    url: "ldap://DC2.opekepe.gr ldap://DC3.opekepe.gr"
+    use: true
+  processing:
+    threads: 2
+```
+
+
+Μετά από κάθε αλλαγή στις παραμέτρους της εφαρμογής απαιτείται επανεκκίνηση της με τη διαδικασία που περιγράφεται παρακάτω.
 
 === Επανεκκίνηση Εφαρμογής
 
@@ -65,7 +115,7 @@ image::img-admin/service.png[align="center"]
 
 === Μετατροπή Certificate
 
-Η εφαρμογή χρησιμοποιεί SSL certificates μορφής `.p12` για την φόρτωση του πιστοποιητικού και του αντίστοιχου private key.
+Η εφαρμογή χρησιμοποιεί SSL certificates μορφής `.p12` για τη φόρτωση του πιστοποιητικού και του αντίστοιχου private key.
 Για τη μετατροπή του πιστοποιητικού από τη μορφή `.pfx` γίνεται χρήση του εργαλείου `keytool` του `jdk` μέσω της παρακάτω εντολής:
 
 ```
