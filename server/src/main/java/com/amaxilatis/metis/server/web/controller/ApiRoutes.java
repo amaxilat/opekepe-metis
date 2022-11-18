@@ -47,4 +47,6 @@ public interface ApiRoutes {
     String ACTION_CLEAN = "/clean";
     
     String VIEW_LOGIN = "/login";
+    
+    String ACTION_SAVE_CONFIGURATION = "/save/configuration";
 }

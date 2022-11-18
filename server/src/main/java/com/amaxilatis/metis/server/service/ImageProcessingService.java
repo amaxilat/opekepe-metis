@@ -3,7 +3,9 @@ package com.amaxilatis.metis.server.service;
 import com.amaxilatis.metis.detector.client.DetectorApiClient;
 import com.amaxilatis.metis.detector.client.dto.PingDataDTO;
 import com.amaxilatis.metis.server.config.ProcessingQueueConfiguration;
+import com.amaxilatis.metis.server.db.model.Configuration;
 import com.amaxilatis.metis.server.db.model.Task;
+import com.amaxilatis.metis.server.db.repository.ConfigurationRepository;
 import com.amaxilatis.metis.server.db.repository.TaskRepository;
 import com.amaxilatis.metis.server.model.ImageProcessingTask;
 import com.amaxilatis.metis.server.model.PoolInfo;
@@ -14,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -41,6 +44,7 @@ public class ImageProcessingService {
     private final SortedSet<TestDescription> testDescriptions = new TreeSet<>();
     
     private final TaskRepository taskRepository;
+    private final ConfigurationRepository configurationRepository;
     
     @PostConstruct
     public void init() {
@@ -53,7 +57,7 @@ public class ImageProcessingService {
         testDescriptions.add(TestDescription.builder().id(6).type(0).name("Έλεγχος 6: Κορυφής Ιστογράμματος").enabled(true).description("Έλεγχος κορυφής ιστογράμματος από την τυπική μέση τιμή (πχ 8bit 128) και σύμφωνα με τις προδιαγραφές").build());
         testDescriptions.add(TestDescription.builder().id(7).type(0).name("Έλεγχος 7: Αντίθεσης").enabled(true).description("Έλεγχος αντίθεσης ανά κανάλι ως έλεγχος της μεταβλητότητας των ψηφιακών τιμών (DN) σαν ποσοστό των διαθεσίμων επιπέδων του γκρι και σύμφωνα με τις προδιαγραφές").build());
         testDescriptions.add(TestDescription.builder().id(8).type(0).name("Έλεγχος 8: Συμπίεσης").enabled(true).description("Έλεγχος συμπίεσης στον μορφότυπο των αρχείων (GeoTiff ή/και JPEG2000) και σύμφωνα με τις προδιαγραφές").build());
-        testDescriptions.add(TestDescription.builder().id(9).type(2).name("Έλεγχος 9: Ομοιογενών Αντικειμένων").enabled(true).description("Αναγνώριση ομοιογενών αντικειμένων και αυτόματη μέτρηση και για την ισορροπία χρώματος και θόρυβο όπου προκύπτει αφενός ως η διαφορά μεταξύ του ελάχιστου και του μέγιστου ψηφιακού συνόλου στην τριάδα υπολογιζόμενη σε σχεδόν «ουδέτερα» αντικείμενα (όπως άσφαλτος ή ταράτσες κτιρίων - δεν εφαρμόζεται σε παγχρωματικές εικόνες) και αφετέρου ως η αναλογία σήματος προς θόρυβο (SNR) που καθορίζεται σαν τον λόγο της μέσης ψηφιακής τιμής (DN) του pixel (DN Value) προς την μεταβλητότητα (standard deviation) των ψηφιακών τιμών (υπολογισμένη σε περιοχές με ομοιόμορφη πυκνότητα μέσων τιμών) και σύμφωνα με τις προδιαγραφές").build());
+        testDescriptions.add(TestDescription.builder().id(9).type(0).name("Έλεγχος 9: Ομοιογενών Αντικειμένων").enabled(true).description("Αναγνώριση ομοιογενών αντικειμένων και αυτόματη μέτρηση και για την ισορροπία χρώματος και θόρυβο όπου προκύπτει αφενός ως η διαφορά μεταξύ του ελάχιστου και του μέγιστου ψηφιακού συνόλου στην τριάδα υπολογιζόμενη σε σχεδόν «ουδέτερα» αντικείμενα (όπως άσφαλτος ή ταράτσες κτιρίων - δεν εφαρμόζεται σε παγχρωματικές εικόνες) και αφετέρου ως η αναλογία σήματος προς θόρυβο (SNR) που καθορίζεται σαν τον λόγο της μέσης ψηφιακής τιμής (DN) του pixel (DN Value) προς την μεταβλητότητα (standard deviation) των ψηφιακών τιμών (υπολογισμένη σε περιοχές με ομοιόμορφη πυκνότητα μέσων τιμών) και σύμφωνα με τις προδιαγραφές").build());
     }
     
     @Scheduled(fixedRate = 10000L)
@@ -82,7 +86,7 @@ public class ImageProcessingService {
             final Task task = optTask.get();
             final List<Integer> tasks = Arrays.stream(task.getTasks().split(",")).map(Integer::parseInt).collect(Collectors.toList());
             log.info("Pending: {} | Running task: {} from {} for {}[{}]", taskRepository.count(), task.getId(), task.getDate(), task.getFileName(), task.getTasks());
-            new ImageProcessingTask(processingQueueConfiguration, fileService, task.getOutFileName(), task.getFileName(), tasks).run();
+            new ImageProcessingTask(processingQueueConfiguration, fileService, task.getOutFileName(), task.getFileName(), tasks, getConfiguration()).run();
             taskRepository.delete(optTask.get());
         }
     }
@@ -102,5 +106,31 @@ public class ImageProcessingService {
     
     public Set<TestDescription> getTestDescriptions() {
         return testDescriptions;
+    }
+    
+    public Configuration getConfiguration() {
+        return configurationRepository.findById(1L).get();
+    }
+    
+    public void updateConfiguration(final Configuration configuration, final String username) {
+        configuration.setDate(new Date());
+        configuration.setUsername(username);
+        final Optional<Configuration> optionalConfig = configurationRepository.findById(1L);
+        if (optionalConfig.isPresent()) {
+            final Configuration currentConfiguration = optionalConfig.get();
+            currentConfiguration.setDate(configuration.getDate());
+            currentConfiguration.setN1PixelSize(configuration.getN1PixelSize());
+            currentConfiguration.setN2BitSize(configuration.getN2BitSize());
+            currentConfiguration.setN3SamplesPerPixel(configuration.getN3SamplesPerPixel());
+            currentConfiguration.setN4CloudCoverageThreshold(configuration.getN4CloudCoverageThreshold());
+            currentConfiguration.setN5ClippingThreshold(configuration.getN5ClippingThreshold());
+            currentConfiguration.setN7VariationLow(configuration.getN7VariationLow());
+            currentConfiguration.setN7VariationHigh(configuration.getN7VariationHigh());
+            currentConfiguration.setN9ColorBalanceThreshold(configuration.getN9ColorBalanceThreshold());
+            currentConfiguration.setN9NoiseThreshold(configuration.getN9NoiseThreshold());
+            configurationRepository.save(currentConfiguration);
+        } else {
+            configurationRepository.save(configuration);
+        }
     }
 }

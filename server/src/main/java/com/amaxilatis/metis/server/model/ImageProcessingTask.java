@@ -2,6 +2,7 @@ package com.amaxilatis.metis.server.model;
 
 import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.server.config.ProcessingQueueConfiguration;
+import com.amaxilatis.metis.server.db.model.Configuration;
 import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.util.ImageCheckerUtils;
 import com.drew.imaging.ImageProcessingException;
@@ -28,6 +29,7 @@ public class ImageProcessingTask implements Runnable {
     private final String outFileName;
     private String filename;
     private List<Integer> tasks;
+    private Configuration configuration;
     
     public void run() {
         log.info(outFileName);
@@ -35,7 +37,7 @@ public class ImageProcessingTask implements Runnable {
         try {
             final File imageFile = new File(filename);
             log.info("parsing file {}", imageFile);
-            final List<FileJobResult> results = ImageCheckerUtils.parseFile(processingQueueConfiguration.getConcurrencySize(), imageFile, tasks, fileService.getResultsLocation(), fileService.getHistogramLocation(), fileService.getCloudMaskLocation(), fileService.getUncompressedLocation());
+            final List<FileJobResult> results = ImageCheckerUtils.parseFile(configuration.toTestConfiguration(), processingQueueConfiguration.getConcurrencySize(), imageFile, tasks, fileService.getResultsLocation(), fileService.getHistogramLocation(), fileService.getCloudMaskLocation(), fileService.getUncompressedLocation());
             
             final StringBuilder sb = new StringBuilder();
             sb.append("\"").append(imageFile.getName()).append("\"").append(",");

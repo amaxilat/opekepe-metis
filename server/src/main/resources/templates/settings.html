@@ -26,97 +26,227 @@
 
                 <!-- Content Row -->
                 <div class="row">
-                    <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-12 col-md-12 mb-12">
-                        <div class="card border-left-primary shadow h-100 py-2">
+
+                    <div class="col-xxl-4 col-xl-6 col-lg-6 col-md-12">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Έλεγχοι</h6>
+                                <div class="text-xs font-weight-bold text-muted mb-1">
+                                </div>
+                            </div>
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary mb-1">
-                                            Ρυθμίσεις Αρχείων
+                                    <div class="col mr-2 ">
+                                        <div class="media" th:each="test : ${tests}">
+                                            <a class="btn btn-circle mr-3"
+                                               th:classappend="${test.enabled ? 'btn-success' : 'btn-warning'}">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                            <div class="media-body">
+                                                <h5 class="mt-0 font-weight-bold"><span th:text="${test.name}">Έλεγχος</span></h5>
+                                                <p th:text="${test.description}">Some description</p>
+                                            </div>
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                            <form class="form-horizontal">
-                                                <div class="form-group">
-                                                    <label for="filesLocation">Διαδρομή Αρχείων</label>
-                                                    <input type="text" class="form-control" id="filesLocation"
-                                                           aria-describedby="filesLocation" disabled
-                                                           th:value="${metisProperties.filesLocation}">
-                                                </div>
-
-                                                <div class="form-group">
-                                                    <label for="reportLocation">Διαδρομή Αναφορών</label>
-                                                    <input type="text" class="form-control" id="reportLocation"
-                                                           aria-describedby="reportLocation" disabled
-                                                           th:value="${metisProperties.reportLocation}">
-                                                </div>
-
-                                                <div class="form-group">
-                                                    <label for="resultsLocation">Διαδρομή Αποτελεσμάτων</label>
-                                                    <input type="text" class="form-control" id="resultsLocation"
-                                                           aria-describedby="resultsLocation" disabled
-                                                           th:value="${metisProperties.resultsLocation}">
-                                                </div>
-
-                                                <div class="form-group">
-                                                    <label for="resultsLocation">Διαδρομή Μικρογραφιών</label>
-                                                    <input type="text" class="form-control" id="thumbnailLocation"
-                                                           aria-describedby="thumbnailLocation" disabled
-                                                           th:value="${metisProperties.thumbnailLocation}">
-                                                </div>
-
-                                                <div class="form-group">
-                                                    <label for="resultsLocation">Διαδρομή Ιστογραμμάτων</label>
-                                                    <input type="text" class="form-control" id="histogramLocation"
-                                                           aria-describedby="histogramLocation" disabled
-                                                           th:value="${metisProperties.histogramLocation}">
-                                                </div>
-
-                                                <div class="form-group">
-                                                    <label for="cloudMaskLocation">Διαδρομή Αρχείων Νεφοκάλυψης</label>
-                                                    <input type="text" class="form-control" id="cloudMaskLocation"
-                                                           aria-describedby="cloudMaskLocation" disabled
-                                                           th:value="${metisProperties.cloudMaskLocation}">
-                                                </div>
-
-                                                <div class="form-group">
-                                                    <label for="uncompressedLocation">Διαδρομή Αποσυμπίεσης Αρχείων</label>
-                                                    <input type="text" class="form-control" id="uncompressedLocation"
-                                                           aria-describedby="uncompressedLocation" disabled
-                                                           th:value="${metisProperties.uncompressedLocation}">
-                                                </div>
-
-                                                <div class="form-group">
-                                                    <label for="backupLocation">Διαδρομή Αντιγράφων Ασφαλείας</label>
-                                                    <input type="text" class="form-control" id="backupLocation"
-                                                           aria-describedby="backupLocation" disabled
-                                                           th:value="${metisProperties.dbBackupLocation}">
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <!--<i class="fas fa-calendar fa-2x text-gray-300"></i>-->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <br/>
-                <!-- Content Row -->
-                <div class="row">
-                    <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-12 col-md-12 mb-12">
-                        <div class="card border-left-primary shadow h-100 py-2">
+
+
+                    <div class="col-xxl-4 col-xl-6 col-lg-6 col-md-12">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Ρυθμίσεις Ελέγχων</h6>
+                                <div class="text-xs font-weight-bold text-muted mb-1">
+                                    τελευταία αλλαγή
+                                    <span th:text="${#dates.format(configuration.date, 'dd-MM-yyyy HH:mm')}"></span>
+                                    από
+                                    <span th:text="${configuration.username}"></span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2 font-weight-bold">
+                                        <form class="form-horizontal" th:action="'/save/configuration'"
+                                              method="post">
+                                            <div class="form-group">
+                                                <label for="n1PixelSize">Έλεγχος 1: Μέγεθος Pixel</label>
+                                                <input type="number" class="form-control" id="n1PixelSize"
+                                                       name="n1PixelSize" aria-describedby="n1PixelSize"
+                                                       required
+                                                       th:value="${configuration.n1PixelSize}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="n2BitSize">Έλεγχος 2: Μέγεθος Bit ανά κανάλι</label>
+                                                <input type="number" class="form-control" id="n2BitSize"
+                                                       name="n2BitSize" aria-describedby="n2BitSize"
+                                                       required
+                                                       th:value="${configuration.n2BitSize}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="n3SamplesPerPixel">Έλεγχος 3: Κανάλια ανά Pixel</label>
+                                                <input type="number" class="form-control" id="n3SamplesPerPixel"
+                                                       name="n3SamplesPerPixel" aria-describedby="n3SamplesPerPixel"
+                                                       required
+                                                       th:value="${configuration.n3SamplesPerPixel}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="n4CloudCoverageThreshold">Έλεγχος 4: Νεφοκάλυψη</label>
+                                                <input type="number" class="form-control"
+                                                       id="n4CloudCoverageThreshold" name="n4CloudCoverageThreshold"
+                                                       aria-describedby="n4CloudCoverageThreshold"
+                                                       required
+                                                       th:value="${configuration.n4CloudCoverageThreshold}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="n5ClippingThreshold">Έλεγχος 5: Ολικό clipping</label>
+                                                <input type="number" class="form-control" id="n5ClippingThreshold"
+                                                       name="n5ClippingThreshold"
+                                                       aria-describedby="n5ClippingThreshold"
+                                                       required
+                                                       th:value="${configuration.n5ClippingThreshold}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="n7VariationLow">Έλεγχος 7: Μεταβλητότητα Τιμών</label>
+                                                <input type="number" class="form-control" id="n7VariationLow"
+                                                       name="n7VariationLow" aria-describedby="n7VariationLow"
+                                                       required
+                                                       th:value="${configuration.n7VariationLow}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="n7VariationHigh">Έλεγχος 7: Μεταβλητότητα Τιμών</label>
+                                                <input type="number" class="form-control" id="n7VariationHigh"
+                                                       name="n7VariationHigh" aria-describedby="n7VariationHigh"
+                                                       required
+                                                       th:value="${configuration.n7VariationHigh}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="n9ColorBalanceThreshold">Έλεγχος 9: Ισορροπία
+                                                    Χρώματος</label>
+                                                <input type="number" class="form-control"
+                                                       id="n9ColorBalanceThreshold"
+                                                       name="n9ColorBalanceThreshold"
+                                                       aria-describedby="n9ColorBalanceThreshold"
+                                                       required
+                                                       th:value="${configuration.n9ColorBalanceThreshold}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="n9NoiseThreshold">Έλεγχος 9: Θόρυβος ανά κανάλι</label>
+                                                <input type="number" class="form-control" id="n9NoiseThreshold"
+                                                       name="n9NoiseThreshold" aria-describedby="n9NoiseThreshold"
+                                                       required
+                                                       th:value="${configuration.n9NoiseThreshold}">
+                                            </div>
+                                            <div class="form-group">
+                                                <button type="submit"
+                                                        class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+                                                    <!-- <span class="icon"><i class="fas fa-eraser text-white-50"></i></span>-->
+                                                    <span class="text">Αποθήκευση Ρυθμίσεων Ελέγχων</span>
+                                                </button>
+                                            </div>
+
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="col-xxl-4 col-xl-6 col-lg-6 col-md-12">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Ρυθμίσεις Αρχείων</h6>
+                                <div class="text-xs font-weight-bold text-muted mb-1">
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2 font-weight-bold">
+                                        <form class="form-horizontal">
+                                            <div class="form-group">
+                                                <label for="filesLocation">Διαδρομή Αρχείων</label>
+                                                <input type="text" class="form-control" id="filesLocation"
+                                                       aria-describedby="filesLocation" disabled
+                                                       th:value="${metisProperties.filesLocation}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="reportLocation">Διαδρομή Αναφορών</label>
+                                                <input type="text" class="form-control" id="reportLocation"
+                                                       aria-describedby="reportLocation" disabled
+                                                       th:value="${metisProperties.reportLocation}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="resultsLocation">Διαδρομή Αποτελεσμάτων</label>
+                                                <input type="text" class="form-control" id="resultsLocation"
+                                                       aria-describedby="resultsLocation" disabled
+                                                       th:value="${metisProperties.resultsLocation}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="resultsLocation">Διαδρομή Μικρογραφιών</label>
+                                                <input type="text" class="form-control" id="thumbnailLocation"
+                                                       aria-describedby="thumbnailLocation" disabled
+                                                       th:value="${metisProperties.thumbnailLocation}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="resultsLocation">Διαδρομή Ιστογραμμάτων</label>
+                                                <input type="text" class="form-control" id="histogramLocation"
+                                                       aria-describedby="histogramLocation" disabled
+                                                       th:value="${metisProperties.histogramLocation}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="cloudMaskLocation">Διαδρομή Αρχείων Νεφοκάλυψης</label>
+                                                <input type="text" class="form-control" id="cloudMaskLocation"
+                                                       aria-describedby="cloudMaskLocation" disabled
+                                                       th:value="${metisProperties.cloudMaskLocation}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="uncompressedLocation">Διαδρομή Αποσυμπίεσης
+                                                    Αρχείων</label>
+                                                <input type="text" class="form-control" id="uncompressedLocation"
+                                                       aria-describedby="uncompressedLocation" disabled
+                                                       th:value="${metisProperties.uncompressedLocation}">
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="backupLocation">Διαδρομή Αντιγράφων Ασφαλείας</label>
+                                                <input type="text" class="form-control" id="backupLocation"
+                                                       aria-describedby="backupLocation" disabled
+                                                       th:value="${metisProperties.dbBackupLocation}">
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xxl-4 col-xl-6 col-lg-6 col-md-12">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                <h6 class="m-0 font-weight-bold text-primary">Ρυθμίσεις Επεξεργασίας</h6>
+                                <div class="text-xs font-weight-bold text-muted mb-1">
+                                </div>
+                            </div>
                             <div class="card-body">
                                 <div class="row no-gutters align-items-center">
                                     <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary mb-1">
-                                            Ρυθμίσεις Επεξεργασίας
-                                        </div>
-
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        <div class="h5 mb-0 font-weight-bold">
                                             <h4 class="small font-weight-bold">Θέσεις Επεξεργασίας
                                                 <span class="float-right">
                                                     <span th:text="${pool.active}"></span>
@@ -131,7 +261,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                        <div class="h5 mb-0 font-weight-bold">
                                             <h4 class="small font-weight-bold">Ουρά Επεξεργασίας
                                                 <span class="float-right">
                                                     <span th:text="${pool.pending}"></span>
@@ -144,46 +274,13 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-auto">
-                                        <!--<i class="fas fa-calendar fa-2x text-gray-300"></i>-->
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
                 <br/>
-                <!-- Content Row -->
-                <div class="row">
-                    <!-- Earnings (Monthly) Card Example -->
-                    <div class="col-xl-12 col-md-12 mb-12">
-                        <div class="card border-left-primary shadow h-100 py-2">
-                            <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary mb-1">
-                                            Ρυθμίσεις Ελέγχων
-                                        </div>
-                                        <div class="media" th:each="test : ${tests}">
-                                            <a class="btn btn-circle mr-3"
-                                               th:classappend="${test.enabled ? 'btn-success' : 'btn-warning'}">
-                                                <i class="fas fa-check"></i>
-                                            </a>
-                                            <div class="media-body">
-                                                <h4 class="mt-0"><span th:text="${test.name}">Έλεγχος</span></h4>
-                                                <p th:text="${test.description}">Some description</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                                <div class="col-auto">
-                                    <!--<i class="fas fa-calendar fa-2x text-gray-300"></i>-->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
         <!-- /.container-fluid -->

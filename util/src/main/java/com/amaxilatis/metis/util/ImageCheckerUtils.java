@@ -4,6 +4,7 @@ import com.amaxilatis.metis.model.ActionNote;
 import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.model.HistogramBin;
 import com.amaxilatis.metis.model.ImagePack;
+import com.amaxilatis.metis.model.TestConfiguration;
 import com.amaxilatis.metis.model.WorldFile;
 import com.amaxilatis.metis.model.WorldFileResult;
 import com.drew.imaging.ImageProcessingException;
@@ -29,15 +30,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import static com.amaxilatis.metis.config.Conditions.N1_PIXEL_SIZE;
-import static com.amaxilatis.metis.config.Conditions.N2_BIT_SIZE;
-import static com.amaxilatis.metis.config.Conditions.N3_SAMPLES_PER_PIXEL;
-import static com.amaxilatis.metis.config.Conditions.N4_CLOUD_COVERAGE_THRESHOLD;
-import static com.amaxilatis.metis.config.Conditions.N5_CLIPPING_THRESHOLD;
-import static com.amaxilatis.metis.config.Conditions.N7_VARIATION_HIGH;
-import static com.amaxilatis.metis.config.Conditions.N7_VARIATION_LOW;
-import static com.amaxilatis.metis.config.Conditions.N9_COLOR_BALANCE_THRESHOLD;
-import static com.amaxilatis.metis.config.Conditions.N9_NOISE_THRESHOLD;
 import static com.amaxilatis.metis.util.FileNameUtils.getResultFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.evaluateWorldFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.getWorldFile;
@@ -51,15 +43,15 @@ public class ImageCheckerUtils {
     @Getter
     private static final Deque<ActionNote> actionNotes = new ConcurrentLinkedDeque<>();
     
-    public static List<FileJobResult> parseDir(final File directory, final List<Integer> tasks) throws IOException, TikaException, SAXException, ImageProcessingException {
+    public static List<FileJobResult> parseDir(final TestConfiguration configuration, final File directory, final List<Integer> tasks) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
         for (final File file : Objects.requireNonNull(directory.listFiles())) {
-            results.addAll(parseFile(1, file, tasks, null, null, null, null));
+            results.addAll(parseFile(configuration, 1, file, tasks, null, null, null, null));
         }
         return results;
     }
     
-    public static List<FileJobResult> parseFile(final Integer concurrency, final File file, final List<Integer> tasks, final String resultsDir, final String histogramDir, final String cloudMaskDir, final String uncompressedLocation) throws IOException, TikaException, SAXException, ImageProcessingException {
+    public static List<FileJobResult> parseFile(final TestConfiguration configuration, final Integer concurrency, final File file, final List<Integer> tasks, final String resultsDir, final String histogramDir, final String cloudMaskDir, final String uncompressedLocation) throws IOException, TikaException, SAXException, ImageProcessingException {
         final List<FileJobResult> results = new ArrayList<>();
         
         if (file.getName().endsWith(".tif") || file.getName().endsWith(".jpf")) {
@@ -67,7 +59,7 @@ public class ImageCheckerUtils {
             ImagePack image = null;
             int[] orderedTests = new int[]{8, 1, 2, 3, 5, 6, 7, 4, 9};
             for (int orderedTest : orderedTests) {
-                final Pair<ImagePack, FileJobResult> pair = tryRunTest(orderedTest, tasks, image, resultsDir, file, cloudMaskDir, uncompressedLocation, histogramDir, concurrency);
+                final Pair<ImagePack, FileJobResult> pair = tryRunTest(configuration, orderedTest, tasks, image, resultsDir, file, cloudMaskDir, uncompressedLocation, histogramDir, concurrency);
                 image = pair.getLeft();
                 if (pair.getRight() != null) {
                     results.add(pair.getRight());
@@ -80,7 +72,7 @@ public class ImageCheckerUtils {
         return results;
     }
     
-    private static Pair<ImagePack, FileJobResult> tryRunTest(final int test, final List<Integer> tasks, ImagePack image, final String resultsDir, final File file, final String cloudMaskDir, final String uncompressedLocation, final String histogramDir, final Integer concurrency) {
+    private static Pair<ImagePack, FileJobResult> tryRunTest(final TestConfiguration configuration, final int test, final List<Integer> tasks, ImagePack image, final String resultsDir, final File file, final String cloudMaskDir, final String uncompressedLocation, final String histogramDir, final Integer concurrency) {
         if (tasks.contains(test)) {
             try {
                 final File resultFile = getResultFile(resultsDir, file, test);
@@ -97,28 +89,28 @@ public class ImageCheckerUtils {
                         image = loadImage(file, cloudMaskDir, uncompressedLocation, concurrency);
                         note(0, file.getParentFile().getName(), file.getName(), false, true, System.currentTimeMillis() - start);
                     }
-    
+                    
                     log.info("running test {} for {}", test, file);
                     note(test, file.getParentFile().getName(), file.getName(), true, null, null);
                     final long start = System.currentTimeMillis();
                     if (test == 1) {
-                        result = testN1(file, image);
+                        result = testN1(file, image, configuration);
                     } else if (test == 2) {
-                        result = testN2(file, image);
+                        result = testN2(file, image, configuration);
                     } else if (test == 3) {
-                        result = testN3(file, image);
+                        result = testN3(file, image, configuration);
                     } else if (test == 4) {
-                        result = testN4(file, image, cloudMaskDir);
+                        result = testN4(file, image, cloudMaskDir, configuration);
                     } else if (test == 5) {
-                        result = testN5(file, image);
+                        result = testN5(file, image, configuration);
                     } else if (test == 6) {
-                        result = testN6(file, image, histogramDir);
+                        result = testN6(file, image, histogramDir, configuration);
                     } else if (test == 7) {
-                        result = testN7(file, image);
+                        result = testN7(file, image, configuration);
                     } else if (test == 8) {
-                        result = testN8(file, image);
+                        result = testN8(file, image, configuration);
                     } else if (test == 9) {
-                        result = testN9(file, image, histogramDir);
+                        result = testN9(file, image, histogramDir, configuration);
                     }
                     note(test, file.getParentFile().getName(), file.getName(), false, result.getResult(), System.currentTimeMillis() - start);
                     if (resultsDir != null) {
@@ -138,11 +130,12 @@ public class ImageCheckerUtils {
      * προς την απόσταση δειγματοληψίας εδάφους (απόσταση μεταξύ δύο διαδοχικών κέντρων εικονοστοιχείων
      * που μετριούνται στο έδαφος) είναι σύμφωνα με τις προδιαγραφές(*),
      *
-     * @param file  the file containing the image to check
-     * @param image an object containing details for the provided image
+     * @param file          the file containing the image to check
+     * @param image         an object containing details for the provided image
+     * @param configuration
      * @return the result of the checks performed
      */
-    public static FileJobResult testN1(final File file, final ImagePack image) throws TikaException, IOException, SAXException, ImageProcessingException {
+    public static FileJobResult testN1(final File file, final ImagePack image, final TestConfiguration configuration) throws TikaException, IOException, SAXException, ImageProcessingException {
         image.loadImage();
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(1);
         
@@ -172,7 +165,7 @@ public class ImageCheckerUtils {
                 
                 double doublePixelSize0 = Double.parseDouble(pixelSizes[0]);
                 double doublePixelSize1 = Double.parseDouble(pixelSizes[2]);
-                if (doublePixelSize0 > N1_PIXEL_SIZE || doublePixelSize1 > N1_PIXEL_SIZE) {
+                if (doublePixelSize0 > configuration.getN1PixelSize() || doublePixelSize1 > configuration.getN1PixelSize()) {
                     metadataRes = false;
                 }
                 note.append(String.format("Μεγέθη Χ: %f, Y: %f", doublePixelSize0, doublePixelSize1));
@@ -191,7 +184,7 @@ public class ImageCheckerUtils {
      * @param image an object containing details for the provided image
      * @return the result of the checks performed
      */
-    public static FileJobResult testN2(final File file, final ImagePack image) throws IOException, ImageProcessingException {
+    public static FileJobResult testN2(final File file, final ImagePack image, final TestConfiguration configuration) throws IOException, ImageProcessingException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(2);
         try {
             final BufferedImage jImage = image.getImage();
@@ -203,9 +196,7 @@ public class ImageCheckerUtils {
             boolean metadataTest = true;
             for (final String bitsCount : bitsCounts) {
                 int bitsCountInt = Integer.parseInt(bitsCount);
-                if (bitsCountInt < N2_BIT_SIZE) {
-                    metadataTest = false;
-                }
+                metadataTest = bitsCountInt == configuration.getN2BitSize();
             }
             
             log.debug("[N2] colorModelComponents: {}", jImage.getColorModel().getNumComponents());
@@ -215,7 +206,7 @@ public class ImageCheckerUtils {
             
             final String note = String.format("%d Κανάλια, Μέγεθος Pixel: %d bit, Μέγεθος/Κανάλι: %d bit | Exif Μέγεθος Pixels: %s bit", jImage.getColorModel().getNumComponents(), jImage.getColorModel().getPixelSize(), pixelSize, metadataValue);
             
-            resultBuilder.note(note).result(metadataTest && (pixelSize >= N2_BIT_SIZE));
+            resultBuilder.note(note).result(metadataTest && (pixelSize == configuration.getN2BitSize()));
         } catch (IIOException e) {
             resultBuilder.result(false);
             resultBuilder.note(e.getMessage());
@@ -231,7 +222,7 @@ public class ImageCheckerUtils {
      * @param image an object containing details for the provided image
      * @return the result of the checks performed
      */
-    public static FileJobResult testN3(final File file, final ImagePack image) throws IOException {
+    public static FileJobResult testN3(final File file, final ImagePack image, final TestConfiguration configuration) throws IOException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(3);
         try {
             final BufferedImage jImage = image.getImage();
@@ -240,7 +231,7 @@ public class ImageCheckerUtils {
             log.debug("[N3] colorModelColorComponents: {}", jImage.getColorModel().getNumColorComponents());
             log.debug("[N3] colorModelHasAlpha: {}", jImage.getColorModel().hasAlpha());
             final String note = String.format("%d Κανάλια, %d Χρώματα, Alpha: %s", jImage.getColorModel().getNumComponents(), jImage.getColorModel().getNumColorComponents(), jImage.getColorModel().hasAlpha() ? "Ναι" : "Όχι");
-            boolean result = jImage.getColorModel().getNumComponents() == N3_SAMPLES_PER_PIXEL && jImage.getColorModel().getNumColorComponents() == N3_SAMPLES_PER_PIXEL - 1 && jImage.getColorModel().hasAlpha();
+            boolean result = jImage.getColorModel().getNumComponents() == configuration.getN3SamplesPerPixel() && jImage.getColorModel().getNumColorComponents() == configuration.getN3SamplesPerPixel() - 1 && jImage.getColorModel().hasAlpha();
             resultBuilder.result(result).note(note).build();
         } catch (IIOException e) {
             resultBuilder.result(false);
@@ -256,13 +247,13 @@ public class ImageCheckerUtils {
      * @param image an object containing details for the provided image
      * @return the result of the checks performed
      */
-    public static FileJobResult testN4(final File file, final ImagePack image, final String cloudMaskDir) throws IOException {
+    public static FileJobResult testN4(final File file, final ImagePack image, final String cloudMaskDir, final TestConfiguration configuration) throws IOException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(4);
         try {
             image.detectClouds(true);
             double percentage = (image.getCloudPixels() / image.getValidPixels()) * 100;
             
-            boolean result = percentage < N4_CLOUD_COVERAGE_THRESHOLD;
+            boolean result = percentage < configuration.getN4CloudCoverageThreshold();
             resultBuilder.result(result);
             resultBuilder.note(String.format("Εικονοστοιχεία με Σύννεφα %.0f, Συνολικά Εικονοστοιχεία %.0f, Ποσοστό: %.2f%%", image.getCloudPixels(), image.getValidPixels(), percentage));
             
@@ -284,7 +275,7 @@ public class ImageCheckerUtils {
      * @param image an object containing details for the provided image
      * @return the result of the checks performed
      */
-    public static FileJobResult testN5(final File file, final ImagePack image) throws TikaException, IOException, SAXException, ImageProcessingException {
+    public static FileJobResult testN5(final File file, final ImagePack image, final TestConfiguration configuration) throws TikaException, IOException, SAXException, ImageProcessingException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(5);
         image.loadImage();
         try {
@@ -300,7 +291,7 @@ public class ImageCheckerUtils {
             log.info("[N5] top[{} - {}]: {}", totalItemsInTop, (totalItemsInTop / pixelsCount) * 100, top);
             log.info("[N5] bottom[{} - {}]: {}", totalItemsInBottom, (totalItemsInBottom / pixelsCount) * 100, bottom);
             
-            boolean result = topClipping < N5_CLIPPING_THRESHOLD && bottomClipping < N5_CLIPPING_THRESHOLD;
+            boolean result = topClipping < configuration.getN5ClippingThreshold() && bottomClipping < configuration.getN5ClippingThreshold();
             resultBuilder.result(result);
             resultBuilder.note(String.format("Πρώτα: %.3f%% , Τελευταία: %.3f%%", bottomClipping, topClipping));
         } catch (IIOException e) {
@@ -319,7 +310,7 @@ public class ImageCheckerUtils {
      * @param histogramDir the directory where histogram images are stored
      * @return the result of the checks performed
      */
-    public static FileJobResult testN6(final File file, final ImagePack image, final String histogramDir) throws IOException, ImageProcessingException, TikaException, SAXException {
+    public static FileJobResult testN6(final File file, final ImagePack image, final String histogramDir, final TestConfiguration configuration) throws IOException, ImageProcessingException, TikaException, SAXException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(6);
         try {
             
@@ -337,7 +328,7 @@ public class ImageCheckerUtils {
             log.info("[N6] histogramG center: {}", majorBinCenterG);
             final int majorBinCenterB = image.getHistogram().majorBin(ColorUtils.LAYERS.BLUE);
             log.info("[N6] histogramB center: {}", majorBinCenterB);
-    
+            
             log.info("[N6] histogram dir {}", histogramDir);
             if (histogramDir != null) {
                 image.getHistogram().saveHistogramImage(new File(FileNameUtils.getImageHistogramFilename(histogramDir, file.getParentFile().getName(), file.getName())));
@@ -361,7 +352,7 @@ public class ImageCheckerUtils {
      * @param image an object containing details for the provided image
      * @return the result of the checks performed
      */
-    public static FileJobResult testN7(final File file, final ImagePack image) throws IOException, ImageProcessingException, TikaException, SAXException {
+    public static FileJobResult testN7(final File file, final ImagePack image, final TestConfiguration configuration) throws IOException, ImageProcessingException, TikaException, SAXException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(7);
         try {
             image.loadHistogram();
@@ -369,8 +360,8 @@ public class ImageCheckerUtils {
             final double std = image.getDnValuesStatistics().getStandardDeviation();
             final double coefficientOfVariation = std / mean;
             final double variance = image.getDnValuesStatistics().getVariance();
-    
-            final boolean result = coefficientOfVariation > N7_VARIATION_LOW && coefficientOfVariation < N7_VARIATION_HIGH;
+            
+            final boolean result = coefficientOfVariation > configuration.getN7VariationLow() && coefficientOfVariation < configuration.getN7VariationHigh();
             resultBuilder.result(result);
             resultBuilder.note(String.format("Μέση Τιμή: %.2f, Τυπική Απόκλιση: %.2f, Διασπορά: %.2f, Συντελεστής Διακύμανσης: %.2f", mean, std, variance, coefficientOfVariation));
         } catch (IIOException e) {
@@ -390,7 +381,7 @@ public class ImageCheckerUtils {
      * @param image an object containing details for the provided image
      * @return the result of the checks performed
      */
-    public static FileJobResult testN8(final File file, final ImagePack image) {
+    public static FileJobResult testN8(final File file, final ImagePack image, final TestConfiguration configuration) {
         int compressionExifValue = image.getCompressionExifValue();
         log.info("[N8] compressionExifValue: {}", compressionExifValue);
         
@@ -470,7 +461,7 @@ public class ImageCheckerUtils {
      * @param histogramDir the directory where histogram images are stored
      * @return the result of the checks performed
      */
-    public static FileJobResult testN9(final File file, final ImagePack image, final String histogramDir) throws TikaException, IOException, SAXException, ImageProcessingException {
+    public static FileJobResult testN9(final File file, final ImagePack image, final String histogramDir, final TestConfiguration configuration) throws TikaException, IOException, SAXException, ImageProcessingException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(9);
         try {
             image.loadColorBalance();
@@ -481,14 +472,14 @@ public class ImageCheckerUtils {
                 image.saveColorBalanceMaskImage(new File(FileNameUtils.getImageColorBalanceMaskFilename(histogramDir, file.getParentFile().getName(), file.getName())));
             }
             
-            boolean result = std < N9_COLOR_BALANCE_THRESHOLD && image.getRedSnr() > N9_NOISE_THRESHOLD && image.getGreenSrn() > N9_NOISE_THRESHOLD && image.getBlueSnr() > N9_NOISE_THRESHOLD;
-            resultBuilder.result(false);
+            boolean result = std < configuration.getN9ColorBalanceThreshold() && image.getRedSnr() > configuration.getN9NoiseThreshold() && image.getGreenSrn() > configuration.getN9NoiseThreshold() && image.getBlueSnr() > configuration.getN9NoiseThreshold();
+            resultBuilder.result(result);
             resultBuilder.note(String.format("Ισορροπία Χρώματος Τυπική Απόκλιση: %.2f, Θόρυβος: R: %.2f G: %.2f B: %.2f", std, image.getRedSnr(), image.getGreenSrn(), image.getBlueSnr()));
         } catch (IIOException e) {
             resultBuilder.result(false);
             resultBuilder.note(e.getMessage());
         }
-        return resultBuilder.result(false).build();
+        return resultBuilder.build();
     }
     
     private static ImagePack loadImage(final File imageFile, final String cloudMaskDir, final String uncompressedLocation, final Integer concurrency) throws ImageProcessingException, IOException {

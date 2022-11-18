@@ -41,11 +41,6 @@
                                     <span class="icon"><i class="fas fa-cloud text-gray-50"></i></span>
                                     <span class="text">Έλεγχος Νεφοκάλυψης</span>
                                 </a>
-                                <a class="dropdown-item" data-toggle="modal" style="cursor: pointer"
-                                   th:attr="data-target='#modal-run-similar-'+${imageDirectoryHash}">
-                                    <span class="icon"><i class="fas fa-boxes text-gray-50"></i></span>
-                                    <span class="text">Έλεγχος Ομοιογένειας</span>
-                                </a>
                             </div>
                         </div>
                         <a type="button" id="downloadDirReport"
@@ -64,7 +59,6 @@
 
                     <div th:replace="fragments/modals :: modal-run(0,'characteristics', 'Έλεγχος Χαρακτηριστικών')"></div>
                     <div th:replace="fragments/modals :: modal-run(1,'cloud', 'Έλεγχος Νεφοκάλυψης')"></div>
-                    <div th:replace="fragments/modals :: modal-run(2,'similar', 'Έλεγχος Ομοιογένειας')"></div>
                     <div th:replace="fragments/modals :: modal-clean"></div>
                 </div>
 

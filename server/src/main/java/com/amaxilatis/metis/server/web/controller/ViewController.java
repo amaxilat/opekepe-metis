@@ -2,6 +2,7 @@ package com.amaxilatis.metis.server.web.controller;
 
 import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
+import com.amaxilatis.metis.server.db.model.Configuration;
 import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
 import com.amaxilatis.metis.server.service.JobService;
@@ -17,12 +18,16 @@ import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.ACTION_SAVE_CONFIGURATION;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_HOME;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_IMAGE_DIRECTORY;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_LOG;

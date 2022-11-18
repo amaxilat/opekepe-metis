@@ -61,5 +61,21 @@ public class BaseController {
         model.addAttribute("metisProperties", props);
         model.addAttribute("tests", imageProcessingService.getTestDescriptions());
         model.addAttribute("bp", buildProperties);
+        model.addAttribute("configuration", imageProcessingService.getConfiguration());
+    }
+    
+    final String getUsernameFromPrincipal() {
+        if (!(SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof String)) {
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            log.info("{}", principal);
+            if (principal instanceof User) {
+                final User u = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                return u.getUsername();
+            } else if (principal instanceof LdapUserDetailsImpl) {
+                final LdapUserDetailsImpl u = (LdapUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                return u.getUsername();
+            }
+        }
+        return null;
     }
 }
