@@ -86,6 +86,10 @@ public class ImagePack {
     @Getter
     private BufferedImage maskImage;
     @Getter
+    private BufferedImage colorBalanceImage;
+    @Getter
+    private SummaryStatistics colorBalanceStatistics;
+    @Getter
     private final int compressionExifValue;
     private BufferedImage tensorflowMaskImage;
     private final String cloudMaskDir;
@@ -95,6 +99,12 @@ public class ImagePack {
     private int componentSize;
     @Getter
     private int componentMaxValue;
+    @Getter
+    private double redSnr;
+    @Getter
+    private double greenSrn;
+    @Getter
+    private double blueSnr;
     
     /**
      * Creates an object that represents and Image file and acts as a helper for storing image properties across different tests.
@@ -210,12 +220,25 @@ public class ImagePack {
             final int height = jImage.getHeight();
             // pixel value statistics
             this.dnValuesStatistics = new SummaryStatistics();
+            this.colorBalanceStatistics = new SummaryStatistics();
+            
+            //mask images for color balance calculation
+            this.colorBalanceImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
             
             //do a pass for histogram and contrast data
             parseImagePixels(width, height, jImage);
             
             this.histogramLoaded = true;
         }
+    }
+    
+    /**
+     * Parse the image and generate its color balance
+     *
+     * @throws IOException
+     */
+    public void loadColorBalance() throws IOException, ImageProcessingException, TikaException, SAXException {
+        loadHistogram();
     }
     
     /**
@@ -342,6 +365,10 @@ public class ImagePack {
         ImageIO.write(tensorflowMaskImage, "png", file);
     }
     
+    public void saveColorBalanceMaskImage(final File file) throws IOException {
+        ImageIO.write(colorBalanceImage, "png", file);
+    }
+    
     private int checkTileData(final BufferedImage image, final int startWidth, final int startHeight, final int tileWidth, final int tileHeight, final int components) {
         int thisTileCloudPixels = 0;
         int[] dnValues = getImageTileDataFromCoordinates(image, tileWidth, tileHeight, components, startWidth, startHeight);
@@ -379,11 +406,12 @@ public class ImagePack {
     
     
     private void parseImagePixels(int width, final int height, final BufferedImage jImage) {
+        long validPixelCount = 0;
         int heightStep = 100;
         for (int heightStart = 0; heightStart < height; heightStart += heightStep) {
             final int size = width * heightStep;
             int[] dnValues = new int[size];
-            log.debug("{} {}", jImage.getSampleModel(), jImage.getSampleModel().getClass());
+            //log.debug("{} {}", jImage.getSampleModel(), jImage.getSampleModel().getClass());
             dnValues = jImage.getRGB(0, heightStart, width, heightStep, dnValues, 0, width);
             for (int i = 0; i < size; i++) {
                 final Color color = new Color(dnValues[i], false);
@@ -392,9 +420,65 @@ public class ImagePack {
                     updateHistogram(color);
                     //update the cloud data for check 7
                     updateContrastData(color);
+                    
+                    final int x = (i) % width;
+                    final int y = (i) / width + heightStart;
+                    updateColorBalance(x, y, color);
+                    
+                    validPixelCount++;
                 }
             }
         }
+        int cutoff1 = (int) (validPixelCount * 0.25);
+        //red
+        redSnr = calcSnr(ColorUtils.LAYERS.RED, cutoff1);
+        //green
+        greenSrn = calcSnr(ColorUtils.LAYERS.GREEN, cutoff1);
+        //blue
+        blueSnr = calcSnr(ColorUtils.LAYERS.BLUE, cutoff1);
+    }
+    
+    private double calcSnr(final ColorUtils.LAYERS color, final int cutoff1) {
+        int bandCutoff = 0;
+        int i = 0;
+        final SummaryStatistics bandStats = new SummaryStatistics();
+        while (bandCutoff < cutoff1 && i < 256) {
+            i++;
+            bandCutoff += getHistogram().getBins().get(color).getData()[i];
+        }
+        if (bandCutoff > cutoff1) {
+            //should we cut off the whole bucket?
+            for (int excessCutoff = cutoff1; excessCutoff < bandCutoff; excessCutoff++) {
+                bandStats.addValue(i);
+            }
+        }
+        for (i++; i < 256; i++) {
+            //add all the elements of the bucket
+            for (int k = 0; k < getHistogram().getBins().get(color).getData()[i]; k++) {
+                bandStats.addValue(i);
+            }
+        }
+        log.info("[{}] band: {} | {} | {} {} {} | {}", name, color, bandStats.getN(), bandStats.getMax(), bandStats.getMin(), bandStats.getMean(), bandStats.getStandardDeviation());
+        return bandStats.getMean() / bandStats.getStandardDeviation();
+    }
+    
+    /**
+     * Update the calculated color balance data.
+     *
+     * @param x     the x coordinate of the pixel
+     * @param y     the y coordinate of the pixel
+     * @param color the color of the pixel
+     */
+    private void updateColorBalance(final int x, final int y, final Color color) {
+        final int alpha = Math.max(Math.max(color.getRed(), color.getGreen()), color.getBlue());
+        final int beta = Math.min(Math.min(color.getRed(), color.getGreen()), color.getBlue());
+        double gama = 0;
+        if (alpha > 0) {
+            gama = ((double) (alpha - beta)) / alpha;
+        }
+        int maskValue = (int) (gama * 256);
+        colorBalanceImage.setRGB(x, y, maskValue);
+        colorBalanceStatistics.addValue(gama);
     }
     
     

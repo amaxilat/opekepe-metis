@@ -163,6 +163,21 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div class="col-xxl-6 col-xl-12 col-lg-6 col-md-12 col-sm-12">
+                                                <div class="card shadow mb-4">
+                                                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                                        <h6 class="m-0 font-weight-bold text-primary">Ισορροπία Χρώματος</h6>
+                                                        <div class="col-auto">
+                                                            <div class="btn-group" role="group"
+                                                                 aria-label="image actions">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <img src="" id="image-colorbalance" class="zoomable geothumb">
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -180,6 +195,7 @@
                 const thumbnail_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_THUMBNAIL_DIRECTORY_IMAGE}]];
                 const histogram_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_HISTOGRAM_DIRECTORY_IMAGE}]];
                 const cloudcover_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_CLOUD_COVER_DIRECTORY_IMAGE}]];
+                const colorbalance_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_COLOR_BALANCE_DIRECTORY_IMAGE}]];
                 const directoryReport_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_DIRECTORY_REPORT_DOWNLOAD}]];
                 const imageDirectoryHash = /*[[${imageDirectoryHash}]]*/ '';
 
@@ -192,6 +208,7 @@
                     $("#image-thumbnail").attr("src", "/img/loading.gif");
                     $("#image-histogram").attr("src", "/img/loading.gif");
                     $("#image-cloudcover").attr("src", "/img/loading.gif");
+                    $("#image-colorbalance").attr("src", "/img/loading.gif");
                     const selected_image = $("#imagelist").val();
                     $.get(image_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image), function (data) {
                         $("#imageResultsBody .test-result").hide();
@@ -210,6 +227,7 @@
                         });
                         $("#image-thumbnail").attr("src", thumbnail_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
                         $("#image-cloudcover").attr("src", cloudcover_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
+                        $("#image-colorbalance").attr("src", colorbalance_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
                     });
                 }
 

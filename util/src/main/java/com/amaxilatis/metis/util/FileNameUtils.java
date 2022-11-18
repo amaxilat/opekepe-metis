@@ -103,6 +103,17 @@ public class FileNameUtils {
         return String.format("%s/%s/%s", location, dir, name + ".mask.png");
     }
     
+    /**
+     * Returns the full path to the image's color balance mask.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's color balance mask file.
+     */
+    public static String getImageColorBalanceMaskFilename(final String location, final String dir, final String name) {
+        return String.format("%s/%s/%s", location, dir, name + ".cbmask.png");
+    }
+    
     
     public static String extractImageNameFromResult(final String name) {
         final String[] parts = name.split("\\.");

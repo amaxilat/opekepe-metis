@@ -32,6 +32,12 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import static com.amaxilatis.metis.config.Conditions.N1_PIXEL_SIZE;
 import static com.amaxilatis.metis.config.Conditions.N2_BIT_SIZE;
 import static com.amaxilatis.metis.config.Conditions.N3_SAMPLES_PER_PIXEL;
+import static com.amaxilatis.metis.config.Conditions.N4_CLOUD_COVERAGE_THRESHOLD;
+import static com.amaxilatis.metis.config.Conditions.N5_CLIPPING_THRESHOLD;
+import static com.amaxilatis.metis.config.Conditions.N7_VARIATION_HIGH;
+import static com.amaxilatis.metis.config.Conditions.N7_VARIATION_LOW;
+import static com.amaxilatis.metis.config.Conditions.N9_COLOR_BALANCE_THRESHOLD;
+import static com.amaxilatis.metis.config.Conditions.N9_NOISE_THRESHOLD;
 import static com.amaxilatis.metis.util.FileNameUtils.getResultFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.evaluateWorldFile;
 import static com.amaxilatis.metis.util.WorldFileUtils.getWorldFile;
@@ -112,7 +118,7 @@ public class ImageCheckerUtils {
                     } else if (test == 8) {
                         result = testN8(file, image);
                     } else if (test == 9) {
-                        result = testN9(file, image);
+                        result = testN9(file, image, histogramDir);
                     }
                     note(test, file.getParentFile().getName(), file.getName(), false, result.getResult(), System.currentTimeMillis() - start);
                     if (resultsDir != null) {
@@ -256,7 +262,7 @@ public class ImageCheckerUtils {
             image.detectClouds(true);
             double percentage = (image.getCloudPixels() / image.getValidPixels()) * 100;
             
-            boolean result = percentage < 5;
+            boolean result = percentage < N4_CLOUD_COVERAGE_THRESHOLD;
             resultBuilder.result(result);
             resultBuilder.note(String.format("Εικονοστοιχεία με Σύννεφα %.0f, Συνολικά Εικονοστοιχεία %.0f, Ποσοστό: %.2f%%", image.getCloudPixels(), image.getValidPixels(), percentage));
             
@@ -294,7 +300,7 @@ public class ImageCheckerUtils {
             log.info("[N5] top[{} - {}]: {}", totalItemsInTop, (totalItemsInTop / pixelsCount) * 100, top);
             log.info("[N5] bottom[{} - {}]: {}", totalItemsInBottom, (totalItemsInBottom / pixelsCount) * 100, bottom);
             
-            boolean result = topClipping < 0.5 && bottomClipping < 0.5;
+            boolean result = topClipping < N5_CLIPPING_THRESHOLD && bottomClipping < N5_CLIPPING_THRESHOLD;
             resultBuilder.result(result);
             resultBuilder.note(String.format("Πρώτα: %.3f%% , Τελευταία: %.3f%%", bottomClipping, topClipping));
         } catch (IIOException e) {
@@ -308,8 +314,9 @@ public class ImageCheckerUtils {
      * * 6. Έλεγχος κορυφής ιστογράμματος από την τυπική μέση τιμή (πχ 8bit 128) και σύμφωνα με τις
      * προδιαγραφές(*),
      *
-     * @param file  the file containing the image to check
-     * @param image an object containing details for the provided image
+     * @param file         the file containing the image to check
+     * @param image        an object containing details for the provided image
+     * @param histogramDir the directory where histogram images are stored
      * @return the result of the checks performed
      */
     public static FileJobResult testN6(final File file, final ImagePack image, final String histogramDir) throws IOException, ImageProcessingException, TikaException, SAXException {
@@ -363,7 +370,7 @@ public class ImageCheckerUtils {
             final double coefficientOfVariation = std / mean;
             final double variance = image.getDnValuesStatistics().getVariance();
     
-            final boolean result = coefficientOfVariation > 0.1 && coefficientOfVariation < 0.2;
+            final boolean result = coefficientOfVariation > N7_VARIATION_LOW && coefficientOfVariation < N7_VARIATION_HIGH;
             resultBuilder.result(result);
             resultBuilder.note(String.format("Μέση Τιμή: %.2f, Τυπική Απόκλιση: %.2f, Διασπορά: %.2f, Συντελεστής Διακύμανσης: %.2f", mean, std, variance, coefficientOfVariation));
         } catch (IIOException e) {
@@ -458,16 +465,29 @@ public class ImageCheckerUtils {
      * ψηφιακών τιμών (υπολογισμένη σε περιοχές με ομοιόμορφη πυκνότητα μέσων τιμών) και σύμφωνα με τις
      * προδιαγραφές(*).
      *
-     * @param file  the file containing the image to check
-     * @param image an object containing details for the provided image
+     * @param file         the file containing the image to check
+     * @param image        an object containing details for the provided image
+     * @param histogramDir the directory where histogram images are stored
      * @return the result of the checks performed
      */
-    public static FileJobResult testN9(final File file, final ImagePack image) throws TikaException, IOException, SAXException, ImageProcessingException {
-        if (!image.isLoaded()) {
-            image.loadImage();
-        }
-        
+    public static FileJobResult testN9(final File file, final ImagePack image, final String histogramDir) throws TikaException, IOException, SAXException, ImageProcessingException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(9);
+        try {
+            image.loadColorBalance();
+            final double std = image.getColorBalanceStatistics().getStandardDeviation();
+            
+            log.info("[N9] histogram dir {}", histogramDir);
+            if (histogramDir != null) {
+                image.saveColorBalanceMaskImage(new File(FileNameUtils.getImageColorBalanceMaskFilename(histogramDir, file.getParentFile().getName(), file.getName())));
+            }
+            
+            boolean result = std < N9_COLOR_BALANCE_THRESHOLD && image.getRedSnr() > N9_NOISE_THRESHOLD && image.getGreenSrn() > N9_NOISE_THRESHOLD && image.getBlueSnr() > N9_NOISE_THRESHOLD;
+            resultBuilder.result(false);
+            resultBuilder.note(String.format("Ισορροπία Χρώματος Τυπική Απόκλιση: %.2f, Θόρυβος: R: %.2f G: %.2f B: %.2f", std, image.getRedSnr(), image.getGreenSrn(), image.getBlueSnr()));
+        } catch (IIOException e) {
+            resultBuilder.result(false);
+            resultBuilder.note(e.getMessage());
+        }
         return resultBuilder.result(false).build();
     }
     

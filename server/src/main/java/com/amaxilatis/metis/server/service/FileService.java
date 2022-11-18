@@ -321,6 +321,9 @@ public class FileService {
         if (task == 5) {
             new File(FileNameUtils.getImageHistogramFilename(props.getHistogramLocation(), file.getParentFile().getName(), file.getName())).delete();
         }
+        if (task == 9) {
+            new File(FileNameUtils.getImageColorBalanceMaskFilename(props.getHistogramLocation(), file.getParentFile().getName(), file.getName())).delete();
+        }
     }
     
     public List<FileJobResult> getImageResults(final String decodedImageDir, final String decodedImage) {
@@ -389,6 +392,17 @@ public class FileService {
     }
     
     /**
+     * Returns the full path to the image's color balance mask.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's color balance mask file.
+     */
+    String getImageColorBalanceFilename(final String dir, final String name) {
+        return FileNameUtils.getImageColorBalanceMaskFilename(props.getHistogramLocation(), dir, name);
+    }
+    
+    /**
      * Returns the full path to the image's cloud coverage mask.
      *
      * @param dir  the directory of the image.
@@ -445,6 +459,28 @@ public class FileService {
         //check if file exists
         if (histogramFile.exists()) {
             return histogramFile;
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Get or create and get the color balance of the image.
+     *
+     * @param directory the directory of the image.
+     * @param name      the name of the image.
+     * @return the file containing the color balance of the image.
+     */
+    public File getImageColorBalance(final String directory, final String name) {
+        final File colorBalanceFile = new File(getImageColorBalanceFilename(directory, name));
+        log.debug("[colorBalance|{}|{}] {}", directory, name, colorBalanceFile.getAbsolutePath());
+        //check if directory exists
+        if (!colorBalanceFile.getParentFile().exists()) {
+            colorBalanceFile.getParentFile().mkdir();
+        }
+        //check if file exists
+        if (colorBalanceFile.exists()) {
+            return colorBalanceFile;
         } else {
             return null;
         }
