@@ -21,7 +21,13 @@
 
                 <!-- Page Heading -->
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                    <h1 class="h3 mb-0 text-gray-800">Φάκελος: <span id="directory" th:text="${imageDir}"></span></h1>
+                    <h1 class="h3 mb-0 text-gray-800">
+                        Φάκελος: <span id="directory" th:text="${imageDir}"></span>
+                        <span class="badge badge-secondary"
+                              th:title="'Έχουν πραγματοποιηθεί '+${checksPerformed}+' από τους '+${checksTotal}+' ελέγχους'">
+                            <span th:text="${checkRate}+'% ελέγχθηκαν'"></span>
+                        </span>
+                    </h1>
                     <div class="btn-group" role="group" aria-label="report actions">
                         <div class="btn-group" role="group">
                             <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown"
@@ -160,7 +166,8 @@
                                             <div class="col-xxl-6 col-xl-12 col-lg-6 col-md-12 col-sm-12">
                                                 <div class="card shadow mb-4">
                                                     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                                        <h6 class="m-0 font-weight-bold text-primary">Ισορροπία Χρώματος</h6>
+                                                        <h6 class="m-0 font-weight-bold text-primary">Ισορροπία
+                                                            Χρώματος</h6>
                                                         <div class="col-auto">
                                                             <div class="btn-group" role="group"
                                                                  aria-label="image actions">
