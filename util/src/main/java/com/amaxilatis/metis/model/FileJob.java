@@ -19,5 +19,6 @@ import java.util.List;
 public class FileJob implements Serializable {
     private static final long serialVersionUID = 1L;
     String name;
+    List<String> notificationTargets;
     List<Integer> tasks;
 }

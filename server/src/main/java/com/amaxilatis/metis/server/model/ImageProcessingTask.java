@@ -4,6 +4,7 @@ import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.server.config.ProcessingQueueConfiguration;
 import com.amaxilatis.metis.server.db.model.Configuration;
 import com.amaxilatis.metis.server.service.FileService;
+import com.amaxilatis.metis.server.service.NotificationService;
 import com.amaxilatis.metis.util.ImageCheckerUtils;
 import com.drew.imaging.ImageProcessingException;
 import lombok.AllArgsConstructor;
@@ -30,6 +31,8 @@ public class ImageProcessingTask implements Runnable {
     private String filename;
     private List<Integer> tasks;
     private Configuration configuration;
+    private NotificationService notificationService;
+    private Long isLastId;
     
     public void run() {
         log.info(outFileName);
@@ -45,6 +48,10 @@ public class ImageProcessingTask implements Runnable {
             results.forEach(result -> sb.append(String.format("\"%s\"", result.getNote())).append(","));
             
             fileService.append(outFileName, sb.toString());
+            
+            if (isLastId != null) {
+                notificationService.notify(isLastId);
+            }
             
             log.info("parsed file [{}s] {} {}", ((System.currentTimeMillis() - start) / 1000), imageFile, results);
         } catch (IOException | TikaException | SAXException | ImageProcessingException e) {

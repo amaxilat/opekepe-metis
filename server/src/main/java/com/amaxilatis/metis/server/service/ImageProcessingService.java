@@ -6,6 +6,7 @@ import com.amaxilatis.metis.server.config.ProcessingQueueConfiguration;
 import com.amaxilatis.metis.server.db.model.Configuration;
 import com.amaxilatis.metis.server.db.model.Task;
 import com.amaxilatis.metis.server.db.repository.ConfigurationRepository;
+import com.amaxilatis.metis.server.db.repository.ReportRepository;
 import com.amaxilatis.metis.server.db.repository.TaskRepository;
 import com.amaxilatis.metis.server.model.ImageProcessingTask;
 import com.amaxilatis.metis.server.model.PoolInfo;
@@ -16,7 +17,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -38,12 +38,14 @@ public class ImageProcessingService {
     private final ProcessingQueueConfiguration processingQueueConfiguration;
     private final FileService fileService;
     private final SimpMessagingTemplate webSocketService;
+    private final NotificationService notificationService;
     
     private final ThreadPoolTaskExecutor taskExecutor;
     
     private final SortedSet<TestDescription> testDescriptions = new TreeSet<>();
     
     private final TaskRepository taskRepository;
+    private final ReportRepository reportRepository;
     private final ConfigurationRepository configurationRepository;
     
     @PostConstruct
@@ -71,8 +73,8 @@ public class ImageProcessingService {
         webSocketService.convertAndSend("/topic/pool", getPoolInfo());
     }
     
-    public void processFile(final String outFileName, final String filename, final List<Integer> tasks) {
-        taskRepository.save(Task.builder().date(new Date()).outFileName(outFileName).fileName(filename).tasks(StringUtils.join(tasks, ",")).build());
+    public void processFile(final String outFileName, final String filename, final List<Integer> tasks, final long reportId) {
+        taskRepository.save(Task.builder().date(new Date()).outFileName(outFileName).fileName(filename).tasks(StringUtils.join(tasks, ",")).reportId(reportId).build());
         //taskExecutor.execute(new ImageProcessingTask(processingQueueConfiguration, fileService, outFileName, filename, tasks));
     }
     
@@ -86,7 +88,12 @@ public class ImageProcessingService {
             final Task task = optTask.get();
             final List<Integer> tasks = Arrays.stream(task.getTasks().split(",")).map(Integer::parseInt).collect(Collectors.toList());
             log.info("Pending: {} | Running task: {} from {} for {}[{}]", taskRepository.count(), task.getId(), task.getDate(), task.getFileName(), task.getTasks());
-            new ImageProcessingTask(processingQueueConfiguration, fileService, task.getOutFileName(), task.getFileName(), tasks, getConfiguration()).run();
+            Long isLastId = null;
+            if (task.getReportId() != null) {
+                final long remainingTasks = taskRepository.countByReportId(task.getReportId());
+                isLastId = remainingTasks == 1 ? task.getReportId() : null;
+            }
+            new ImageProcessingTask(processingQueueConfiguration, fileService, task.getOutFileName(), task.getFileName(), tasks, getConfiguration(), notificationService, isLastId).run();
             taskRepository.delete(optTask.get());
         }
     }

@@ -28,6 +28,7 @@ public class Task {
     private String outFileName;
     private String fileName;
     private String tasks;
+    private Long reportId;
     
     public String reportName() {
         if (outFileName != null) {

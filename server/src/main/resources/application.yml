@@ -69,4 +69,14 @@ metis:
     domain: localhost
     url: ldap://localhost
     use: true
+  notificationEmail: notification@notification.com
+  domain: https://localhost
 
+spring.mail:
+  host: smtp.host
+  port: 587
+  username: username
+  password: password
+  properties.mail.smtp:
+    auth: true
+    starttls.enable: true

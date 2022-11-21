@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface TaskRepository extends DataTablesRepository<Task, Long> {
     Optional<Task> findFirstByOrderByIdAsc();
+    
+    long countByReportId(long reportId);
 }

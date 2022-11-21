@@ -34,10 +34,10 @@ public class ActionController extends BaseController {
     }
     
     @PostMapping(value = ACTION_RUN, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public String run(@RequestParam("name") final String name, @RequestParam("tasks") final List<Integer> tasks) {
-        log.info("post:{}, name:{}, tasks:{}", ACTION_RUN, name, tasks);
+    public String run(@RequestParam("name") final String name, @RequestParam("tasks") final List<Integer> tasks, @RequestParam("notificationTargets") final String notificationTargets) {
+        log.info("post:{}, name:{}, tasks:{}, notificationTargets:{}", ACTION_RUN, name, tasks, notificationTargets);
         final String decodedName = fileService.getStringFromHash(name);
-        final FileJob job = FileJob.builder().name(decodedName).tasks(tasks).build();
+        final FileJob job = FileJob.builder().name(decodedName).tasks(tasks).notificationTargets(List.of(notificationTargets.split(","))).build();
         jobService.startJob(job);
         return String.format("redirect:/view?dir=%s&successMessage=check-started", decodedName);
     }

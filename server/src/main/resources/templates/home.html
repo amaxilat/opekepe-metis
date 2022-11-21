@@ -58,6 +58,7 @@
                                         <th>Φάκελος</th>
                                         <th>Θέση Αναφοράς</th>
                                         <th>Ημερομηνία Έναρξης</th>
+                                        <th>Ειδοποιήσεις</th>
                                     </tr>
                                     </thead>
                                 </table>
@@ -113,6 +114,8 @@
             }, {
                 data: 'date',
                 render: $.fn.dataTable.render.moment("YYYY-MM-DDTHH:mm:ss.SSSSZ", 'DD/MM/YYYY HH:mm')
+            }, {
+                data: 'notificationTargets'
             }],
             order: [4, "desc"]
         });

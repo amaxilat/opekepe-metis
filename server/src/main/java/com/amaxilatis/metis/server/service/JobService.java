@@ -60,7 +60,7 @@ public class JobService {
         fileJob.getTasks().stream().map(integer -> String.format(NOTES_TITLE, integer)).forEach(titles::add);
         fileService.append(getOutputFileName(report), titles);
         log.info("processing start {}", System.currentTimeMillis());
-        fileList.forEach(file -> imageProcessingService.processFile(getOutputFileName(report), file.getPath(), fileJob.getTasks()));
+        fileList.forEach(file -> imageProcessingService.processFile(getOutputFileName(report), file.getPath(), fileJob.getTasks(), report.getId()));
     }
     
     public String getOutputFileName(final Report report) {

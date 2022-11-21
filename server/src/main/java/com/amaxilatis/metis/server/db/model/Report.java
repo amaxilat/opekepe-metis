@@ -26,4 +26,5 @@ public class Report {
     private String filesLocation;
     private String path;
     private String reportLocation;
+    private String notificationTargets;
 }

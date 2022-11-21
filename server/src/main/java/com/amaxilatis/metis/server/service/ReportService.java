@@ -27,6 +27,7 @@ public class ReportService {
         Report report = new Report();
         report.setFilesLocation(props.getFilesLocation());
         report.setReportLocation(props.getReportLocation());
+        report.setNotificationTargets(StringUtils.join(fileJob.getNotificationTargets(), ','));
         report.setPath(fileJob.getName());
         report.setDate(new Date());
         return reportRepository.save(report);

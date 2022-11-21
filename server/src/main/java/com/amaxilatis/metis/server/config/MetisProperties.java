@@ -16,5 +16,7 @@ public class MetisProperties {
     private String resultsLocation;
     private String dbBackupLocation;
     private String version;
+    private String notificationEmail;
+    private String domain;
     
 }
