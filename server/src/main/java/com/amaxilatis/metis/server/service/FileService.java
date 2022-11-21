@@ -46,6 +46,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import static com.amaxilatis.metis.server.util.ResultsUtils.*;
 import static com.amaxilatis.metis.util.FileNameUtils.getResultFile;
 
 @Slf4j
@@ -528,6 +529,9 @@ public class FileService {
             for (int i = 1; i < 10; i++) {
                 appendCell(titleRow, String.format(CHECK_TITLE, i));
             }
+            
+            resultsTitles.forEach(s -> appendCell(titleRow, s));
+            
             for (int i = 1; i < 10; i++) {
                 appendCell(titleRow, String.format(NOTES_TITLE, i));
             }
@@ -541,30 +545,51 @@ public class FileService {
                         .forEach(filename -> {
                             final Row fileRow = appendRow(sheet, 1);
                             appendCell(fileRow, filename);
-                            for (int i = 1; i < 10; i++) {
-                                final File resultFile = getResultFile(props.getResultsLocation(), new File(props.getFilesLocation() + "/" + name + "/", filename), i);
-                                final FileJobResult result;
+                            
+                            final List<FileJobResult> results = new ArrayList<>();
+                            for (int i = 0; i < 9; i++) {
+                                final File resultFile = getResultFile(props.getResultsLocation(), new File(props.getFilesLocation() + "/" + name + "/", filename), i + 1);
                                 if (resultFile.exists()) {
                                     try {
-                                        result = mapper.readValue(resultFile, FileJobResult.class);
-                                        appendCell(fileRow, result.getResult() ? CHECK_OK : CHECK_NOK);
+                                        results.add(mapper.readValue(resultFile, FileJobResult.class));
                                     } catch (IOException e) {
-                                        appendCell(fileRow, "");
                                     }
+                                } else {
+                                }
+                            }
+                            
+                            for (int i = 0; i < 9; i++) {
+                                FileJobResult result = getTaskById(results, i);
+                                if (result != null) {
+                                    appendCell(fileRow, result.getResult() ? CHECK_OK : CHECK_NOK);
                                 } else {
                                     appendCell(fileRow, "");
                                 }
                             }
-                            for (int i = 1; i < 10; i++) {
-                                final File resultFile = getResultFile(props.getResultsLocation(), new File(props.getFilesLocation() + "/" + name + "/", filename), i);
-                                final FileJobResult result;
-                                if (resultFile.exists()) {
-                                    try {
-                                        result = mapper.readValue(resultFile, FileJobResult.class);
-                                        appendCell(fileRow, result.getNote());
-                                    } catch (IOException e) {
-                                        appendCell(fileRow, "");
-                                    }
+                            
+                            appendCell(fileRow, getN1XPixelSizeWorld(results));
+                            appendCell(fileRow, getN1YPixelSizeWorld(results));
+                            appendCell(fileRow, getN1XPixelSize(results));
+                            appendCell(fileRow, getN1YPixelSize(results));
+                            appendCell(fileRow, getN2BitSize(results));
+                            appendCell(fileRow, getN3SamplesPerPixel(results));
+                            appendCell(fileRow, getN3SamplesPerPixelColor(results));
+                            appendCell(fileRow, getN3HasAlpha(results));
+                            appendCell(fileRow, getN4CloudCoverage(results));
+                            appendCell(fileRow, getN5TopClipping(results));
+                            appendCell(fileRow, getN5BottomClipping(results));
+                            appendCell(fileRow, getN6MajorBinCenterLum(results));
+                            appendCell(fileRow, getN7CoefficientOfVariation(results));
+                            appendCell(fileRow, getN8Compression(results));
+                            appendCell(fileRow, getN9ColorBalance(results));
+                            appendCell(fileRow, getN9RedSnr(results));
+                            appendCell(fileRow, getN9GreenSnr(results));
+                            appendCell(fileRow, getN9BlueSnr(results));
+                            
+                            for (int i = 0; i < 9; i++) {
+                                FileJobResult result = getTaskById(results, i);
+                                if (result != null) {
+                                    appendCell(fileRow, result.getNote());
                                 } else {
                                     appendCell(fileRow, "");
                                 }
@@ -580,4 +605,6 @@ public class FileService {
         }
         return null;
     }
+    
+    
 }

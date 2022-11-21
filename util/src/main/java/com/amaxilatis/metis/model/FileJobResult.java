@@ -22,6 +22,26 @@ public class FileJobResult implements Serializable, Comparable<FileJobResult> {
     Boolean result;
     String note;
     
+    //metrics
+    Double n1XPixelSizeWorld;
+    Double n1YPixelSizeWorld;
+    Double n1XPixelSize;
+    Double n1YPixelSize;
+    Integer n2BitSize;
+    Integer n3SamplesPerPixel;
+    Integer n3SamplesPerPixelColor;
+    Boolean n3HasAlpha;
+    Double n4CloudCoverage;
+    Double b5TopClipping;
+    Double n5BottomClipping;
+    Integer n6LumHistCenter;
+    Double n7CoefficientOfVariation;
+    String n8Compression;
+    Double n9ColorBalance;
+    Double n9RedSnr;
+    Double n9GreenSnr;
+    Double n9BlueSnr;
+    
     @Override
     public int compareTo(final FileJobResult o) {
         return getTask() - o.getTask();

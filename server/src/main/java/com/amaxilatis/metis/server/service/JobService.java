@@ -25,6 +25,7 @@ import static com.amaxilatis.metis.server.service.FileService.CHECK_TITLE;
 import static com.amaxilatis.metis.server.service.FileService.FILE_TITLE;
 import static com.amaxilatis.metis.server.service.FileService.FOLDER_TITLE;
 import static com.amaxilatis.metis.server.service.FileService.NOTES_TITLE;
+import static com.amaxilatis.metis.server.util.ResultsUtils.resultsTitles;
 
 @Slf4j
 @Service
@@ -57,6 +58,9 @@ public class JobService {
         // add header
         final List<String> titles = new ArrayList<>(List.of(FILE_TITLE));
         fileJob.getTasks().stream().map(integer -> String.format(CHECK_TITLE, integer)).forEach(titles::add);
+        
+        titles.addAll(resultsTitles);
+        
         fileJob.getTasks().stream().map(integer -> String.format(NOTES_TITLE, integer)).forEach(titles::add);
         fileService.append(getOutputFileName(report), titles);
         log.info("processing start {}", System.currentTimeMillis());

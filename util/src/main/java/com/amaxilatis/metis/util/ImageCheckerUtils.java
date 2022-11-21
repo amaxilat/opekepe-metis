@@ -149,6 +149,8 @@ public class ImageCheckerUtils {
             log.info("[N1] file:{}, n1:{} world", file.getName(), worldConditionRes.isOk());
             note.append(worldConditionRes.getNote());
             worldRes = worldConditionRes.isOk();
+            resultBuilder.n1XPixelSizeWorld(worldFile.getXPixelSize());
+            resultBuilder.n1YPixelSizeWorld(worldFile.getYPixelSize());
         } catch (FileNotFoundException e) {
             note.append(String.format("Δεν βρέθηκε το αρχείο world της εικόνας %s", file.getName()));
             worldRes = false;
@@ -164,10 +166,12 @@ public class ImageCheckerUtils {
                 final String[] pixelSizes = metadataValue.replaceAll(",", "\\.").split(" ");
                 
                 double doublePixelSize0 = Double.parseDouble(pixelSizes[0]);
-                double doublePixelSize1 = Double.parseDouble(pixelSizes[2]);
-                if (doublePixelSize0 > configuration.getN1PixelSize() || doublePixelSize1 > configuration.getN1PixelSize()) {
+                double doublePixelSize1 = Double.parseDouble(pixelSizes[1]);
+                if (doublePixelSize0 != configuration.getN1PixelSize() || doublePixelSize1 != configuration.getN1PixelSize()) {
                     metadataRes = false;
                 }
+                resultBuilder.n1XPixelSize(doublePixelSize0);
+                resultBuilder.n1YPixelSize(doublePixelSize1);
                 note.append(String.format("Μεγέθη Χ: %f, Y: %f", doublePixelSize0, doublePixelSize1));
                 log.info("[N1] file:{}, n1:{} exif", file.getName(), metadataRes);
                 resultBuilder.note(note.toString());
@@ -206,7 +210,7 @@ public class ImageCheckerUtils {
             
             final String note = String.format("%d Κανάλια, Μέγεθος Pixel: %d bit, Μέγεθος/Κανάλι: %d bit | Exif Μέγεθος Pixels: %s bit", jImage.getColorModel().getNumComponents(), jImage.getColorModel().getPixelSize(), pixelSize, metadataValue);
             
-            resultBuilder.note(note).result(metadataTest && (pixelSize == configuration.getN2BitSize()));
+            resultBuilder.note(note).result(metadataTest && (pixelSize == configuration.getN2BitSize())).n2BitSize(pixelSize);
         } catch (IIOException e) {
             resultBuilder.result(false);
             resultBuilder.note(e.getMessage());
@@ -231,8 +235,18 @@ public class ImageCheckerUtils {
             log.debug("[N3] colorModelColorComponents: {}", jImage.getColorModel().getNumColorComponents());
             log.debug("[N3] colorModelHasAlpha: {}", jImage.getColorModel().hasAlpha());
             final String note = String.format("%d Κανάλια, %d Χρώματα, Alpha: %s", jImage.getColorModel().getNumComponents(), jImage.getColorModel().getNumColorComponents(), jImage.getColorModel().hasAlpha() ? "Ναι" : "Όχι");
-            boolean result = jImage.getColorModel().getNumComponents() == configuration.getN3SamplesPerPixel() && jImage.getColorModel().getNumColorComponents() == configuration.getN3SamplesPerPixel() - 1 && jImage.getColorModel().hasAlpha();
-            resultBuilder.result(result).note(note).build();
+            boolean result = jImage.getColorModel().getNumComponents() == configuration.getN3SamplesPerPixel()
+                    //color
+                    && jImage.getColorModel().getNumColorComponents() == configuration.getN3SamplesPerPixel() - 1
+                    //alpha
+                    && jImage.getColorModel().hasAlpha();
+            resultBuilder.result(result).note(note)
+                    //samplesPerPixel
+                    .n3SamplesPerPixel(jImage.getColorModel().getNumComponents())
+                    //color
+                    .n3SamplesPerPixelColor(jImage.getColorModel().getNumColorComponents())
+                    //alpha
+                    .n3HasAlpha(jImage.getColorModel().hasAlpha()).build();
         } catch (IIOException e) {
             resultBuilder.result(false);
             resultBuilder.note(e.getMessage());
@@ -255,6 +269,7 @@ public class ImageCheckerUtils {
             
             boolean result = percentage < configuration.getN4CloudCoverageThreshold();
             resultBuilder.result(result);
+            resultBuilder.n4CloudCoverage(percentage);
             resultBuilder.note(String.format("Εικονοστοιχεία με Σύννεφα %.0f, Συνολικά Εικονοστοιχεία %.0f, Ποσοστό: %.2f%%", image.getCloudPixels(), image.getValidPixels(), percentage));
             
             if (cloudMaskDir != null) {
@@ -292,6 +307,7 @@ public class ImageCheckerUtils {
             log.info("[N5] bottom[{} - {}]: {}", totalItemsInBottom, (totalItemsInBottom / pixelsCount) * 100, bottom);
             
             boolean result = topClipping < configuration.getN5ClippingThreshold() && bottomClipping < configuration.getN5ClippingThreshold();
+            resultBuilder.b5TopClipping(topClipping).n5BottomClipping(bottomClipping);
             resultBuilder.result(result);
             resultBuilder.note(String.format("Πρώτα: %.3f%% , Τελευταία: %.3f%%", bottomClipping, topClipping));
         } catch (IIOException e) {
@@ -335,6 +351,7 @@ public class ImageCheckerUtils {
             }
             
             boolean result = histMinLimit < majorBinCenterLum && majorBinCenterLum < histMaxLimit;
+            resultBuilder.n6LumHistCenter(majorBinCenterLum);
             resultBuilder.result(result);
             resultBuilder.note(String.format("Κορυφή Ιστογράμματος: %d, όρια +/-15%%: [%d,%d], Κέντρα Ιστογράμματος Χρωμάτων: [R:%d,G:%d,B:%d]", majorBinCenterLum, histMinLimit, histMaxLimit, majorBinCenterR, majorBinCenterG, majorBinCenterB));
         } catch (IIOException e) {
@@ -362,6 +379,7 @@ public class ImageCheckerUtils {
             final double variance = image.getDnValuesStatistics().getVariance();
             
             final boolean result = coefficientOfVariation > configuration.getN7VariationLow() && coefficientOfVariation < configuration.getN7VariationHigh();
+            resultBuilder.n7CoefficientOfVariation(coefficientOfVariation);
             resultBuilder.result(result);
             resultBuilder.note(String.format("Μέση Τιμή: %.2f, Τυπική Απόκλιση: %.2f, Διασπορά: %.2f, Συντελεστής Διακύμανσης: %.2f", mean, std, variance, coefficientOfVariation));
         } catch (IIOException e) {
@@ -389,6 +407,7 @@ public class ImageCheckerUtils {
         
         if (file.getName().endsWith(".tif")) {
             resultBuilder.note("Συμπίεση: " + CompressionUtils.toText(compressionExifValue));
+            resultBuilder.n8Compression(CompressionUtils.toText(compressionExifValue));
             resultBuilder.result(CompressionUtils.isLossless(compressionExifValue));
             return resultBuilder.build();
         } else if (file.getName().endsWith(".jpf")) {
@@ -473,6 +492,7 @@ public class ImageCheckerUtils {
             }
             
             boolean result = std < configuration.getN9ColorBalanceThreshold() && image.getRedSnr() > configuration.getN9NoiseThreshold() && image.getGreenSrn() > configuration.getN9NoiseThreshold() && image.getBlueSnr() > configuration.getN9NoiseThreshold();
+            resultBuilder.n9ColorBalance(std).n9RedSnr(image.getRedSnr()).n9GreenSnr(image.getGreenSrn()).n9BlueSnr(image.getBlueSnr());
             resultBuilder.result(result);
             resultBuilder.note(String.format("Ισορροπία Χρώματος Τυπική Απόκλιση: %.2f, Θόρυβος: R: %.2f G: %.2f B: %.2f", std, image.getRedSnr(), image.getGreenSrn(), image.getBlueSnr()));
         } catch (IIOException e) {
