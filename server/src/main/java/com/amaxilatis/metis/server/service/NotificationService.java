@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -69,7 +68,7 @@ public class NotificationService {
                 message.setText(body);
                 message.addAttachment(attachment.getName(), new ByteArrayResource(IOUtils.toByteArray(new FileInputStream(attachment))), Files.probeContentType(attachment.toPath()));
             });
-        } catch (MailException e) {
+        } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
     }
