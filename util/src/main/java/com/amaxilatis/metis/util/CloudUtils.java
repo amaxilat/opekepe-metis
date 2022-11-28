@@ -11,6 +11,7 @@ public class CloudUtils {
     public static final int WHITE_RGB = Color.white.getRGB(); // Color white
     public static final int BLACK_RGB = Color.black.getRGB(); // Color black
     public static final int GRAY_RGB = Color.gray.getRGB(); // Color gray
+    public static final int LIGHT_GRAY_RGB = Color.lightGray.getRGB(); // Color gray
     
     /**
      * Cleans up the image mask based on the percentage of cloud pixels found inside each tile of the provided size.
@@ -43,7 +44,7 @@ public class CloudUtils {
                     for (int i = 0; i < tileSize; i++) {
                         for (int j = 0; j < tileSize; j++) {
                             if (image.getRGB(w * tileSize + i, h * tileSize + j) == WHITE_RGB) {
-                                image.setRGB(w * tileSize + i, h * tileSize + j, BLACK_RGB);
+                                image.setRGB(w * tileSize + i, h * tileSize + j, LIGHT_GRAY_RGB);
                                 removedPixels++;
                             }
                         }
@@ -91,14 +92,14 @@ public class CloudUtils {
      */
     private static boolean isAnyNearby(final BufferedImage image, final int x, final int y, final int specificColor, final int threshold) {
         int nearby = 0;
-        nearby += image.getRGB(x - 1, y) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x + 1, y) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x, y - 1) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x, y + 1) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x - 1, y - 1) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x - 1, y + 1) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x + 1, y - 1) == specificColor ? 1 : 0;
-        nearby += image.getRGB(x + 1, y + 1) == specificColor ? 1 : 0;
+        nearby += new Color(image.getRGB(x - 1, y)).getRed() > 30 ? 1 : 0;
+        nearby += new Color(image.getRGB(x + 1, y)).getRed() > 30 ? 1 : 0;
+        nearby += new Color(image.getRGB(x, y - 1)).getRed() > 30 ? 1 : 0;
+        nearby += new Color(image.getRGB(x, y + 1)).getRed() > 30 ? 1 : 0;
+        nearby += new Color(image.getRGB(x - 1, y - 1)).getRed() > 30 ? 1 : 0;
+        nearby += new Color(image.getRGB(x - 1, y + 1)).getRed() > 30 ? 1 : 0;
+        nearby += new Color(image.getRGB(x + 1, y - 1)).getRed() > 30 ? 1 : 0;
+        nearby += new Color(image.getRGB(x + 1, y + 1)).getRed() > 30 ? 1 : 0;
         return nearby > threshold;
     }
     

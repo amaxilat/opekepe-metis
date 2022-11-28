@@ -59,4 +59,13 @@ public class ColorUtils {
         }
     }
     
+    public static boolean isDark(final int rgb) {
+        final Color c = new Color(rgb);
+        return isDark(c.getRed(), c.getGreen(), c.getBlue());
+    }
+    
+    public static boolean isDark(final int r, final int g, final int b) {
+        return r < 150 && g < 150 && b < 150;//|| (c.getRed() < 150 || c.getGreen() < 150 || c.getBlue() < 150)
+    }
+    
 }
