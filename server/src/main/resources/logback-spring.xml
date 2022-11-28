@@ -10,40 +10,39 @@
         <appender-ref ref="CONSOLE"/>
     </root>
 
+<!--    <appender name="FILE_TESTS" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+<!--        <file>tests.log</file>-->
+<!--        <append>true</append>-->
+<!--        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">-->
+<!--            <fileNamePattern>tests.log.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>-->
+<!--            <maxFileSize>1MB</maxFileSize>-->
+<!--            <maxHistory>2</maxHistory>-->
+<!--        </rollingPolicy>-->
+<!--        <encoder>-->
+<!--            <pattern>-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}) %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }) %clr(-&#45;&#45;) %clr(%-40.40logger:L%line) %clr(-) %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}</pattern>-->
+<!--        </encoder>-->
+<!--    </appender>-->
+<!--    <appender name="FILE_USERS" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+<!--        <file>users.log</file>-->
+<!--        <append>true</append>-->
+<!--        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">-->
+<!--            <fileNamePattern>users.log.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>-->
+<!--            <maxFileSize>1MB</maxFileSize>-->
+<!--            <maxHistory>2</maxHistory>-->
+<!--        </rollingPolicy>-->
+<!--        <encoder>-->
+<!--            <pattern>-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}) %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }) %clr(-&#45;&#45;) %clr(%-40.40logger:L%line) %clr(-) %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}</pattern>-->
+<!--        </encoder>-->
+<!--    </appender>-->
 
-    <appender name="FILE_TESTS" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>tests.log</file>
-        <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>tests.log.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <maxFileSize>1MB</maxFileSize>
-            <maxHistory>2</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}) %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }) %clr(---) %clr(%-40.40logger:L%line) %clr(-) %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}</pattern>
-        </encoder>
-    </appender>
-    <appender name="FILE_USERS" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>users.log</file>
-        <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>users.log.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <maxFileSize>1MB</maxFileSize>
-            <maxHistory>2</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>-%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}) %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }) %clr(---) %clr(%-40.40logger:L%line) %clr(-) %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}</pattern>
-        </encoder>
-    </appender>
-
-    <logger name="com.amaxilatis.metis.util.ImageCheckerUtils" level="INFO">
-        <appender-ref ref="FILE_TESTS"/>
-    </logger>
-    <logger name="com.amaxilatis.metis.model.ImagePack" level="INFO">
-        <appender-ref ref="FILE_TESTS"/>
-    </logger>
-    <logger name="com.amaxilatis.metis.server.web.controller.BaseController" level="INFO">
-        <appender-ref ref="FILE_USERS"/>
-    </logger>
+<!--    <logger name="com.amaxilatis.metis.util.ImageCheckerUtils" level="INFO">-->
+<!--        <appender-ref ref="FILE_TESTS"/>-->
+<!--    </logger>-->
+<!--    <logger name="com.amaxilatis.metis.model.ImagePack" level="INFO">-->
+<!--        <appender-ref ref="FILE_TESTS"/>-->
+<!--    </logger>-->
+<!--    <logger name="com.amaxilatis.metis.server.web.controller.BaseController" level="INFO">-->
+<!--        <appender-ref ref="FILE_USERS"/>-->
+<!--    </logger>-->
 
 </configuration>

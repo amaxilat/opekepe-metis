@@ -23,16 +23,35 @@
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800">
                         Φάκελος: <span id="directory" th:text="${imageDir}"></span>
-                        <span class="badge badge-secondary"
-                              th:title="'Έχουν πραγματοποιηθεί '+${checksPerformed}+' από τους '+${checksTotal}+' ελέγχους'">
-                            <span th:text="${checkRate}+'% ελέγχθηκαν'"></span>
-                        </span>
+                        <div class="btn-group" role="group" aria-label="report actions">
+
+                        </div>
                     </h1>
                     <div class="btn-group" role="group" aria-label="report actions">
+                        <a type="button" class="d-none d-sm-inline-block btn btn-sm btn-info shadow-sm">
+                            <span class="icon"><i class="fas fa-images"></i></span>
+                            <span class="text" th:text="${#lists.size(images)}">&nbsp;</span>
+                            <span class="text">Ορθοφωτοχάρτες</span>
+                        </a>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-dark dropdown-toggle"
+                                    data-toggle="dropdown"
+                                    aria-expanded="false">
+                                <span class="icon"><i class="fas fa-check-double text-white-50"></i></span>
+                                <span class="text" th:text="${checkRate}+'% ελέγχθηκαν'"></span>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" style="cursor: pointer">
+                                    <span class="icon"><i class="fas fa-search text-gray-50"></i></span>
+                                    <span class="text"
+                                          th:text="${checksPerformed}+' από '+${checksTotal}+' ελέγχους'"></span>
+                                </a>
+                            </div>
+                        </div>
                         <div class="btn-group" role="group">
                             <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown"
                                     aria-expanded="false">
-                                <span class="icon"><i class="fas fa-search text-white-50"></i></span>
+                                <span class="icon"><i class="fab fa-searchengin text-white-50"></i></span>
                                 <span class="text">Έλεγχος Φακέλου</span>
                             </button>
                             <div class="dropdown-menu">
@@ -73,7 +92,7 @@
                     <div class="col-xxl-12 col-xl-12 col-md-12 col-sm-12 mb-12">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                <h6 class="m-0 font-weight-bold text-primary">Εικόνα</h6>
+                                <h6 class="m-0 font-weight-bold text-primary">Ορθοφωτοχάρτης</h6>
                                 <div class="col mr-2">
                                     <select id="imagelist" class="custom-select col-md-12"
                                             onchange="loadFile()">
@@ -125,6 +144,14 @@
                                                         <div class="col-auto">
                                                             <div class="btn-group" role="group"
                                                                  aria-label="image actions">
+                                                                <a data-toggle="modal"
+                                                                   data-target="#modal-info-thumbnail"
+                                                                   id="thumbnailInfoButton">
+                                                                        <span class="icon">
+                                                                            <i class="fa-solid fa-circle-info"></i></span>
+                                                                    <span class="text"></span>
+                                                                </a>
+                                                                <div th:replace="fragments/modals :: modal-info-thumbnail"></div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -140,6 +167,14 @@
                                                         <div class="col-auto">
                                                             <div class="btn-group" role="group"
                                                                  aria-label="image actions">
+                                                                <a data-toggle="modal"
+                                                                   data-target="#modal-info-histogram"
+                                                                   id="histogramInfoButton">
+                                                                        <span class="icon">
+                                                                            <i class="fa-solid fa-circle-info"></i></span>
+                                                                    <span class="text"></span>
+                                                                </a>
+                                                                <div th:replace="fragments/modals :: modal-info-histogram"></div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -155,6 +190,13 @@
                                                         <div class="col-auto">
                                                             <div class="btn-group" role="group"
                                                                  aria-label="image actions">
+                                                                <a data-toggle="modal" data-target="#modal-info-cloud"
+                                                                   id="cloudInfoButton">
+                                                                        <span class="icon">
+                                                                            <i class="fa-solid fa-circle-info"></i></span>
+                                                                    <span class="text"></span>
+                                                                </a>
+                                                                <div th:replace="fragments/modals :: modal-info-cloud"></div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -171,6 +213,14 @@
                                                         <div class="col-auto">
                                                             <div class="btn-group" role="group"
                                                                  aria-label="image actions">
+                                                                <a data-toggle="modal"
+                                                                   data-target="#modal-info-color-balance"
+                                                                   id="colorBalanceInfoButton">
+                                                                        <span class="icon">
+                                                                            <i class="fa-solid fa-circle-info"></i></span>
+                                                                    <span class="text"></span>
+                                                                </a>
+                                                                <div th:replace="fragments/modals :: modal-info-color-balance"></div>
                                                             </div>
                                                         </div>
                                                     </div>
