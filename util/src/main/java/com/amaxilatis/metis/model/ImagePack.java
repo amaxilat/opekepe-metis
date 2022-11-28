@@ -45,9 +45,11 @@ import java.util.concurrent.TimeUnit;
 
 import static com.amaxilatis.metis.util.CloudUtils.BLACK_RGB;
 import static com.amaxilatis.metis.util.CloudUtils.GRAY_RGB;
+import static com.amaxilatis.metis.util.CloudUtils.LIGHT_GRAY_RGB;
 import static com.amaxilatis.metis.util.CloudUtils.WHITE_RGB;
 import static com.amaxilatis.metis.util.CloudUtils.cleanupCloudsBasedOnNearby;
 import static com.amaxilatis.metis.util.CloudUtils.cleanupCloudsBasedOnTiles;
+import static com.amaxilatis.metis.util.ColorUtils.isDark;
 import static com.amaxilatis.metis.util.ImageDataUtils.getImageTileDataFromCoordinates;
 import static com.amaxilatis.metis.util.ImageDataUtils.isEmptyTile;
 import static com.amaxilatis.metis.util.ImageDataUtils.isValidPixel;
@@ -83,8 +85,6 @@ public class ImagePack {
     private double validPixels = 0;
     @Getter
     private double cloudPixels = 0;
-    @Getter
-    private BufferedImage maskImage;
     @Getter
     private BufferedImage colorBalanceImage;
     @Getter
@@ -253,7 +253,6 @@ public class ImagePack {
         final int height = jImage.getHeight();
         
         //mask images for cloud detection
-        this.maskImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         this.tensorflowMaskImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         
         final long start = System.currentTimeMillis();
@@ -354,9 +353,11 @@ public class ImagePack {
         
         int removedPixels = cleanupCloudsBasedOnNearby(tensorflowMaskImage, width, height, 2);
         tfCloudPixels -= removedPixels;
+        log.info(String.format("[%20s] cleaned clouds in %d pixels", name, removedPixels));
         
         removedPixels = cleanupCloudsBasedOnTiles(tensorflowMaskImage, width, height, 100, 3);
         tfCloudPixels -= removedPixels;
+        log.info(String.format("[%20s] cleaned clouds in %d pixels", name, removedPixels));
         
         return new ImageDetectionResultDTO(null, null, (int) tfCheckedPixels, (int) tfCloudPixels, tfCloudPixels / tfCheckedPixels);
     }
@@ -373,14 +374,23 @@ public class ImagePack {
         int thisTileCloudPixels = 0;
         int[] dnValues = getImageTileDataFromCoordinates(image, tileWidth, tileHeight, components, startWidth, startHeight);
         if (isEmptyTile(componentMaxValue, dnValues)) {
-            log.trace(String.format("[%20s] tile_l:[%04d,%04d] skipping...", name, startWidth, startHeight));
-            for (int j = 0; j < TILE_WIDTH; j++) {
-                for (int k = 0; k < TILE_HEIGHT; k++) {
-                    tensorflowMaskImage.setRGB(startWidth + k, startHeight + j, BLACK_RGB);
-                }
-            }
+            log.trace(String.format("[%20s] tile:[%04d,%04d] skipping empty tile...", name, startWidth, startHeight));
+            //        } else if (!isBrightEnoughAnywhere(componentMaxValue, dnValues)) {
+            //            log.trace(String.format("[%20s] tile:[%04d,%04d] skipping dark tile...", name, startWidth, startHeight));
+            //        } else if (getAlphaVariance(componentMaxValue, dnValues) > 4000) {
+            //            log.info(String.format("[%20s] tile:[%04d,%04d] skipping alpha-spread[%.0f] tile...", name, startWidth, startHeight, getAlphaVariance(componentMaxValue, dnValues)));
+            //        } else if (getAlphaPeak(componentMaxValue, dnValues) < 20) {
+            //            log.info(String.format("[%20s] tile:[%04d,%04d] skipping alpha-low[%d] tile...", name, startWidth, startHeight, getAlphaPeak(componentMaxValue, dnValues)));
         } else {
-            log.trace(String.format("[%20s] tile_l:[%04d,%04d] detecting...", name, startWidth, startHeight));
+            log.trace(String.format("[%20s] tile:[%04d,%04d] detecting...", name, startWidth, startHeight));
+    
+            //            for (int i = 0; i < dnValues.length; i += 4) {
+            //                if (isDark(dnValues[i], dnValues[i + 1], dnValues[i + 2])) {
+            //                    dnValues[i] = 0;
+            //                    dnValues[i + 1] = 0;
+            //                    dnValues[i + 2] = 0;
+            //                }
+            //            }
             
             DetectionsDTO detectionsDTO;
             do {
@@ -389,12 +399,39 @@ public class ImagePack {
             
             for (int j = 0; j < TILE_WIDTH; j++) {
                 for (int k = 0; k < TILE_HEIGHT; k++) {
-                    thisTileCloudPixels += detectionsDTO.getPredictions()[j][k];
                     int mx = startWidth + k;
                     int my = startHeight + j;
-                    tensorflowMaskImage.setRGB(mx, my, detectionsDTO.getPredictions()[j][k] == 1 ? WHITE_RGB : BLACK_RGB);
+                    // double a = detectionsDTO.getPredictions()[j][k];
+                    // tensorflowMaskImage.setRGB(mx, my, new Color((int) (a * 255), (int) (a * 255), (int) (a * 255)).getRGB());
+    
+                    //dark patches cannot be clouds obviously
+                    if (detectionsDTO.getPredictions()[j][k] > 0.2 && !isDark(image.getRGB(mx, my))) {
+                        thisTileCloudPixels++;
+                        tensorflowMaskImage.setRGB(mx, my, WHITE_RGB);
+                    } else {
+                        if (detectionsDTO.getPredictions()[j][k] > 0.2 && isDark(image.getRGB(mx, my))) {
+                            tensorflowMaskImage.setRGB(mx, my, LIGHT_GRAY_RGB);
+                        } else {
+                            tensorflowMaskImage.setRGB(mx, my, BLACK_RGB);
+                        }
+                    }
+                    
+                    //                    if (detectionsDTO.getPredictions()[j][k] > 0.2 && !isDark(image.getRGB(mx, my))) {
+                    //                        thisTileCloudPixels++;
+                    //                        tensorflowMaskImage.setRGB(mx, my, WHITE_RGB);
+                    //                    } else {
+                    //                        if (detectionsDTO.getPredictions()[j][k] > 0.2 && isDark(image.getRGB(mx, my))) {
+                    //                            //log.info(String.format("[%20s] tile_l:[%04d,%04d] cloud in dark pixel ignored", name, startWidth, startHeight));
+                    //                            tensorflowMaskImage.setRGB(mx, my, LIGHT_GRAY_RGB);
+                    //                        } else {
+                    //                            tensorflowMaskImage.setRGB(mx, my, BLACK_RGB);
+                    //                        }
+                    //                    }
                 }
             }
+        }
+        if (thisTileCloudPixels > 0) {
+            log.info(String.format("[%20s] tile:[%04d,%04d] has clouds in %d pixels", name, startWidth, startHeight, thisTileCloudPixels));
         }
         return thisTileCloudPixels;
     }
@@ -438,25 +475,33 @@ public class ImagePack {
         blueSnr = calcSnr(ColorUtils.LAYERS.BLUE, cutoff1);
     }
     
-    private double calcSnr(final ColorUtils.LAYERS color, final int cutoff1) {
+    private double calcSnr(final ColorUtils.LAYERS color, final int samplesOfCutoff) {
         int bandCutoff = 0;
         int i = 0;
         final SummaryStatistics bandStats = new SummaryStatistics();
-        while (bandCutoff < cutoff1 && i < 256) {
-            i++;
-            bandCutoff += getHistogram().getBins().get(color).getData()[i];
-        }
-        if (bandCutoff > cutoff1) {
-            //should we cut off the whole bucket?
-            for (int excessCutoff = cutoff1; excessCutoff < bandCutoff; excessCutoff++) {
-                bandStats.addValue(i);
+        try {
+            while (bandCutoff < samplesOfCutoff && i < 255) {
+                i++;
+                bandCutoff += getHistogram().getBins().get(color).getData()[i];
             }
-        }
-        for (i++; i < 256; i++) {
-            //add all the elements of the bucket
-            for (int k = 0; k < getHistogram().getBins().get(color).getData()[i]; k++) {
-                bandStats.addValue(i);
+            if (bandCutoff > samplesOfCutoff) {
+                //add the elements in the band that were cut off incorrectly (this happens when the last bin has more elements than the cutoff1 threshold.
+                for (int excessCutoff = samplesOfCutoff; excessCutoff < bandCutoff; excessCutoff++) {
+                    bandStats.addValue(i);
+                }
             }
+            for (i++; i < 256; i++) {
+                //add all the elements of the bucket
+                try {
+                    for (int k = 0; k < getHistogram().getBins().get(color).getData()[i]; k++) {
+                        bandStats.addValue(i);
+                    }
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    log.error("[{}] color={}, i={}, len(data)={}", name, color, i, getHistogram().getBins().get(color).getData().length, e);
+                }
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            log.error("[{}] color={}, i={}, len(data)={}", name, color, i, getHistogram().getBins().get(color).getData().length, e);
         }
         log.info("[{}] band: {} | {} | {} {} {} | {}", name, color, bandStats.getN(), bandStats.getMax(), bandStats.getMin(), bandStats.getMean(), bandStats.getStandardDeviation());
         return bandStats.getMean() / bandStats.getStandardDeviation();
