@@ -559,7 +559,7 @@ public class FileService {
                             }
                             
                             for (int i = 0; i < 9; i++) {
-                                FileJobResult result = getTaskById(results, i);
+                                FileJobResult result = getTaskById(results, i + 1);
                                 if (result != null) {
                                     appendCell(fileRow, result.getResult() ? CHECK_OK : CHECK_NOK);
                                 } else {
@@ -587,7 +587,7 @@ public class FileService {
                             appendCell(fileRow, getN9BlueSnr(results));
                             
                             for (int i = 0; i < 9; i++) {
-                                FileJobResult result = getTaskById(results, i);
+                                FileJobResult result = getTaskById(results, i + 1);
                                 if (result != null) {
                                     appendCell(fileRow, result.getNote());
                                 } else {
