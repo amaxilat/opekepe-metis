@@ -6,5 +6,5 @@ import lombok.Data;
 public class DetectionsDTO {
     private int w;
     private int h;
-    private int[][] predictions;
+    private double[][] predictions;
 }

@@ -28,13 +28,17 @@ prod_model_name = 'model'
 if os.path.exists(prod_model_name):
     model_name = prod_model_name
 
-threshold = 0.8
+threshold = 0.5
 model = keras.models.load_model(model_name, custom_objects={
     "BinaryTP": BinaryTP(),
     "BinaryFP": BinaryFP(),
     "BinaryTN": BinaryTN(),
     "BinaryFN": BinaryFN()
 })
+
+model.summary()
+
+t_stats = False
 
 t_load = []
 t_prepare = []
@@ -43,6 +47,7 @@ t_reply = []
 
 TILE_WIDTH = 256
 TILE_HEIGHT = 256
+
 
 def avg(lst):
     if len(lst) == 0:
@@ -54,8 +59,8 @@ def load_request_data(req):
     compressed = False
     if CONTENT_ENCODING_KEY in req.headers and req.headers[CONTENT_ENCODING_KEY] == 'gzip':
         compressed = True
-    logger.debug(
-        f"path: {req.path} type: {req.headers['Content-Type']} size: {int(req.headers.get('Content-Length')) / 1024}KB compressed: {compressed}")
+    # logger.debug(f"path: {req.path} type: {req.headers['Content-Type']} size: {int(req.headers.get(
+    # 'Content-Length')) / 1024}KB compressed: {compressed}")
     if compressed:
         return json.loads(gzip.decompress(req.data))
     else:
@@ -74,7 +79,9 @@ def detect_in_single_tile():
     n = time.time()
     # load
     request_data = load_request_data(request)
-    t_load.append((time.time() - n))
+    t_t_load = (time.time() - n)
+    if t_stats:
+        t_load.append(t_t_load)
     (h, w, predictions_bin, c, d) = predict_tile(request_data)
     return make_response(jsonify({'predictions': predictions_bin, 'h': h, 'w': w}), 200)
 
@@ -84,13 +91,18 @@ def detect_in_many_tiles():
     n = time.time()
     # load
     request_data = load_request_data(request)
-    t_load.append((time.time() - n))
+    t_t_load = (time.time() - n)
+    if t_stats:
+        t_load.append(t_t_load)
     response_data = []
     for request_item in request_data['tiles']:
         (h, w, predictions_bin, c, d) = predict_tile(request_item)
         response_data.append({'predictions': predictions_bin, 'h': h, 'w': w})
-    logger.debug(
-        f'[{model_name}|{threshold}] load:{avg(t_load)} prepare:{avg(t_prepare)} predict:{avg(t_predict)} reply:{avg(t_reply)}')
+    if t_stats:
+        logger.debug(
+            f'[{model_name}|{threshold}] load:{avg(t_load)} prepare:{avg(t_prepare)} predict:{avg(t_predict)} reply:{avg(t_reply)}')
+    else:
+        logger.debug(f'[{model_name}|{threshold}]')
     return make_response(jsonify({'tiles': response_data}), 200)
 
 
@@ -155,7 +167,9 @@ def predict_tile(tile, mask_img=None):
     w = tile['w']
 
     n = time.time()
-    t_load.append((time.time() - n))
+    t_t_load = (time.time() - n)
+    if t_stats:
+        t_load.append(t_t_load)
     # print('jsonload:', (time.time() - n))
 
     n = time.time()
@@ -167,13 +181,16 @@ def predict_tile(tile, mask_img=None):
     # rank_3_tensor = tf.Tensor(o, dtype=tf.float32)
     rank_3_tensor = tf.convert_to_tensor([oo])
     # print('prepare', (time.time() - n))
-    t_prepare.append((time.time() - n))
+    t_t_prepare = (time.time() - n)
+    t_prepare.append(t_t_prepare)
 
     n = time.time()
     # predict
     predictions = model.predict(rank_3_tensor, verbose=0).tolist()[0]
     # print('predict', (time.time() - n))
-    t_predict.append((time.time() - n))
+    t_t_predict = (time.time() - n)
+    if t_stats:
+        t_predict.append(t_t_predict)
 
     n = time.time()
 
@@ -184,9 +201,10 @@ def predict_tile(tile, mask_img=None):
     for x in range(TILE_WIDTH):
         predictions_row = []
         for y in range(TILE_HEIGHT):
-            cloud_prediction = 1 if predictions[x][y][0] > threshold and (
-                    oo[x][y][0] > 0 or oo[x][y][1] > 0 or oo[x][y][2] > 0) and (
-                                            oo[x][y][0] < 255 or oo[x][y][1] < 255 or oo[x][y][2] < 255) else 0
+            cloud_prediction = predictions[x][y][0]
+            # cloud_prediction = 1 if predictions[x][y][0] > threshold and (
+            #         oo[x][y][0] > 0 or oo[x][y][1] > 0 or oo[x][y][2] > 0) and (
+            #                                 oo[x][y][0] < 255 or oo[x][y][1] < 255 or oo[x][y][2] < 255) else 0
             predictions_row.append(cloud_prediction)
             if mask_img is not None:
                 if cloud_prediction == 1:
@@ -196,9 +214,14 @@ def predict_tile(tile, mask_img=None):
                     mask_img[h * TILE_HEIGHT + x][w * TILE_WIDTH + y] = 0
         predictions_bin.append(predictions_row)
     # print('reply', (time.time() - n))
-    t_reply.append((time.time() - n))
-    logger.debug(
-        f'[{model_name}|{threshold}] ({h},{w}) load:{avg(t_load)} prepare:{avg(t_prepare)} predict:{avg(t_predict)} reply:{avg(t_reply)} cloudy: {cloudy_pixels}')
+    t_t_reply = (time.time() - n)
+    if t_stats:
+        t_reply.append(t_t_reply)
+        logger.debug(
+            f'[{model_name}|{threshold}] ({h},{w}) load:{avg(t_load)} prepare:{avg(t_prepare)} predict:{avg(t_predict)} reply:{avg(t_reply)} cloudy: {cloudy_pixels}')
+    else:
+        logger.debug(
+            f'[{model_name}|{threshold}] ({h},{w})')
     return h, w, predictions_bin, mask_img, cloudy_pixels
 
 
