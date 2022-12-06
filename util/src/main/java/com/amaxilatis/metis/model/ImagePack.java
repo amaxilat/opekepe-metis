@@ -2,8 +2,6 @@ package com.amaxilatis.metis.model;
 
 
 import com.amaxilatis.metis.detector.client.DetectorApiClient;
-import com.amaxilatis.metis.detector.client.dto.DataDTO;
-import com.amaxilatis.metis.detector.client.dto.DetectionsDTO;
 import com.amaxilatis.metis.detector.client.dto.ImageDetectionResultDTO;
 import com.amaxilatis.metis.util.ColorUtils;
 import com.amaxilatis.metis.util.CompressionUtils;
@@ -37,6 +35,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,11 +44,10 @@ import java.util.concurrent.TimeUnit;
 
 import static com.amaxilatis.metis.util.CloudUtils.BLACK_RGB;
 import static com.amaxilatis.metis.util.CloudUtils.GRAY_RGB;
-import static com.amaxilatis.metis.util.CloudUtils.LIGHT_GRAY_RGB;
 import static com.amaxilatis.metis.util.CloudUtils.WHITE_RGB;
-import static com.amaxilatis.metis.util.CloudUtils.cleanupCloudsBasedOnNearby;
-import static com.amaxilatis.metis.util.CloudUtils.cleanupCloudsBasedOnTiles;
-import static com.amaxilatis.metis.util.ColorUtils.isDark;
+import static com.amaxilatis.metis.util.CloudUtils.cleanupNDWI;
+import static com.amaxilatis.metis.util.ColorUtils.getBSI;
+import static com.amaxilatis.metis.util.ColorUtils.getNDWI;
 import static com.amaxilatis.metis.util.ImageDataUtils.getImageTileDataFromCoordinates;
 import static com.amaxilatis.metis.util.ImageDataUtils.isEmptyTile;
 import static com.amaxilatis.metis.util.ImageDataUtils.isValidPixel;
@@ -92,6 +90,9 @@ public class ImagePack {
     @Getter
     private final int compressionExifValue;
     private BufferedImage tensorflowMaskImage;
+    private BufferedImage nirMaskImage;
+    private BufferedImage bsiMaskImage;
+    private BufferedImage ndwiMaskImage;
     private final String cloudMaskDir;
     private final int workers;
     
@@ -167,6 +168,7 @@ public class ImagePack {
         
         this.loaded = false;
         this.histogramLoaded = false;
+        
     }
     
     public com.drew.metadata.Metadata getIoMetadata() {
@@ -254,9 +256,12 @@ public class ImagePack {
         
         //mask images for cloud detection
         this.tensorflowMaskImage = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        this.nirMaskImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        this.bsiMaskImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        this.ndwiMaskImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         
         final long start = System.currentTimeMillis();
-        log.info(String.format("[%20s] starting TF cloud detection...", name));
+        log.info(String.format("[%20s] starting cloud detection...", name));
         
         ImageDetectionResultDTO detectionResult;
         
@@ -283,11 +288,14 @@ public class ImagePack {
         for (int w = 0; w < width; w++) {
             for (int h = 0; h < height; h++) {
                 tensorflowMaskImage.setRGB(w, h, GRAY_RGB);
+                nirMaskImage.setRGB(w, h, GRAY_RGB);
+                bsiMaskImage.setRGB(w, h, BLACK_RGB);
+                ndwiMaskImage.setRGB(w, h, GRAY_RGB);
             }
         }
         
         final ExecutorService executorService = Executors.newFixedThreadPool(workers);
-        final ArrayList<Future<Integer>> futures = new ArrayList<>();
+        final List<Future<Integer>> futures = new ArrayList<>();
         
         int widthTiles = width / TILE_WIDTH;
         int heightTiles = height / TILE_HEIGHT;
@@ -350,20 +358,17 @@ public class ImagePack {
                 log.error("future is not cancelled or done???");
             }
         }
-        
-        int removedPixels = cleanupCloudsBasedOnNearby(tensorflowMaskImage, width, height, 2);
-        tfCloudPixels -= removedPixels;
-        log.info(String.format("[%20s] cleaned clouds in %d pixels", name, removedPixels));
-        
-        removedPixels = cleanupCloudsBasedOnTiles(tensorflowMaskImage, width, height, 100, 3);
-        tfCloudPixels -= removedPixels;
-        log.info(String.format("[%20s] cleaned clouds in %d pixels", name, removedPixels));
+    
+        tfCloudPixels -= cleanupNDWI(tensorflowMaskImage, 0, 0, image.getWidth(), image.getHeight());
         
         return new ImageDetectionResultDTO(null, null, (int) tfCheckedPixels, (int) tfCloudPixels, tfCloudPixels / tfCheckedPixels);
     }
     
     public void saveTensorflowMaskImage(final File file) throws IOException {
         ImageIO.write(tensorflowMaskImage, "png", file);
+        ImageIO.write(nirMaskImage, "png", new File(file.getParentFile(), file.getName().replace("mask", "nir")));
+        ImageIO.write(bsiMaskImage, "png", new File(file.getParentFile(), file.getName().replace("mask", "bsi")));
+        ImageIO.write(ndwiMaskImage, "png", new File(file.getParentFile(), file.getName().replace("mask", "ndwi")));
     }
     
     public void saveColorBalanceMaskImage(final File file) throws IOException {
@@ -375,58 +380,29 @@ public class ImagePack {
         int[] dnValues = getImageTileDataFromCoordinates(image, tileWidth, tileHeight, components, startWidth, startHeight);
         if (isEmptyTile(componentMaxValue, dnValues)) {
             log.trace(String.format("[%20s] tile:[%04d,%04d] skipping empty tile...", name, startWidth, startHeight));
-            //        } else if (!isBrightEnoughAnywhere(componentMaxValue, dnValues)) {
-            //            log.trace(String.format("[%20s] tile:[%04d,%04d] skipping dark tile...", name, startWidth, startHeight));
-            //        } else if (getAlphaVariance(componentMaxValue, dnValues) > 4000) {
-            //            log.info(String.format("[%20s] tile:[%04d,%04d] skipping alpha-spread[%.0f] tile...", name, startWidth, startHeight, getAlphaVariance(componentMaxValue, dnValues)));
-            //        } else if (getAlphaPeak(componentMaxValue, dnValues) < 20) {
-            //            log.info(String.format("[%20s] tile:[%04d,%04d] skipping alpha-low[%d] tile...", name, startWidth, startHeight, getAlphaPeak(componentMaxValue, dnValues)));
         } else {
             log.trace(String.format("[%20s] tile:[%04d,%04d] detecting...", name, startWidth, startHeight));
-    
-            //            for (int i = 0; i < dnValues.length; i += 4) {
-            //                if (isDark(dnValues[i], dnValues[i + 1], dnValues[i + 2])) {
-            //                    dnValues[i] = 0;
-            //                    dnValues[i + 1] = 0;
-            //                    dnValues[i + 2] = 0;
-            //                }
-            //            }
-            
-            DetectionsDTO detectionsDTO;
-            do {
-                detectionsDTO = detectorApiClient.postData(DataDTO.builder().w(startWidth).h(startHeight).data(dnValues).build());
-            } while (detectionsDTO == null);
-            
-            for (int j = 0; j < TILE_WIDTH; j++) {
-                for (int k = 0; k < TILE_HEIGHT; k++) {
-                    int mx = startWidth + k;
-                    int my = startHeight + j;
-                    // double a = detectionsDTO.getPredictions()[j][k];
-                    // tensorflowMaskImage.setRGB(mx, my, new Color((int) (a * 255), (int) (a * 255), (int) (a * 255)).getRGB());
-    
-                    //dark patches cannot be clouds obviously
-                    if (detectionsDTO.getPredictions()[j][k] > 0.2 && !isDark(image.getRGB(mx, my))) {
-                        thisTileCloudPixels++;
-                        tensorflowMaskImage.setRGB(mx, my, WHITE_RGB);
-                    } else {
-                        if (detectionsDTO.getPredictions()[j][k] > 0.2 && isDark(image.getRGB(mx, my))) {
-                            tensorflowMaskImage.setRGB(mx, my, LIGHT_GRAY_RGB);
-                        } else {
-                            tensorflowMaskImage.setRGB(mx, my, BLACK_RGB);
-                        }
-                    }
-                    
-                    //                    if (detectionsDTO.getPredictions()[j][k] > 0.2 && !isDark(image.getRGB(mx, my))) {
-                    //                        thisTileCloudPixels++;
-                    //                        tensorflowMaskImage.setRGB(mx, my, WHITE_RGB);
-                    //                    } else {
-                    //                        if (detectionsDTO.getPredictions()[j][k] > 0.2 && isDark(image.getRGB(mx, my))) {
-                    //                            //log.info(String.format("[%20s] tile_l:[%04d,%04d] cloud in dark pixel ignored", name, startWidth, startHeight));
-                    //                            tensorflowMaskImage.setRGB(mx, my, LIGHT_GRAY_RGB);
-                    //                        } else {
-                    //                            tensorflowMaskImage.setRGB(mx, my, BLACK_RGB);
-                    //                        }
-                    //                    }
+            for (int i = 0; i < dnValues.length; i += components) {
+                int x = startWidth + ((i / components) % (tileWidth));
+                int y = startHeight + ((i / components) / (tileWidth));
+                int r = dnValues[i], g = dnValues[i + 1], b = dnValues[i + 2], nir = dnValues[i + 3];
+                
+                nirMaskImage.setRGB(x, y, new Color(nir, nir, nir).getRGB());
+                
+                int bsi = (int) (getBSI(nir, dnValues[i], dnValues[i + 2]) * 255);
+                bsiMaskImage.setRGB(x, y, new Color(bsi, bsi, bsi).getRGB());
+                
+                int ndwi = -999;
+                try {
+                    ndwi = (int) (getNDWI(nir, g) * 255);
+                    ndwiMaskImage.setRGB(x, y, new Color(ndwi, ndwi, ndwi).getRGB());
+                    boolean isCloudPixel = (124 < ndwi && ndwi < 140) && (84 < bsi && bsi < 96);
+                    thisTileCloudPixels += isCloudPixel ? 1 : 0;
+                    tensorflowMaskImage.setRGB(x, y, isCloudPixel ? WHITE_RGB : BLACK_RGB);
+                } catch (IllegalArgumentException e) {
+                    log.error("IllegalArgumentException: {}", ndwi);
+                } catch (ArithmeticException e) {
+                    log.error("ArithmeticException: {} {}", g, nir);
                 }
             }
         }

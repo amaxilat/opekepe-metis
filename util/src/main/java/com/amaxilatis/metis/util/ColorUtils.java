@@ -59,6 +59,18 @@ public class ColorUtils {
         }
     }
     
+    public static double getNDVI(final double nir, final double red) {
+        return ((((nir - red) / (nir + red)) + 1) / 2);
+    }
+    
+    public static double getBSI(final double nir, final double red, final double blue) {
+        return (((red - (blue + nir)) / (red + blue + nir)) + 1) / 2;
+    }
+    
+    public static double getNDWI(final double nir, final double green) throws IllegalArgumentException, ArithmeticException {
+        return ((((green - nir) / (green + nir)) + 1) / 2);
+    }
+    
     public static boolean isDark(final int rgb) {
         final Color c = new Color(rgb);
         return isDark(c.getRed(), c.getGreen(), c.getBlue());
