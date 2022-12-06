@@ -104,6 +104,39 @@ public class FileNameUtils {
     }
     
     /**
+     * Returns the full path to the image's NIR mask.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's NIR mask file.
+     */
+    public static String getImageNIRMaskFilename(final String location, final String dir, final String name) {
+        return String.format("%s/%s/%s", location, dir, name + ".nir.png");
+    }
+    
+    /**
+     * Returns the full path to the image's NDWI mask.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's NDWI mask file.
+     */
+    public static String getImageNDWIMaskFilename(final String location, final String dir, final String name) {
+        return String.format("%s/%s/%s", location, dir, name + ".ndwi.png");
+    }
+    
+    /**
+     * Returns the full path to the image's BSI mask.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's BSI mask file.
+     */
+    public static String getImageBSIMaskFilename(final String location, final String dir, final String name) {
+        return String.format("%s/%s/%s", location, dir, name + ".bsi.png");
+    }
+    
+    /**
      * Returns the full path to the image's color balance mask.
      *
      * @param dir  the directory of the image.
