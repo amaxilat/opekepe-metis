@@ -274,9 +274,9 @@ public class ImagePack {
         //get results form the call
         validPixels = detectionResult.getPixels();
         cloudPixels = detectionResult.getCloudy();
-        
-        double percentage = validPixels / cloudPixels;
-        log.info(String.format("[%20s] TF cloud detection result: %1.3f took: %d sec", name, percentage, (System.currentTimeMillis() - start) / 1000));
+    
+        double percentage = cloudPixels / validPixels;
+        log.info(String.format("[%20s] cloud-detection result: %1.3f took: %d sec", name, percentage, (System.currentTimeMillis() - start) / 1000));
     }
     
     private ImageDetectionResultDTO detectCloudsInTilesOfImage(final BufferedImage image, final int width, final int height) throws IOException {
@@ -407,7 +407,7 @@ public class ImagePack {
             }
         }
         if (thisTileCloudPixels > 0) {
-            log.info(String.format("[%20s] tile:[%04d,%04d] has clouds in %d pixels", name, startWidth, startHeight, thisTileCloudPixels));
+            log.debug(String.format("[%20s] tile:[%04d,%04d] has clouds in %d pixels", name, startWidth, startHeight, thisTileCloudPixels));
         }
         return thisTileCloudPixels;
     }

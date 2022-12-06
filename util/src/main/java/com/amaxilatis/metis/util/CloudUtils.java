@@ -178,7 +178,7 @@ public class CloudUtils {
                     int length = y - startY;
                     if (length < threshold) {
                         //                        log.info("startY = {} , y = {}", startY, y);
-                        for (int y1 = startY; y1 <= y; y1++) {
+                        for (int y1 = startY; y1 < y; y1++) {
                             image.setRGB(x, y1, BLACK_RGB);
                             removedPixels++;
                         }
@@ -199,7 +199,7 @@ public class CloudUtils {
                     int length = x - startX;
                     if (length < threshold) {
                         //                        log.info("startX = {} , X = {}", startX, x);
-                        for (int x1 = startX; x1 <= x; x1++) {
+                        for (int x1 = startX; x1 < x; x1++) {
                             image.setRGB(x1, y, GRAY_RGB);
                             removedPixels++;
                         }
@@ -311,6 +311,7 @@ public class CloudUtils {
             }
         }
         
+        // cleanup non-white and non-black pixels
         for (int w = startWidth; w < scanWidth; w++) {
             for (int h = startHeight; h < scanHeight; h++) {
                 if (image.getRGB(w, h) != WHITE_RGB) {
