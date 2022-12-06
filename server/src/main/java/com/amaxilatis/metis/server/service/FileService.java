@@ -318,6 +318,9 @@ public class FileService {
         new File(resultsDir, FileNameUtils.getResultName(file, task)).delete();
         if (task == 4) {
             new File(FileNameUtils.getImageCloudCoverMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())).delete();
+            new File(FileNameUtils.getImageNIRMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())).delete();
+            new File(FileNameUtils.getImageNDWIMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())).delete();
+            new File(FileNameUtils.getImageBSIMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())).delete();
         }
         if (task == 5) {
             new File(FileNameUtils.getImageHistogramFilename(props.getHistogramLocation(), file.getParentFile().getName(), file.getName())).delete();
@@ -415,6 +418,39 @@ public class FileService {
     }
     
     /**
+     * Returns the full path to the image's NIR mask.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's NIR mask file.
+     */
+    String getImageMaskNIRFilename(final String dir, final String name) {
+        return FileNameUtils.getImageNIRMaskFilename(props.getCloudMaskLocation(), dir, name);
+    }
+    
+    /**
+     * Returns the full path to the image's NDWI mask.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's NDWI mask file.
+     */
+    String getImageMaskNDWIFilename(final String dir, final String name) {
+        return FileNameUtils.getImageNDWIMaskFilename(props.getCloudMaskLocation(), dir, name);
+    }
+    
+    /**
+     * Returns the full path to the image's BSI mask.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's BSI mask file.
+     */
+    String getImageMaskBSIFilename(final String dir, final String name) {
+        return FileNameUtils.getImageBSIMaskFilename(props.getCloudMaskLocation(), dir, name);
+    }
+    
+    /**
      * Get or create and get the thumbnail of the image.
      *
      * @param directory the directory of the image.
@@ -482,6 +518,72 @@ public class FileService {
         //check if file exists
         if (colorBalanceFile.exists()) {
             return colorBalanceFile;
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Get or create and get the NIR of the image.
+     *
+     * @param directory the directory of the image.
+     * @param name      the name of the image.
+     * @return the file containing the NIR mask of the image.
+     */
+    public File getImageMaskNIR(final String directory, final String name) {
+        final File maskNIRFile = new File(getImageMaskNIRFilename(directory, name));
+        log.debug("[nir|{}|{}] {}", directory, name, maskNIRFile.getAbsolutePath());
+        //check if directory exists
+        if (!maskNIRFile.getParentFile().exists()) {
+            maskNIRFile.getParentFile().mkdir();
+        }
+        //check if file exists
+        if (maskNIRFile.exists()) {
+            return maskNIRFile;
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Get or create and get the NDWI of the image.
+     *
+     * @param directory the directory of the image.
+     * @param name      the name of the image.
+     * @return the file containing the NDWI mask of the image.
+     */
+    public File getImageMaskNDWI(final String directory, final String name) {
+        final File maskNDWIFile = new File(getImageMaskNDWIFilename(directory, name));
+        log.debug("[ndwi|{}|{}] {}", directory, name, maskNDWIFile.getAbsolutePath());
+        //check if directory exists
+        if (!maskNDWIFile.getParentFile().exists()) {
+            maskNDWIFile.getParentFile().mkdir();
+        }
+        //check if file exists
+        if (maskNDWIFile.exists()) {
+            return maskNDWIFile;
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Get or create and get the BSI of the image.
+     *
+     * @param directory the directory of the image.
+     * @param name      the name of the image.
+     * @return the file containing the BSI mask of the image.
+     */
+    public File getImageMaskBSI(final String directory, final String name) {
+        final File maskBSIFile = new File(getImageMaskBSIFilename(directory, name));
+        log.debug("[bsi|{}|{}] {}", directory, name, maskBSIFile.getAbsolutePath());
+        //check if directory exists
+        if (!maskBSIFile.getParentFile().exists()) {
+            maskBSIFile.getParentFile().mkdir();
+        }
+        //check if file exists
+        if (maskBSIFile.exists()) {
+            return maskBSIFile;
         } else {
             return null;
         }

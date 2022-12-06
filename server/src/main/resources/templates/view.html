@@ -94,14 +94,17 @@
                             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                                 <h6 class="m-0 font-weight-bold text-primary">Ορθοφωτοχάρτης</h6>
                                 <div class="col mr-2">
-                                    <select id="imagelist" class="custom-select col-md-12"
-                                            onchange="loadFile()">
-                                        <option th:each="image : ${images}"
-                                                th:text="${image.name}" th:title="${image.name}"
-                                                th:value="${image.hash}" th:selected="${image.hash==file}">
-                                            image
-                                        </option>
-                                    </select>
+                                    <div class="btn-group" role="group" aria-label="Basic example">
+                                        <select id="imagelist" class="custom-select col-md-12" onchange="loadFile()"
+                                                style="border-top-right-radius: 0; border-bottom-right-radius: 0">
+                                            <option th:each="image : ${images}"
+                                                    th:text="${image.name}" th:title="${image.name}"
+                                                    th:value="${image.hash}" th:selected="${image.hash==file}">
+                                                image
+                                            </option>
+                                        </select>
+                                        <button class="btn btn-primary" onclick="showNextImage()">Επόμενη</button>
+                                    </div>
                                 </div>
                             </div>
                             <div class="card-body">
@@ -146,7 +149,7 @@
                                                                  aria-label="image actions">
                                                                 <a data-toggle="modal"
                                                                    data-target="#modal-info-thumbnail"
-                                                                   id="thumbnailInfoButton">
+                                                                   id="thumbnailInfoButton" style="cursor: pointer">
                                                                         <span class="icon">
                                                                             <i class="fa-solid fa-circle-info"></i></span>
                                                                     <span class="text"></span>
@@ -169,7 +172,7 @@
                                                                  aria-label="image actions">
                                                                 <a data-toggle="modal"
                                                                    data-target="#modal-info-histogram"
-                                                                   id="histogramInfoButton">
+                                                                   id="histogramInfoButton" style="cursor: pointer">
                                                                         <span class="icon">
                                                                             <i class="fa-solid fa-circle-info"></i></span>
                                                                     <span class="text"></span>
@@ -191,7 +194,7 @@
                                                             <div class="btn-group" role="group"
                                                                  aria-label="image actions">
                                                                 <a data-toggle="modal" data-target="#modal-info-cloud"
-                                                                   id="cloudInfoButton">
+                                                                   id="cloudInfoButton" style="cursor: pointer">
                                                                         <span class="icon">
                                                                             <i class="fa-solid fa-circle-info"></i></span>
                                                                     <span class="text"></span>
@@ -215,7 +218,7 @@
                                                                  aria-label="image actions">
                                                                 <a data-toggle="modal"
                                                                    data-target="#modal-info-color-balance"
-                                                                   id="colorBalanceInfoButton">
+                                                                   id="colorBalanceInfoButton" style="cursor: pointer">
                                                                         <span class="icon">
                                                                             <i class="fa-solid fa-circle-info"></i></span>
                                                                     <span class="text"></span>
@@ -226,6 +229,36 @@
                                                     </div>
                                                     <div class="card-body">
                                                         <img src="" id="image-colorbalance" class="zoomable geothumb">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-xxl-6 col-xl-12 col-lg-6 col-md-12 col-sm-12">
+                                                <div class="card shadow mb-4">
+                                                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                                        <h6 class="m-0 font-weight-bold text-primary">
+                                                            Μάσκα:&nbsp;
+                                                            <a class="mask-link" onclick="showMask('NIR',this)"
+                                                               style="cursor: pointer; color: #3a3b45">NIR</a>&nbsp;|&nbsp;
+                                                            <a class="mask-link" onclick="showMask('NDWI',this)"
+                                                               style="cursor: pointer; color: #3a3b45">NDWI</a>&nbsp;|&nbsp;
+                                                            <a class="mask-link" onclick="showMask('BSI',this)"
+                                                               style="cursor: pointer; color: #3a3b45">BSI</a>
+                                                        </h6>
+                                                        <div class="col-auto">
+                                                            <div class="btn-group" role="group"
+                                                                 aria-label="image actions">
+                                                                <a data-toggle="modal" data-target="#modal-info-masks"
+                                                                   id="maskInfoButton" style="cursor: pointer">
+                                                                        <span class="icon">
+                                                                            <i class="fa-solid fa-circle-info"></i></span>
+                                                                    <span class="text"></span>
+                                                                </a>
+                                                                <div th:replace="fragments/modals :: modal-info-masks"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <img src="" id="image-masks" class="zoomable geothumb">
                                                     </div>
                                                 </div>
                                             </div>
@@ -247,12 +280,39 @@
                 const histogram_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_HISTOGRAM_DIRECTORY_IMAGE}]];
                 const cloudcover_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_CLOUD_COVER_DIRECTORY_IMAGE}]];
                 const colorbalance_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_COLOR_BALANCE_DIRECTORY_IMAGE}]];
+                const nir_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_NIR_DIRECTORY_IMAGE}]];
+                const ndwi_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_NDWI_DIRECTORY_IMAGE}]];
+                const bsi_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_BSI_DIRECTORY_IMAGE}]];
                 const directoryReport_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_DIRECTORY_REPORT_DOWNLOAD}]];
                 const imageDirectoryHash = /*[[${imageDirectoryHash}]]*/ '';
+
+                function showMask(mask, e) {
+                    const maskImg = $("#image-masks");
+                    maskImg.attr("src", "/img/loading.gif");
+                    $(".mask-link").css('color', '#3a3b45');
+                    const selected_image = $("#imagelist").val();
+                    switch (mask) {
+                        case 'NIR':
+                            maskImg.attr("src", nir_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
+                            break;
+                        case 'NDWI':
+                            maskImg.attr("src", ndwi_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
+                            break;
+                        case 'BSI':
+                            maskImg.attr("src", bsi_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
+                            break;
+                    }
+                    $(e).css('color', '#4e73df');
+                }
 
                 /*]]>*/
                 function loadFile() {
                     window.location = window.location.origin + window.location.pathname + "?dir=" + getUrlParameter("dir") + "&file=" + $("#imagelist").val();
+                }
+
+                function showNextImage() {
+                    $('#imagelist option:selected').next().attr('selected', 'selected');
+                    $('#imagelist').change();
                 }
 
                 function reloadFile() {
@@ -279,6 +339,7 @@
                         $("#image-thumbnail").attr("src", thumbnail_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
                         $("#image-cloudcover").attr("src", cloudcover_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
                         $("#image-colorbalance").attr("src", colorbalance_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
+                        showMask('NIR', $('.mask-link')[0]);
                     });
                 }
 

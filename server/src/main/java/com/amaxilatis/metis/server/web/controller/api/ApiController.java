@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.SortedSet;
 
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_BACKUP;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_BSI_DIRECTORY_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_CLOUD;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_CLOUD_COVER_DIRECTORY_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_COLOR_BALANCE_DIRECTORY_IMAGE;
@@ -36,6 +37,8 @@ import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_HISTOGRAM
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE_DIRECTORY;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_IMAGE_DIRECTORY_IMAGE;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_NDWI_DIRECTORY_IMAGE;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_NIR_DIRECTORY_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_POOL;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_SCAN_IMAGES;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_THUMBNAIL_DIRECTORY_IMAGE;
@@ -115,7 +118,7 @@ public class ApiController extends BaseController {
     }
     
     @GetMapping(value = API_CLOUD_COVER_DIRECTORY_IMAGE)
-    public ResponseEntity<Resource> apiDownloadImageCloudCover(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+    public ResponseEntity<Resource> apiDownloadImageMaskCloudCover(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_CLOUD_COVER_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
@@ -123,13 +126,39 @@ public class ApiController extends BaseController {
         return cloudCoverFile != null ? FileUtils.sendFile(response, cloudCoverFile, cloudCoverFile.getName()) : null;
     }
     
-    
     @GetMapping(value = API_COLOR_BALANCE_DIRECTORY_IMAGE)
-    public ResponseEntity<Resource> apiDownloadImageColorBalance(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+    public ResponseEntity<Resource> apiDownloadImageMaskColorBalance(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_COLOR_BALANCE_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File histogramFile = fileService.getImageColorBalance(decodedImageDir, decodedImage);
+        return histogramFile != null ? FileUtils.sendFile(response, histogramFile, histogramFile.getName()) : null;
+    }
+    
+    @GetMapping(value = API_NIR_DIRECTORY_IMAGE)
+    public ResponseEntity<Resource> apiDownloadImageMaskNIR(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+        log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_NIR_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
+        final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
+        final String decodedImage = fileService.getStringFromHash(imageHash);
+        final File histogramFile = fileService.getImageMaskNIR(decodedImageDir, decodedImage);
+        return histogramFile != null ? FileUtils.sendFile(response, histogramFile, histogramFile.getName()) : null;
+    }
+    
+    @GetMapping(value = API_NDWI_DIRECTORY_IMAGE)
+    public ResponseEntity<Resource> apiDownloadImageMaskNDWI(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+        log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_NDWI_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
+        final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
+        final String decodedImage = fileService.getStringFromHash(imageHash);
+        final File histogramFile = fileService.getImageMaskNDWI(decodedImageDir, decodedImage);
+        return histogramFile != null ? FileUtils.sendFile(response, histogramFile, histogramFile.getName()) : null;
+    }
+    
+    @GetMapping(value = API_BSI_DIRECTORY_IMAGE)
+    public ResponseEntity<Resource> apiDownloadImageMaskBSI(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+        log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_BSI_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
+        final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
+        final String decodedImage = fileService.getStringFromHash(imageHash);
+        final File histogramFile = fileService.getImageMaskBSI(decodedImageDir, decodedImage);
         return histogramFile != null ? FileUtils.sendFile(response, histogramFile, histogramFile.getName()) : null;
     }
     
