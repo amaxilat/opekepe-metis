@@ -26,21 +26,6 @@ function connect() {
     });
 }
 
-function connect_cloud_detection() {
-    $.get("/v1/api/cloud", function (data) {
-        if (data['model'] === undefined || data['model'] === null) {
-            $("#dot-cloud").css("color", "#bbb");
-            $("#cloud-model").text('');
-        } else {
-            $("#dot-cloud").css("color", "#49660e");
-            $("#cloud-model").text(data['model']);
-        }
-    }).fail(function () {
-        $("#dot-cloud").css("color", "#bbb");
-        $("#cloud-model").text('');
-    });
-}
-
 function disconnect() {
     if (stompClient !== null) {
         stompClient.disconnect();

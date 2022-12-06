@@ -349,9 +349,6 @@
                     Zoom(".zoomable");
                 });
                 $(document).ready(function () {
-                    connect_cloud_detection();
-                });
-                $(document).ready(function () {
                     $('#downloadDirReport').click(function () {
                         $($("#downloadDirReport span")[2]).html('<i class="fa-solid fa-spinner fa-spin"></i>');
                         fetch(directoryReport_url.replace("{imageDirectoryHash}", imageDirectoryHash))
