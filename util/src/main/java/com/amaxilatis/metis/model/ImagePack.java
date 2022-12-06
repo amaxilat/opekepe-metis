@@ -504,7 +504,7 @@ public class ImagePack {
             log.error("[{}] color={}, i={}, len(data)={}", name, color, i, getHistogram().getBins().get(color).getData().length, e);
         }
         log.info("[{}] band: {} | {} | {} {} {} | {}", name, color, bandStats.getN(), bandStats.getMax(), bandStats.getMin(), bandStats.getMean(), bandStats.getStandardDeviation());
-        return bandStats.getMean() / bandStats.getStandardDeviation();
+        return (bandStats.getMean() / bandStats.getStandardDeviation()) * 100;
     }
     
     /**
