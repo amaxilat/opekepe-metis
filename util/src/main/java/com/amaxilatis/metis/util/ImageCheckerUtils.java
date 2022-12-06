@@ -375,10 +375,10 @@ public class ImageCheckerUtils {
             image.loadHistogram();
             final double mean = image.getDnValuesStatistics().getMean();
             final double std = image.getDnValuesStatistics().getStandardDeviation();
-            final double coefficientOfVariation = std / mean;
+            final double coefficientOfVariation = (std / mean) * 100;
             final double variance = image.getDnValuesStatistics().getVariance();
-            
-            final boolean result = coefficientOfVariation > configuration.getN7VariationLow() && coefficientOfVariation < configuration.getN7VariationHigh();
+    
+            final boolean result = coefficientOfVariation >= configuration.getN7VariationLow() && coefficientOfVariation <= configuration.getN7VariationHigh();
             resultBuilder.n7CoefficientOfVariation(coefficientOfVariation);
             resultBuilder.result(result);
             resultBuilder.note(String.format("Μέση Τιμή: %.2f, Τυπική Απόκλιση: %.2f, Διασπορά: %.2f, Συντελεστής Διακύμανσης: %.2f", mean, std, variance, coefficientOfVariation));
