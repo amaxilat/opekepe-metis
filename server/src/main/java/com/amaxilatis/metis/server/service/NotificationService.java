@@ -5,17 +5,16 @@ import com.amaxilatis.metis.server.db.model.Report;
 import com.amaxilatis.metis.server.db.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import javax.mail.internet.InternetAddress;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.Multipart;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMultipart;
 import java.io.File;
-import java.io.FileInputStream;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -61,14 +60,23 @@ public class NotificationService {
     public void sendMailWithAttachment(final String to, final String subject, final String body, final File attachment) {
         try {
             emailSender.send(mimeMessage -> {
-                final MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-                message.setTo(new InternetAddress(to));
-                message.setFrom(new InternetAddress(props.getNotificationEmail()));
-                message.setSubject(subject);
-                message.setText(body, true);
-                message.addAttachment(attachment.getName(), new ByteArrayResource(IOUtils.toByteArray(new FileInputStream(attachment))), Files.probeContentType(attachment.toPath()));
-                mimeMessage.setContent(body, "text/html; charset=utf-8");
+                mimeMessage.setFrom(props.getNotificationEmail());
+                mimeMessage.setSubject(subject);
+                mimeMessage.addRecipients(Message.RecipientType.TO, to);
+                
+                final Multipart multipart = new MimeMultipart();
+                
+                final BodyPart messageBodyPart = new MimeBodyPart();
+                messageBodyPart.setText(body);
+                multipart.addBodyPart(messageBodyPart);
+                
+                final MimeBodyPart attachmentPart = new MimeBodyPart();
+                attachmentPart.attachFile(attachment);
+                multipart.addBodyPart(attachmentPart);
+                
+                mimeMessage.setContent(multipart);
             });
+            log.info("sent mail to: {}", to);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
