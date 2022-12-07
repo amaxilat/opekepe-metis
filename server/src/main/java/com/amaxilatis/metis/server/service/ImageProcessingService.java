@@ -1,5 +1,6 @@
 package com.amaxilatis.metis.server.service;
 
+import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.config.ProcessingQueueConfiguration;
 import com.amaxilatis.metis.server.db.model.Configuration;
 import com.amaxilatis.metis.server.db.model.Task;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ImageProcessingService {
     
+    private final MetisProperties metisProperties;
     private final ProcessingQueueConfiguration processingQueueConfiguration;
     private final FileService fileService;
     private final SimpMessagingTemplate webSocketService;
@@ -91,7 +93,7 @@ public class ImageProcessingService {
                 final long remainingTasks = taskRepository.countByReportId(task.getReportId());
                 isLastId = remainingTasks == 1 ? task.getReportId() : null;
             }
-            new ImageProcessingTask(processingQueueConfiguration, fileService, task.getOutFileName(), task.getFileName(), tasks, getConfiguration(), notificationService, isLastId, true).run();
+            new ImageProcessingTask(processingQueueConfiguration, fileService, task.getOutFileName(), task.getFileName(), tasks, getConfiguration(), notificationService, isLastId, metisProperties.isStoreHelperMasks()).run();
             taskRepository.delete(optTask.get());
         }
     }

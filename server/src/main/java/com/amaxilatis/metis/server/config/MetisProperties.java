@@ -15,6 +15,7 @@ public class MetisProperties {
     private String uncompressedLocation;
     private String resultsLocation;
     private String dbBackupLocation;
+    private boolean storeHelperMasks;
     private String version;
     private String notificationEmail;
     private String domain;

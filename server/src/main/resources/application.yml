@@ -60,6 +60,7 @@ metis:
   histogramLocation: hist
   cloudMaskLocation: cloud
   filesLocation: files
+  storeHelperMasks: true
   version: ^project.version^
   dbBackupLocation: backup
   uncompressedLocation: unc
