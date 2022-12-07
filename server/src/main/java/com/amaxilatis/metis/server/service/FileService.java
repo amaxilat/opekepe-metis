@@ -315,18 +315,26 @@ public class FileService {
     
     private void cleanFileResults(final String directory, final File file, final int task) {
         File resultsDir = new File(props.getResultsLocation(), directory);
-        new File(resultsDir, FileNameUtils.getResultName(file, task)).delete();
+        deleteIfExists(new File(resultsDir, FileNameUtils.getResultName(file, task)));
         if (task == 4) {
-            new File(FileNameUtils.getImageCloudCoverMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())).delete();
-            new File(FileNameUtils.getImageNIRMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())).delete();
-            new File(FileNameUtils.getImageNDWIMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())).delete();
-            new File(FileNameUtils.getImageBSIMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())).delete();
+            deleteIfExists(new File(FileNameUtils.getImageCloudCoverMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())));
+            deleteIfExists(new File(FileNameUtils.getImageNIRMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())));
+            deleteIfExists(new File(FileNameUtils.getImageNDWIMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())));
+            deleteIfExists(new File(FileNameUtils.getImageBSIMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())));
         }
         if (task == 5) {
-            new File(FileNameUtils.getImageHistogramFilename(props.getHistogramLocation(), file.getParentFile().getName(), file.getName())).delete();
+            deleteIfExists(new File(FileNameUtils.getImageHistogramFilename(props.getHistogramLocation(), file.getParentFile().getName(), file.getName())));
         }
         if (task == 9) {
-            new File(FileNameUtils.getImageColorBalanceMaskFilename(props.getHistogramLocation(), file.getParentFile().getName(), file.getName())).delete();
+            deleteIfExists(new File(FileNameUtils.getImageColorBalanceMaskFilename(props.getHistogramLocation(), file.getParentFile().getName(), file.getName())));
+        }
+    }
+    
+    private void deleteIfExists(final File file) {
+        try {
+            Files.deleteIfExists(file.toPath());
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
         }
     }
     
@@ -471,7 +479,7 @@ public class FileService {
             long start = System.currentTimeMillis();
             try {
                 FileUtils.makeThumbnail(new File(getImageFilename(directory, name)), thumbnailFile, 450, 339);
-                log.info("[thumbnail-create|{}|{}] time:{}", directory, name, (System.currentTimeMillis() - start));
+                log.info("[{}][thumbnail-create] dir:{} took:{}", name, directory, (System.currentTimeMillis() - start));
                 return thumbnailFile;
             } catch (IOException e) {
                 return null;
@@ -488,7 +496,7 @@ public class FileService {
      */
     public File getImageHistogram(final String directory, final String name) {
         final File histogramFile = new File(getImageHistogramFilename(directory, name));
-        log.debug("[histogram|{}|{}] {}", directory, name, histogramFile.getAbsolutePath());
+        log.debug("[{}][histogram] dir:{} path:{}", name, directory, histogramFile.getAbsolutePath());
         //check if directory exists
         if (!histogramFile.getParentFile().exists()) {
             histogramFile.getParentFile().mkdir();
@@ -510,7 +518,7 @@ public class FileService {
      */
     public File getImageColorBalance(final String directory, final String name) {
         final File colorBalanceFile = new File(getImageColorBalanceFilename(directory, name));
-        log.debug("[colorBalance|{}|{}] {}", directory, name, colorBalanceFile.getAbsolutePath());
+        log.debug("[{}][colorBalance] dir:{} path:{}", name, directory, colorBalanceFile.getAbsolutePath());
         //check if directory exists
         if (!colorBalanceFile.getParentFile().exists()) {
             colorBalanceFile.getParentFile().mkdir();
@@ -532,7 +540,7 @@ public class FileService {
      */
     public File getImageMaskNIR(final String directory, final String name) {
         final File maskNIRFile = new File(getImageMaskNIRFilename(directory, name));
-        log.debug("[nir|{}|{}] {}", directory, name, maskNIRFile.getAbsolutePath());
+        log.debug("[{}][nir] dir:{} path:{}", name, directory, maskNIRFile.getAbsolutePath());
         //check if directory exists
         if (!maskNIRFile.getParentFile().exists()) {
             maskNIRFile.getParentFile().mkdir();
@@ -554,7 +562,7 @@ public class FileService {
      */
     public File getImageMaskNDWI(final String directory, final String name) {
         final File maskNDWIFile = new File(getImageMaskNDWIFilename(directory, name));
-        log.debug("[ndwi|{}|{}] {}", directory, name, maskNDWIFile.getAbsolutePath());
+        log.debug("[{}][ndwi] dir:{} path:{}", name, directory, maskNDWIFile.getAbsolutePath());
         //check if directory exists
         if (!maskNDWIFile.getParentFile().exists()) {
             maskNDWIFile.getParentFile().mkdir();
@@ -576,7 +584,7 @@ public class FileService {
      */
     public File getImageMaskBSI(final String directory, final String name) {
         final File maskBSIFile = new File(getImageMaskBSIFilename(directory, name));
-        log.debug("[bsi|{}|{}] {}", directory, name, maskBSIFile.getAbsolutePath());
+        log.debug("[{}][bsi] dir:{} path:{}", name, directory, maskBSIFile.getAbsolutePath());
         //check if directory exists
         if (!maskBSIFile.getParentFile().exists()) {
             maskBSIFile.getParentFile().mkdir();
@@ -598,7 +606,7 @@ public class FileService {
      */
     public File getImageCloudCover(final String directory, final String name) {
         final File cloudCoverFile = new File(getImageCloudCoverFilename(directory, name));
-        log.debug("[cloudCover|{}|{}] {}", directory, name, cloudCoverFile.getAbsolutePath());
+        log.debug("[{}][cloudCover] dir:{} path:{}", name, directory, cloudCoverFile.getAbsolutePath());
         //check if directory exists
         if (!cloudCoverFile.getParentFile().exists()) {
             cloudCoverFile.getParentFile().mkdir();
