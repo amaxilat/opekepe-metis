@@ -503,8 +503,8 @@ public class ImagePack {
         if (alpha > 0) {
             gama = ((double) (alpha - beta)) / alpha;
         }
-        final int maskValue = (int) (gama * 256);
-        colorBalanceMask.setRGB(x, y, maskValue);
+        int gamaInt = (int) gama * 255;
+        colorBalanceMask.setRGB(x, y, new Color(gamaInt, gamaInt, gamaInt).getRGB());
         colorBalanceStatistics.addValue(gama);
     }
     
