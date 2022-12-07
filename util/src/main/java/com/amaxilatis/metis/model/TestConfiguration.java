@@ -24,4 +24,5 @@ public class TestConfiguration {
     private double n7VariationHigh;
     private double n9ColorBalanceThreshold;
     private double n9NoiseThreshold;
+    private boolean storeMasks;
 }

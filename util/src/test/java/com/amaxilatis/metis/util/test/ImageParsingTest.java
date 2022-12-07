@@ -26,7 +26,7 @@ public class ImageParsingTest {
     final File directory8 = new File("..\\dataset\\dataset8\\");
     final File directory4 = new File("..\\dataset\\dataset4\\0456039030.tif");
     private static List<Integer> tasks;
-    private final TestConfiguration testConfiguration = new TestConfiguration(0.5, 8, 4, 2.0, 0.5, 0.1, 0.2, 2.0, 5.0);
+    private final TestConfiguration testConfiguration = new TestConfiguration(0.5, 8, 4, 2.0, 0.5, 0.1, 0.2, 2.0, 5.0, true);
     
     @BeforeAll
     static void beforeAll() {

@@ -349,11 +349,20 @@ public class ImagePack {
         return new CloudDetectionResult(null, null, (int) tfCheckedPixels, (int) tfCloudPixels, tfCloudPixels / tfCheckedPixels);
     }
     
-    public void saveTensorflowMaskImage(final File file) throws IOException {
+    /**
+     * Save the tensorflow cloud detection mask image and the helper masks based on the provided arguments.
+     *
+     * @param file       the file for storing the tensorflow mask image.
+     * @param storeMasks a flag to show if helper mask storage is needed.
+     * @throws IOException
+     */
+    public void saveTensorflowMaskImage(final File file, final boolean storeMasks) throws IOException {
         ImageIO.write(cloudDetectionMask, "png", file);
-        ImageIO.write(nirMask, "png", new File(file.getParentFile(), file.getName().replace("mask", "nir")));
-        ImageIO.write(bsiMask, "png", new File(file.getParentFile(), file.getName().replace("mask", "bsi")));
-        ImageIO.write(ndwiMask, "png", new File(file.getParentFile(), file.getName().replace("mask", "ndwi")));
+        if (storeMasks) {
+            ImageIO.write(nirMask, "png", new File(file.getParentFile(), file.getName().replace("mask", "nir")));
+            ImageIO.write(bsiMask, "png", new File(file.getParentFile(), file.getName().replace("mask", "bsi")));
+            ImageIO.write(ndwiMask, "png", new File(file.getParentFile(), file.getName().replace("mask", "ndwi")));
+        }
     }
     
     /**
