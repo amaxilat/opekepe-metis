@@ -3,6 +3,8 @@ package com.amaxilatis.metis.util;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 @Slf4j
 public class FileNameUtils {
@@ -40,9 +42,7 @@ public class FileNameUtils {
         final String resultFileName = getResultName(file, task);
         final String parentDirName = getFileParentName(file);
         final File parentDir = new File(resultsDir, parentDirName);
-        if (!parentDir.exists()) {
-            parentDir.mkdirs();
-        }
+        createDirectories(parentDir);
         return new File(parentDir, resultFileName);
     }
     
@@ -152,4 +152,22 @@ public class FileNameUtils {
         final String[] parts = name.split("\\.");
         return parts[0] + "." + parts[1];
     }
+    
+    public static boolean createDirectories(final File file) {
+        try {
+            Files.createDirectories(file.toPath());
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return file.exists();
+    }
+    
+    public static void deleteIfExists(final File file) {
+        try {
+            Files.deleteIfExists(file.toPath());
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+    }
+    
 }

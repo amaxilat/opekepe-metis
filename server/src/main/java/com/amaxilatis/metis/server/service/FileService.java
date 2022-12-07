@@ -47,6 +47,8 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static com.amaxilatis.metis.server.util.ResultsUtils.*;
+import static com.amaxilatis.metis.util.FileNameUtils.createDirectories;
+import static com.amaxilatis.metis.util.FileNameUtils.deleteIfExists;
 import static com.amaxilatis.metis.util.FileNameUtils.getResultFile;
 
 @Slf4j
@@ -193,15 +195,7 @@ public class FileService {
      * @return true if the directory exists or is created, false if there was an error.
      */
     private boolean checkAndCreateDirectory(final String location) {
-        final File locationDir = new File(location);
-        if (!locationDir.exists()) {
-            log.info("creating {} directory...", locationDir.getName());
-            boolean result = locationDir.mkdirs();
-            log.debug("created {} directory {}", locationDir.getName(), result);
-            return result;
-        } else {
-            return true;
-        }
+        return createDirectories(new File(location));
     }
     
     /**
@@ -327,14 +321,6 @@ public class FileService {
         }
         if (task == 9) {
             deleteIfExists(new File(FileNameUtils.getImageColorBalanceMaskFilename(props.getHistogramLocation(), file.getParentFile().getName(), file.getName())));
-        }
-    }
-    
-    private void deleteIfExists(final File file) {
-        try {
-            Files.deleteIfExists(file.toPath());
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
         }
     }
     
@@ -470,7 +456,7 @@ public class FileService {
         log.debug("[thumbnail|{}|{}] {}", directory, name, thumbnailFile.getAbsolutePath());
         //check if directory exists
         if (!thumbnailFile.getParentFile().exists()) {
-            thumbnailFile.getParentFile().mkdir();
+            createDirectories(thumbnailFile.getParentFile());
         }
         //check if file exists
         if (thumbnailFile.exists()) {
@@ -499,7 +485,7 @@ public class FileService {
         log.debug("[{}][histogram] dir:{} path:{}", name, directory, histogramFile.getAbsolutePath());
         //check if directory exists
         if (!histogramFile.getParentFile().exists()) {
-            histogramFile.getParentFile().mkdir();
+            createDirectories(histogramFile.getParentFile());
         }
         //check if file exists
         if (histogramFile.exists()) {
@@ -521,7 +507,7 @@ public class FileService {
         log.debug("[{}][colorBalance] dir:{} path:{}", name, directory, colorBalanceFile.getAbsolutePath());
         //check if directory exists
         if (!colorBalanceFile.getParentFile().exists()) {
-            colorBalanceFile.getParentFile().mkdir();
+            createDirectories(colorBalanceFile.getParentFile());
         }
         //check if file exists
         if (colorBalanceFile.exists()) {
@@ -715,6 +701,4 @@ public class FileService {
         }
         return null;
     }
-    
-    
 }

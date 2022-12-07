@@ -79,7 +79,7 @@ public class ImageCheckerUtils {
                 FileJobResult result = null;
                 if (resultsDir != null && resultFile.exists()) {
                     note(test, file.getParentFile().getName(), file.getName(), true, null, null);
-                    log.info("loading test {} result for {}", test, file);
+                    log.info("[{}][N{}] loading test result", file.getName(), test);
                     result = mapper.readValue(resultFile, FileJobResult.class);
                     note(test, file.getParentFile().getName(), file.getName(), false, result.getResult(), null);
                 } else {
@@ -89,8 +89,8 @@ public class ImageCheckerUtils {
                         image = loadImage(file, cloudMaskDir, uncompressedLocation, concurrency);
                         note(0, file.getParentFile().getName(), file.getName(), false, true, System.currentTimeMillis() - start);
                     }
-                    
-                    log.info("running test {} for {}", test, file);
+    
+                    log.info("[{}][N{}] running test", file.getName(), test);
                     note(test, file.getParentFile().getName(), file.getName(), true, null, null);
                     final long start = System.currentTimeMillis();
                     if (test == 1) {
@@ -159,7 +159,7 @@ public class ImageCheckerUtils {
         note.append(" | Exif: ");
         boolean metadataRes = true;
         for (final String metadataName : image.getMetadata().names()) {
-            log.debug("metadataName: " + metadataName);
+            log.debug("[{}][N1] metadataName: {}", file.getName(), metadataName);
             if (metadataName.contains("0x830e")) {
                 final String metadataValue = image.getMetadata().get(metadataName);
                 log.debug("[{}][N1] {}:{} ", file.getName(), metadataName, metadataValue);
