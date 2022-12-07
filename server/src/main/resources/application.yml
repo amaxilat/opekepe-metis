@@ -10,7 +10,7 @@ server:
     key-password: password
   port: 443
   http2:
-    enabled: true
+    enabled: false
   compression:
     enabled: true
     min-response-size: 1024

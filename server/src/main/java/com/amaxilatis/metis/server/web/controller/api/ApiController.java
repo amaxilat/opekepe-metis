@@ -1,6 +1,5 @@
 package com.amaxilatis.metis.server.web.controller.api;
 
-import com.amaxilatis.metis.detector.client.dto.PingDataDTO;
 import com.amaxilatis.metis.model.FileJobResult;
 import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
@@ -30,7 +29,6 @@ import java.util.SortedSet;
 
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_BACKUP;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_BSI_DIRECTORY_IMAGE;
-import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_CLOUD;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_CLOUD_COVER_DIRECTORY_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_COLOR_BALANCE_DIRECTORY_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_HISTOGRAM_DIRECTORY_IMAGE;
@@ -58,13 +56,6 @@ public class ApiController extends BaseController {
     public PoolInfo apiPool() {
         log.info("get:{}", API_POOL);
         return imageProcessingService.getPoolInfo();
-    }
-    
-    @ResponseBody
-    @GetMapping(value = API_CLOUD, produces = MediaType.APPLICATION_JSON_VALUE)
-    public PingDataDTO apiCloud() {
-        log.info("get:{}", API_CLOUD);
-        return imageProcessingService.getCloudInfo();
     }
     
     @ResponseBody

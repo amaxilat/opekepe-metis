@@ -1,8 +1,6 @@
 package com.amaxilatis.metis.model;
 
 
-import com.amaxilatis.metis.detector.client.DetectorApiClient;
-import com.amaxilatis.metis.detector.client.dto.ImageDetectionResultDTO;
 import com.amaxilatis.metis.util.ColorUtils;
 import com.amaxilatis.metis.util.CompressionUtils;
 import com.amaxilatis.metis.util.FileNameUtils;
@@ -95,8 +93,6 @@ public class ImagePack {
     private BufferedImage ndwiMaskImage;
     private final String cloudMaskDir;
     private final int workers;
-    
-    private final DetectorApiClient detectorApiClient = new DetectorApiClient();
     private int componentSize;
     @Getter
     private int componentMaxValue;
@@ -263,13 +259,7 @@ public class ImagePack {
         final long start = System.currentTimeMillis();
         log.info(String.format("[%20s] starting cloud detection...", name));
         
-        ImageDetectionResultDTO detectionResult;
-        
-        if (segmented) {
-            detectionResult = detectCloudsInTilesOfImage(jImage, width, height);
-        } else {
-            detectionResult = detectCloudsInWholeImage();
-        }
+        final CloudDetectionResult detectionResult = detectCloudsInTilesOfImage(jImage, width, height);
         
         //get results form the call
         validPixels = detectionResult.getPixels();
@@ -279,7 +269,7 @@ public class ImagePack {
         log.info(String.format("[%20s] cloud-detection result: %1.3f took: %d sec", name, percentage, (System.currentTimeMillis() - start) / 1000));
     }
     
-    private ImageDetectionResultDTO detectCloudsInTilesOfImage(final BufferedImage image, final int width, final int height) throws IOException {
+    private CloudDetectionResult detectCloudsInTilesOfImage(final BufferedImage image, final int width, final int height) throws IOException {
         double tfCheckedPixels = 0;
         double tfCloudPixels = 0;
         
@@ -361,7 +351,7 @@ public class ImagePack {
     
         tfCloudPixels -= cleanupNDWI(tensorflowMaskImage, 0, 0, image.getWidth(), image.getHeight());
         
-        return new ImageDetectionResultDTO(null, null, (int) tfCheckedPixels, (int) tfCloudPixels, tfCloudPixels / tfCheckedPixels);
+        return new CloudDetectionResult(null, null, (int) tfCheckedPixels, (int) tfCloudPixels, tfCloudPixels / tfCheckedPixels);
     }
     
     public void saveTensorflowMaskImage(final File file) throws IOException {
@@ -411,12 +401,6 @@ public class ImagePack {
         }
         return thisTileCloudPixels;
     }
-    
-    private ImageDetectionResultDTO detectCloudsInWholeImage() {
-        //make a call to the cloud detection server for the whole image
-        return detectorApiClient.checkImageFile(dataFile.getAbsolutePath(), new File(FileNameUtils.getImageCloudCoverMaskFilename(cloudMaskDir, parentDirName, name)).getAbsolutePath());
-    }
-    
     
     private void parseImagePixels(int width, final int height, final BufferedImage jImage) {
         long validPixelCount = 0;

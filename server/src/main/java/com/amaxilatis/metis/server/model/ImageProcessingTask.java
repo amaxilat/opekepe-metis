@@ -51,6 +51,7 @@ public class ImageProcessingTask implements Runnable {
     private Configuration configuration;
     private NotificationService notificationService;
     private Long isLastId;
+    private boolean storeMasks;
     
     public void run() {
         log.info(outFileName);
@@ -58,7 +59,7 @@ public class ImageProcessingTask implements Runnable {
         try {
             final File imageFile = new File(filename);
             log.info("parsing file {}", imageFile);
-            final List<FileJobResult> results = ImageCheckerUtils.parseFile(configuration.toTestConfiguration(), processingQueueConfiguration.getConcurrencySize(), imageFile, tasks, fileService.getResultsLocation(), fileService.getHistogramLocation(), fileService.getCloudMaskLocation(), fileService.getUncompressedLocation());
+            final List<FileJobResult> results = ImageCheckerUtils.parseFile(configuration.toTestConfiguration(storeMasks), processingQueueConfiguration.getConcurrencySize(), imageFile, tasks, fileService.getResultsLocation(), fileService.getHistogramLocation(), fileService.getCloudMaskLocation(), fileService.getUncompressedLocation());
             
             final StringBuilder sb = new StringBuilder();
             sb.append("\"").append(imageFile.getName()).append("\"").append(",");

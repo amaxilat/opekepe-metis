@@ -39,7 +39,11 @@ public class Configuration {
     private double n9ColorBalanceThreshold;
     private double n9NoiseThreshold;
     
+    public TestConfiguration toTestConfiguration(final boolean storeMasks) {
+        return new TestConfiguration(n1PixelSize, n2BitSize, n3SamplesPerPixel, n4CloudCoverageThreshold, n5ClippingThreshold, n7VariationLow, n7VariationHigh, n9ColorBalanceThreshold, n9NoiseThreshold, storeMasks);
+    }
+    
     public TestConfiguration toTestConfiguration() {
-        return new TestConfiguration(n1PixelSize, n2BitSize, n3SamplesPerPixel, n4CloudCoverageThreshold, n5ClippingThreshold, n7VariationLow, n7VariationHigh, n9ColorBalanceThreshold, n9NoiseThreshold);
+        return this.toTestConfiguration(true);
     }
 }

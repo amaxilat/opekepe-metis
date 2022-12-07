@@ -65,8 +65,9 @@ public class NotificationService {
                 message.setTo(new InternetAddress(to));
                 message.setFrom(new InternetAddress(props.getNotificationEmail()));
                 message.setSubject(subject);
-                message.setText(body);
+                message.setText(body, true);
                 message.addAttachment(attachment.getName(), new ByteArrayResource(IOUtils.toByteArray(new FileInputStream(attachment))), Files.probeContentType(attachment.toPath()));
+                mimeMessage.setContent(body, "text/html; charset=utf-8");
             });
         } catch (Exception e) {
             log.error(e.getMessage(), e);

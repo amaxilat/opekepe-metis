@@ -1,7 +1,5 @@
 package com.amaxilatis.metis.server.service;
 
-import com.amaxilatis.metis.detector.client.DetectorApiClient;
-import com.amaxilatis.metis.detector.client.dto.PingDataDTO;
 import com.amaxilatis.metis.server.config.ProcessingQueueConfiguration;
 import com.amaxilatis.metis.server.db.model.Configuration;
 import com.amaxilatis.metis.server.db.model.Task;
@@ -93,7 +91,7 @@ public class ImageProcessingService {
                 final long remainingTasks = taskRepository.countByReportId(task.getReportId());
                 isLastId = remainingTasks == 1 ? task.getReportId() : null;
             }
-            new ImageProcessingTask(processingQueueConfiguration, fileService, task.getOutFileName(), task.getFileName(), tasks, getConfiguration(), notificationService, isLastId).run();
+            new ImageProcessingTask(processingQueueConfiguration, fileService, task.getOutFileName(), task.getFileName(), tasks, getConfiguration(), notificationService, isLastId, true).run();
             taskRepository.delete(optTask.get());
         }
     }
@@ -105,10 +103,6 @@ public class ImageProcessingService {
     public PoolInfo getPoolInfo() {
         //final long pending = taskExecutor.getThreadPoolExecutor().getTaskCount() - taskExecutor.getThreadPoolExecutor().getCompletedTaskCount();
         return new PoolInfo(taskExecutor.getCorePoolSize(), taskExecutor.getPoolSize(), taskExecutor.getActiveCount(), taskRepository.count());
-    }
-    
-    public PingDataDTO getCloudInfo() {
-        return new DetectorApiClient().getPingData();
     }
     
     public Set<TestDescription> getTestDescriptions() {
