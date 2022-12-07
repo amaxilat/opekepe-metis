@@ -146,7 +146,7 @@ public class ImageCheckerUtils {
         try {
             final WorldFile worldFile = parseWorldFile(worldFileFile);
             final WorldFileResult worldConditionRes = evaluateWorldFile(worldFile);
-            log.info("[N1] file:{}, n1:{} world", file.getName(), worldConditionRes.isOk());
+            log.info("[{}][N1] n1:{} world", file.getName(), worldConditionRes.isOk());
             note.append(worldConditionRes.getNote());
             worldRes = worldConditionRes.isOk();
             resultBuilder.n1XPixelSizeWorld(worldFile.getXPixelSize());
@@ -162,7 +162,7 @@ public class ImageCheckerUtils {
             log.debug("metadataName: " + metadataName);
             if (metadataName.contains("0x830e")) {
                 final String metadataValue = image.getMetadata().get(metadataName);
-                log.debug("[N1] file:{}, {}:{} ", file.getName(), metadataName, metadataValue);
+                log.debug("[{}][N1] {}:{} ", file.getName(), metadataName, metadataValue);
                 final String[] pixelSizes = metadataValue.replaceAll(",", "\\.").split(" ");
                 
                 double doublePixelSize0 = Double.parseDouble(pixelSizes[0]);
@@ -173,7 +173,7 @@ public class ImageCheckerUtils {
                 resultBuilder.n1XPixelSize(doublePixelSize0);
                 resultBuilder.n1YPixelSize(doublePixelSize1);
                 note.append(String.format("Μεγέθη Χ: %f, Y: %f", doublePixelSize0, doublePixelSize1));
-                log.info("[N1] file:{}, n1:{} exif", file.getName(), metadataRes);
+                log.info("[{}][N1] n1:{} exif", file.getName(), metadataRes);
                 resultBuilder.note(note.toString());
             }
         }
@@ -195,18 +195,18 @@ public class ImageCheckerUtils {
             
             final ExifIFD0Directory directory = image.getIoMetadata().getFirstDirectoryOfType(ExifIFD0Directory.class);
             final String metadataValue = directory.getString(TAG_BITS_PER_SAMPLE).replaceAll("[^0-9 ]", "");
-            log.info("[N2] bitPerSample {}", metadataValue);
+            log.info("[{}][N2] bitPerSample {}", file.getName(), metadataValue);
             final String[] bitsCounts = metadataValue.split(" ");
             boolean metadataTest = true;
             for (final String bitsCount : bitsCounts) {
                 int bitsCountInt = Integer.parseInt(bitsCount);
                 metadataTest = bitsCountInt == configuration.getN2BitSize();
             }
-            
-            log.debug("[N2] colorModelComponents: {}", jImage.getColorModel().getNumComponents());
-            log.debug("[N2] colorModelPixelSize: {}", jImage.getColorModel().getPixelSize());
+    
+            log.debug("[{}][N2] colorModelComponents: {}", file.getName(), jImage.getColorModel().getNumComponents());
+            log.debug("[{}][N2] colorModelPixelSize: {}", file.getName(), jImage.getColorModel().getPixelSize());
             final int pixelSize = jImage.getColorModel().getPixelSize() / jImage.getColorModel().getNumComponents();
-            log.debug("[N2] bitPerPixel: {}", pixelSize);
+            log.debug("[{}][N2] bitPerPixel: {}", file.getName(), pixelSize);
             
             final String note = String.format("%d Κανάλια, Μέγεθος Pixel: %d bit, Μέγεθος/Κανάλι: %d bit | Exif Μέγεθος Pixels: %s bit", jImage.getColorModel().getNumComponents(), jImage.getColorModel().getPixelSize(), pixelSize, metadataValue);
             
@@ -230,10 +230,8 @@ public class ImageCheckerUtils {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(3);
         try {
             final BufferedImage jImage = image.getImage();
-            
-            log.debug("[N3] colorModelComponents: {}", jImage.getColorModel().getNumComponents());
-            log.debug("[N3] colorModelColorComponents: {}", jImage.getColorModel().getNumColorComponents());
-            log.debug("[N3] colorModelHasAlpha: {}", jImage.getColorModel().hasAlpha());
+    
+            log.debug("[{}][N3] colorModelComponents: {},  colorModelColorComponents: {}, colorModelHasAlpha: {}", file.getName(), jImage.getColorModel().getNumComponents(), jImage.getColorModel().getNumColorComponents(), jImage.getColorModel().hasAlpha());
             final String note = String.format("%d Κανάλια, %d Χρώματα, Alpha: %s", jImage.getColorModel().getNumComponents(), jImage.getColorModel().getNumColorComponents(), jImage.getColorModel().hasAlpha() ? "Ναι" : "Όχι");
             boolean result = jImage.getColorModel().getNumComponents() == configuration.getN3SamplesPerPixel()
                     //color
@@ -264,16 +262,16 @@ public class ImageCheckerUtils {
     public static FileJobResult testN4(final File file, final ImagePack image, final String cloudMaskDir, final TestConfiguration configuration) throws IOException {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(4);
         try {
-            image.detectClouds(true);
-            double percentage = (image.getCloudPixels() / image.getValidPixels()) * 100;
-            
-            boolean result = percentage < configuration.getN4CloudCoverageThreshold();
+            image.detectClouds();
+            final double percentage = (image.getCloudPixels() / image.getValidPixels()) * 100;
+    
+            final boolean result = percentage < configuration.getN4CloudCoverageThreshold();
             resultBuilder.result(result);
             resultBuilder.n4CloudCoverage(percentage);
             resultBuilder.note(String.format("Εικονοστοιχεία με Σύννεφα %.0f, Συνολικά Εικονοστοιχεία %.0f, Ποσοστό: %.2f%%", image.getCloudPixels(), image.getValidPixels(), percentage));
             
             if (cloudMaskDir != null) {
-                image.saveTensorflowMaskImage(new File(FileNameUtils.getImageCloudCoverMaskFilename(cloudMaskDir, file.getParentFile().getName(), file.getName())));
+                image.saveTensorflowMaskImage(new File(FileNameUtils.getImageCloudCoverMaskFilename(cloudMaskDir, file.getParentFile().getName(), file.getName())), configuration.isStoreMasks());
             }
         } catch (IIOException e) {
             resultBuilder.result(false);
@@ -303,8 +301,7 @@ public class ImageCheckerUtils {
             long totalItemsInBottom = bottom.stream().mapToLong(HistogramBin::getValuesCount).sum();
             double topClipping = (totalItemsInTop / pixelsCount) * 100;
             double bottomClipping = (totalItemsInBottom / pixelsCount) * 100;
-            log.info("[N5] top[{} - {}]: {}", totalItemsInTop, (totalItemsInTop / pixelsCount) * 100, top);
-            log.info("[N5] bottom[{} - {}]: {}", totalItemsInBottom, (totalItemsInBottom / pixelsCount) * 100, bottom);
+            log.info("[{}][N5] top[{} - {}]: {}, bottom[{} - {}]: {}", file.getName(), totalItemsInTop, (totalItemsInTop / pixelsCount) * 100, top, totalItemsInBottom, (totalItemsInBottom / pixelsCount) * 100, bottom);
             
             boolean result = topClipping < configuration.getN5ClippingThreshold() && bottomClipping < configuration.getN5ClippingThreshold();
             resultBuilder.b5TopClipping(topClipping).n5BottomClipping(bottomClipping);
@@ -334,18 +331,15 @@ public class ImageCheckerUtils {
             final int centerValue = image.getHistogram().getBinCount() / 2;
             int histMinLimit = (int) (centerValue * 0.85);
             int histMaxLimit = (int) (centerValue * 1.15);
-            log.info("[N6] brightness: {}< mean:{} <{} std: {}", histMinLimit, image.getHistogram().getMean(ColorUtils.LAYERS.LUM), histMaxLimit, image.getHistogram().getStandardDeviation(ColorUtils.LAYERS.LUM));
+            log.info("[{}][N6] brightness: {}< mean:{} <{} std: {}", file.getName(), histMinLimit, image.getHistogram().getMean(ColorUtils.LAYERS.LUM), histMaxLimit, image.getHistogram().getStandardDeviation(ColorUtils.LAYERS.LUM));
             final int majorBinCenterLum = image.getHistogram().majorBin(ColorUtils.LAYERS.LUM);
-            log.info("[N6] histogramBr center: {}", majorBinCenterLum);
+            log.info("[{}][N6] histogramBr center: {}", file.getName(), majorBinCenterLum);
             
             final int majorBinCenterR = image.getHistogram().majorBin(ColorUtils.LAYERS.RED);
-            log.info("[N6] histogramR center: {}", majorBinCenterR);
             final int majorBinCenterG = image.getHistogram().majorBin(ColorUtils.LAYERS.GREEN);
-            log.info("[N6] histogramG center: {}", majorBinCenterG);
             final int majorBinCenterB = image.getHistogram().majorBin(ColorUtils.LAYERS.BLUE);
-            log.info("[N6] histogramB center: {}", majorBinCenterB);
+            log.info("[{}][N6] histogram centers R:{} G:{} B:{}", file.getName(), majorBinCenterR, majorBinCenterG, majorBinCenterB);
             
-            log.info("[N6] histogram dir {}", histogramDir);
             if (histogramDir != null) {
                 image.getHistogram().saveHistogramImage(new File(FileNameUtils.getImageHistogramFilename(histogramDir, file.getParentFile().getName(), file.getName())));
             }
@@ -373,10 +367,10 @@ public class ImageCheckerUtils {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(7);
         try {
             image.loadHistogram();
-            final double mean = image.getDnValuesStatistics().getMean();
-            final double std = image.getDnValuesStatistics().getStandardDeviation();
+            final double mean = image.getDnStats().getMean();
+            final double std = image.getDnStats().getStandardDeviation();
             final double coefficientOfVariation = (std / mean) * 100;
-            final double variance = image.getDnValuesStatistics().getVariance();
+            final double variance = image.getDnStats().getVariance();
     
             final boolean result = coefficientOfVariation >= configuration.getN7VariationLow() && coefficientOfVariation <= configuration.getN7VariationHigh();
             resultBuilder.n7CoefficientOfVariation(coefficientOfVariation);
@@ -401,7 +395,7 @@ public class ImageCheckerUtils {
      */
     public static FileJobResult testN8(final File file, final ImagePack image, final TestConfiguration configuration) {
         int compressionExifValue = image.getCompressionExifValue();
-        log.info("[N8] compressionExifValue: {}", compressionExifValue);
+        log.info("[{}][N8] compressionExifValue: {}", file.getName(), compressionExifValue);
         
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(8);
         
@@ -486,7 +480,6 @@ public class ImageCheckerUtils {
             image.loadColorBalance();
             final double std = image.getColorBalanceStatistics().getStandardDeviation();
             
-            log.info("[N9] histogram dir {}", histogramDir);
             if (histogramDir != null) {
                 image.saveColorBalanceMaskImage(new File(FileNameUtils.getImageColorBalanceMaskFilename(histogramDir, file.getParentFile().getName(), file.getName())));
             }
