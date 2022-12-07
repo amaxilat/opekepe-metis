@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.amaxilatis.metis</groupId>
         <artifactId>parent</artifactId>
-        <version>0.12.0-SNAPSHOT</version>
+        <version>0.14.0-SNAPSHOT</version>
         <!--<relativePath/>-->
     </parent>
 
     <artifactId>server</artifactId>
-    <version>0.12.0-SNAPSHOT</version>
+    <version>0.14.0-SNAPSHOT</version>
 
     <name>metis-server</name>
     <description>Metis :: server</description>
