@@ -296,7 +296,7 @@ public class CloudUtils {
         totalPixelsRemoved += pixelsRemoved;
         
         int totalPixelsAdded = 0;
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 2; i++) {
             int pixelsAdded = fillCloudsBasedOnNearby(image, 6, startWidth, startHeight, scanWidth, scanHeight);
             totalPixelsAdded += pixelsAdded;
             if (pixelsAdded < 100) {

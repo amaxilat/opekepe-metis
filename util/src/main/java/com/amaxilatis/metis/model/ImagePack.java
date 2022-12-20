@@ -46,6 +46,7 @@ import static com.amaxilatis.metis.util.CloudUtils.WHITE_RGB;
 import static com.amaxilatis.metis.util.CloudUtils.cleanupNDWI;
 import static com.amaxilatis.metis.util.ColorUtils.getBSI;
 import static com.amaxilatis.metis.util.ColorUtils.getNDWI;
+import static com.amaxilatis.metis.util.ColorUtils.isDark;
 import static com.amaxilatis.metis.util.ImageDataUtils.getImageTileDataFromCoordinates;
 import static com.amaxilatis.metis.util.ImageDataUtils.isEmptyTile;
 import static com.amaxilatis.metis.util.ImageDataUtils.isValidPixel;
@@ -407,7 +408,7 @@ public class ImagePack {
                 try {
                     ndwi = (int) (getNDWI(nir, g) * 255);
                     ndwiMask.setRGB(x, y, new Color(ndwi, ndwi, ndwi).getRGB());
-                    final boolean isCloudPixel = (124 < ndwi && ndwi < 140) && (84 < bsi && bsi < 96);
+                    final boolean isCloudPixel = !isDark(r, g, b) && (125 < ndwi && ndwi < 140) && (85 < bsi && bsi < 95);
                     thisTileCloudPixels += isCloudPixel ? 1 : 0;
                     cloudDetectionMask.setRGB(x, y, isCloudPixel ? WHITE_RGB : BLACK_RGB);
                 } catch (IllegalArgumentException e) {
