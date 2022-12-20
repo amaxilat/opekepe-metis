@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -37,7 +38,7 @@ public class FileUtils {
     public static void makeThumbnail(final File input, final File output, final int width, final int height) throws IOException {
         if (input.getName().endsWith("jp2")) {
         } else {
-            Thumbnails.of(input).size(width, height).toFile(output);
+            Thumbnails.of(input).outputQuality(0.9).imageType(BufferedImage.TYPE_INT_RGB).size(width, height).toFile(output);
         }
     }
     
