@@ -31,7 +31,6 @@ import static com.amaxilatis.metis.server.util.ResultsUtils.resultsTitles;
 @Service
 @RequiredArgsConstructor
 public class JobService {
-    final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
     
     private final MetisProperties props;
     private final ImageProcessingService imageProcessingService;
@@ -39,11 +38,9 @@ public class JobService {
     private final ReportService reportService;
     
     public void startJob(final FileJob fileJob) {
-        final Date startTime = new Date(System.currentTimeMillis());
         final File targetFile = new File(props.getFilesLocation() + "/" + fileJob.getName());
         log.info("[fileJob] target:{} isDir:{} tasks:{}", fileJob.getName(), targetFile.isDirectory(), fileJob.getTasks());
-        //final String outFileName = String.format("%s/metis-%s-%s.csv", props.getReportLocation(), targetFile.getName(), sdf.format(startTime));
-        Report report = reportService.createReport(props, fileJob);
+        final Report report = reportService.createReport(props, fileJob);
         fileService.createTempReport(getOutputFileName(report));
         
         SortedSet<File> fileList = new TreeSet<>();

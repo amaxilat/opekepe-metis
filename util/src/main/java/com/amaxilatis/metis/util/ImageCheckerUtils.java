@@ -86,10 +86,10 @@ public class ImageCheckerUtils {
                     if (image == null) {
                         final long start = System.currentTimeMillis();
                         note(0, file.getParentFile().getName(), file.getName(), true, null, null);
-                        image = loadImage(file, cloudMaskDir, uncompressedLocation, concurrency);
+                        image = loadImage(file, uncompressedLocation, concurrency);
                         note(0, file.getParentFile().getName(), file.getName(), false, true, System.currentTimeMillis() - start);
                     }
-    
+                    
                     log.info("[{}][N{}] running test", file.getName(), test);
                     note(test, file.getParentFile().getName(), file.getName(), true, null, null);
                     final long start = System.currentTimeMillis();
@@ -142,7 +142,7 @@ public class ImageCheckerUtils {
         final File worldFileFile = getWorldFile(file);
         final StringBuilder note = new StringBuilder();
         note.append("WorldFile: ");
-        boolean worldRes = true;
+        boolean worldRes;
         try {
             final WorldFile worldFile = parseWorldFile(worldFileFile);
             final WorldFileResult worldConditionRes = evaluateWorldFile(worldFile);
@@ -163,7 +163,7 @@ public class ImageCheckerUtils {
             if (metadataName.contains("0x830e")) {
                 final String metadataValue = image.getMetadata().get(metadataName);
                 log.debug("[{}][N1] {}:{} ", file.getName(), metadataName, metadataValue);
-                final String[] pixelSizes = metadataValue.replaceAll(",", "\\.").split(" ");
+                final String[] pixelSizes = metadataValue.replaceAll(",", ".").split(" ");
                 
                 double doublePixelSize0 = Double.parseDouble(pixelSizes[0]);
                 double doublePixelSize1 = Double.parseDouble(pixelSizes[1]);
@@ -202,7 +202,7 @@ public class ImageCheckerUtils {
                 int bitsCountInt = Integer.parseInt(bitsCount);
                 metadataTest = bitsCountInt == configuration.getN2BitSize();
             }
-    
+            
             log.debug("[{}][N2] colorModelComponents: {}", file.getName(), jImage.getColorModel().getNumComponents());
             log.debug("[{}][N2] colorModelPixelSize: {}", file.getName(), jImage.getColorModel().getPixelSize());
             final int pixelSize = jImage.getColorModel().getPixelSize() / jImage.getColorModel().getNumComponents();
@@ -230,7 +230,7 @@ public class ImageCheckerUtils {
         final FileJobResult.FileJobResultBuilder resultBuilder = FileJobResult.builder().name(file.getName()).task(3);
         try {
             final BufferedImage jImage = image.getImage();
-    
+            
             log.debug("[{}][N3] colorModelComponents: {},  colorModelColorComponents: {}, colorModelHasAlpha: {}", file.getName(), jImage.getColorModel().getNumComponents(), jImage.getColorModel().getNumColorComponents(), jImage.getColorModel().hasAlpha());
             final String note = String.format("%d Κανάλια, %d Χρώματα, Alpha: %s", jImage.getColorModel().getNumComponents(), jImage.getColorModel().getNumColorComponents(), jImage.getColorModel().hasAlpha() ? "Ναι" : "Όχι");
             boolean result = jImage.getColorModel().getNumComponents() == configuration.getN3SamplesPerPixel()
@@ -264,7 +264,7 @@ public class ImageCheckerUtils {
         try {
             image.detectClouds();
             final double percentage = (image.getCloudPixels() / image.getValidPixels()) * 100;
-    
+            
             final boolean result = percentage < configuration.getN4CloudCoverageThreshold();
             resultBuilder.result(result);
             resultBuilder.n4CloudCoverage(percentage);
@@ -371,7 +371,7 @@ public class ImageCheckerUtils {
             final double std = image.getDnStats().getStandardDeviation();
             final double coefficientOfVariation = (std / mean) * 100;
             final double variance = image.getDnStats().getVariance();
-    
+            
             final boolean result = coefficientOfVariation >= configuration.getN7VariationLow() && coefficientOfVariation <= configuration.getN7VariationHigh();
             resultBuilder.n7CoefficientOfVariation(coefficientOfVariation);
             resultBuilder.result(result);
@@ -495,8 +495,8 @@ public class ImageCheckerUtils {
         return resultBuilder.build();
     }
     
-    private static ImagePack loadImage(final File imageFile, final String cloudMaskDir, final String uncompressedLocation, final Integer concurrency) throws ImageProcessingException, IOException {
-        return new ImagePack(imageFile, cloudMaskDir, uncompressedLocation, concurrency);
+    private static ImagePack loadImage(final File imageFile, final String uncompressedLocation, final Integer concurrency) throws ImageProcessingException, IOException {
+        return new ImagePack(imageFile, uncompressedLocation, concurrency);
     }
     
     private static void note(final int testId, final String dirName, final String fileName, final boolean start, final Boolean result, final Long time) {

@@ -11,7 +11,6 @@ public class ColorUtils {
         RED, GREEN, BLUE, NIR, LUM, COLORS
     }
     
-    
     /**
      * Get the brightness value of a pixel
      *
@@ -49,33 +48,61 @@ public class ColorUtils {
         return 0.299 * red + 0.587 * green + 0.114 * blue;
     }
     
-    public static double sRGBtoLin(final double colorChannel) {
-        // Send this function a decimal sRGB gamma encoded color value
-        // between 0.0 and 1.0, and it returns a linearized value.
-        if (colorChannel <= 0.04045) {
-            return colorChannel / 12.92;
-        } else {
-            return Math.pow(((colorChannel + 0.055) / 1.055), 2.4);
-        }
-    }
-    
+    /**
+     * Calculates the NDVI index for the given nir and red bands.
+     *
+     * @param nir the nir band value
+     * @param red the red band value
+     * @return the calculated NDVI index.
+     */
     public static double getNDVI(final double nir, final double red) {
         return ((((nir - red) / (nir + red)) + 1) / 2);
     }
     
+    /**
+     * Calculates the BSI index for the given nir, red and blue bands.
+     *
+     * @param nir  the nir band value
+     * @param red  the red band value
+     * @param blue the blue band value
+     * @return the calculated BSI index value.
+     */
     public static double getBSI(final double nir, final double red, final double blue) {
         return (((red - (blue + nir)) / (red + blue + nir)) + 1) / 2;
     }
     
+    /**
+     * Calculates the NDWI index for the given nir and green bands.
+     *
+     * @param nir   the nir band value
+     * @param green the green band value
+     * @return the calculated NDWI index value
+     * @throws IllegalArgumentException
+     * @throws ArithmeticException
+     */
     public static double getNDWI(final double nir, final double green) throws IllegalArgumentException, ArithmeticException {
         return ((((green - nir) / (green + nir)) + 1) / 2);
     }
     
+    /**
+     * Checks if the color is very dark.
+     *
+     * @param rgb the rgb color
+     * @return true if the color is dark false otherwise.
+     */
     public static boolean isDark(final int rgb) {
         final Color c = new Color(rgb);
         return isDark(c.getRed(), c.getGreen(), c.getBlue());
     }
     
+    /**
+     * Checks if the color is very dark.
+     *
+     * @param r the red band of the color
+     * @param g the green band of the color
+     * @param b the blue band of the color
+     * @return true if the color is dark false otherwise.
+     */
     public static boolean isDark(final int r, final int g, final int b) {
         return r < 10 && g < 10 && b < 10;
     }

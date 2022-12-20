@@ -109,10 +109,6 @@ public class ImageParsingTest {
                 log.warn("Input not a directory");
                 results.addAll(ImageCheckerUtils.parseFile(testConfiguration, 1, directory4, tasks, null, null, directory4.getParent(), null));
             }
-            //            for (final FileJobResult result : results) {
-            //                Assertions.assertEquals(result.getTask(), tasks.get(0));
-            //                Assertions.assertTrue(result.getResult());
-            //            }
         } catch (IOException | TikaException | SAXException | ImageProcessingException e) {
             log.error(e.getMessage(), e);
         }
@@ -132,8 +128,6 @@ public class ImageParsingTest {
             }
             for (final FileJobResult result : results) {
                 log.info(result.toString());
-                //Assertions.assertEquals(result.getTask(), tasks.get(0));
-                //Assertions.assertFalse(result.getResult());
             }
         } catch (IOException | TikaException | SAXException | ImageProcessingException e) {
             log.error(e.getMessage(), e);

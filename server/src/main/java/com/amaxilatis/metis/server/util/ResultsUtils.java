@@ -9,7 +9,7 @@ import java.util.List;
 @Slf4j
 public class ResultsUtils {
     
-    public static List<String> resultsTitles = List.of("Μέγεθος Pixel X worldFile", "Μέγεθος Pixel Y worldFile", "Μέγεθος Pixel X exif", "Μέγεθος Pixel Y exif", "bits ανά Pixel", "Κανάλια", "Χρώματα", "NIR", "Νεφοκάλυψη", "Clipping τελευταία 5 bins", "Clipping πρώτα 5 bins", "Κέντρο Ιστογράμματος", "Συντελεστής Μεταβλητότητας", "Συμπίεση", "Ισορροπία Χρώματος", "Θόρυβος Κόκκινο", "Θόρυβος Πράσινο", "Θόρυβος Μπλε");
+    public static final List<String> resultsTitles = List.of("Μέγεθος Pixel X worldFile", "Μέγεθος Pixel Y worldFile", "Μέγεθος Pixel X exif", "Μέγεθος Pixel Y exif", "bits ανά Pixel", "Κανάλια", "Χρώματα", "NIR", "Νεφοκάλυψη", "Clipping τελευταία 5 bins", "Clipping πρώτα 5 bins", "Κέντρο Ιστογράμματος", "Συντελεστής Μεταβλητότητας", "Συμπίεση", "Ισορροπία Χρώματος", "Θόρυβος Κόκκινο", "Θόρυβος Πράσινο", "Θόρυβος Μπλε");
     
     public static FileJobResult getTaskById(final Iterable<FileJobResult> results, int id) {
         for (final FileJobResult result : results) {
@@ -79,7 +79,7 @@ public class ResultsUtils {
     public static String getN3HasAlpha(final Iterable<FileJobResult> results) {
         FileJobResult result = getTaskById(results, 3);
         if (result != null) {
-            return String.valueOf(result.getN3HasAlpha() ? "Ναι" : "Όχι");
+            return result.getN3HasAlpha() ? "Ναι" : "Όχι";
         }
         return "";
     }

@@ -58,13 +58,13 @@ import static org.apache.tika.mime.MimeTypes.OCTET_STREAM;
 public class ImagePack {
     private static final int TILE_WIDTH = 256;
     private static final int TILE_HEIGHT = 256;
-    private com.drew.metadata.Metadata ioMetadata;
+    @Getter
+    private final com.drew.metadata.Metadata ioMetadata;
     private BufferedImage image;
     @Getter
     private final Metadata metadata;
     private final File uncompressedImageFile;
     private final String name;
-    private final String parentDirName;
     private final File dataFile;
     private final BodyContentHandler handler;
     private final FileInputStream inputStream;
@@ -89,7 +89,6 @@ public class ImagePack {
     private BufferedImage nirMask;
     private BufferedImage bsiMask;
     private BufferedImage ndwiMask;
-    private final String cloudMaskDir;
     private final int workers;
     @Getter
     private int componentMaxValue;
@@ -104,18 +103,15 @@ public class ImagePack {
      * Creates an object that represents and Image file and acts as a helper for storing image properties across different tests.
      *
      * @param file                 the file of the image.
-     * @param cloudMaskDir         location where cloudMasks are stored
      * @param uncompressedLocation location where uncompressed images are stored
      * @param workers              concurrency used when calculating cloud coverage
      * @throws IOException
      */
-    public ImagePack(final File file, final String cloudMaskDir, final String uncompressedLocation, final Integer workers) throws IOException, ImageProcessingException {
+    public ImagePack(final File file, final String uncompressedLocation, final Integer workers) throws IOException, ImageProcessingException {
         this.workers = workers;
-        this.cloudMaskDir = cloudMaskDir;
         this.name = file.getName();
         
         this.ioMetadata = ImageMetadataReader.readMetadata(file);
-        this.parentDirName = file.getParentFile().getName();
         
         compressionExifValue = Integer.parseInt(ioMetadata.getFirstDirectoryOfType(ExifIFD0Directory.class).getString(TAG_COMPRESSION));
         if (CompressionUtils.isCompressed(compressionExifValue) && CompressionUtils.isLossless(compressionExifValue)) {
@@ -162,10 +158,6 @@ public class ImagePack {
         this.loaded = false;
         this.histogramLoaded = false;
         
-    }
-    
-    public com.drew.metadata.Metadata getIoMetadata() {
-        return ioMetadata;
     }
     
     public BufferedImage getImage() throws IOException {
@@ -468,7 +460,7 @@ public class ImagePack {
                 bandCutoff += getHistogram().getBins().get(color).getData()[i];
             }
             if (bandCutoff > samplesOfCutoff) {
-                //add the elements in the band that were cut off incorrectly (this happens when the last bin has more elements than the cutoff1 threshold.
+                //add the elements in the band that were cut off incorrectly (this happens when the last bin has more elements than the cutoff1 threshold).
                 for (int excessCutoff = samplesOfCutoff; excessCutoff < bandCutoff; excessCutoff++) {
                     bandStats.addValue(i);
                 }

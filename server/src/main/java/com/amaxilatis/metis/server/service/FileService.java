@@ -238,9 +238,7 @@ public class FileService {
             });
             
             //cleanup results from deleted files
-            Arrays.stream(imageDirectoryList).forEach(imagesDirectory -> {
-                cleanupDirectoryResults(imagesDirectory);
-            });
+            Arrays.stream(imageDirectoryList).forEach(this::cleanupDirectoryResults);
         } else {
             log.warn("[updateImageDirs] imageDirectoryList is null!!!");
         }
@@ -289,8 +287,6 @@ public class FileService {
     }
     
     public String getStringHash(final String name) {
-        //return Base64.encode(name).replaceAll("=", "-");
-        //return DigestUtils.md5Hex(name);
         return URLEncoder.encode(name, Charsets.UTF_8);
     }
     
@@ -649,6 +645,7 @@ public class FileService {
                                     try {
                                         results.add(mapper.readValue(resultFile, FileJobResult.class));
                                     } catch (IOException e) {
+                                        //ignore
                                     }
                                 } else {
                                 }

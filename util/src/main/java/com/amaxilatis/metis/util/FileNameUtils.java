@@ -147,12 +147,23 @@ public class FileNameUtils {
         return String.format("%s/%s/%s", location, dir, name + ".cbmask.png");
     }
     
-    
+    /**
+     * Extracts the image name from a result filename.
+     *
+     * @param name the result filename
+     * @return the extracted image name.
+     */
     public static String extractImageNameFromResult(final String name) {
         final String[] parts = name.split("\\.");
         return parts[0] + "." + parts[1];
     }
     
+    /**
+     * Creates the directories to the given path.
+     *
+     * @param file the directory to create.
+     * @return true if the directories existed or were created successfully, false otherwise.
+     */
     public static boolean createDirectories(final File file) {
         try {
             Files.createDirectories(file.toPath());
@@ -162,6 +173,11 @@ public class FileNameUtils {
         return file.exists();
     }
     
+    /**
+     * Deletes a file if it exists.
+     *
+     * @param file the file to delete.
+     */
     public static void deleteIfExists(final File file) {
         try {
             Files.deleteIfExists(file.toPath());

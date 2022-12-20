@@ -1,8 +1,5 @@
 package com.amaxilatis.metis.server.util;
 
-import ij.process.ByteProcessor;
-import ij.process.ImageProcessor;
-import ij.process.MedianCut;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.core.io.Resource;
@@ -12,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import javax.servlet.http.HttpServletResponse;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +20,7 @@ import java.nio.file.Paths;
 public class FileUtils {
     
     
-    public static ResponseEntity<Resource> sendFile(final HttpServletResponse response, final File file, final String decodedImage) {
+    public static ResponseEntity<Resource> sendFile(final File file, final String decodedImage) {
         final Path path = Paths.get(file.getPath());
         Resource resource = null;
         try {
@@ -40,16 +36,5 @@ public class FileUtils {
         } else {
             Thumbnails.of(input).outputQuality(0.9).imageType(BufferedImage.TYPE_INT_RGB).size(width, height).toFile(output);
         }
-    }
-    
-    
-    private static ImageProcessor reduceColors(ImageProcessor ip, final int nColors) {
-        if (ip instanceof ByteProcessor && nColors == 256) {
-            return ip;
-        }
-        ip = ip.convertToRGB();
-        final MedianCut mc = new MedianCut((int[]) ip.getPixels(), ip.getWidth(), ip.getHeight());
-        final Image img = mc.convert(nColors);
-        return new ByteProcessor(img);
     }
 }

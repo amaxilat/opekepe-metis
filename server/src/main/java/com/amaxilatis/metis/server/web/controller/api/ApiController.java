@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.util.List;
 import java.util.SortedSet;
@@ -91,66 +90,66 @@ public class ApiController extends BaseController {
     }
     
     @GetMapping(value = API_THUMBNAIL_DIRECTORY_IMAGE)
-    public ResponseEntity<Resource> apiDownloadImageThumb(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+    public ResponseEntity<Resource> apiDownloadImageThumb(@PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_THUMBNAIL_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File thumbnailFile = fileService.getImageThumbnail(decodedImageDir, decodedImage);
-        return thumbnailFile != null ? FileUtils.sendFile(response, thumbnailFile, thumbnailFile.getName()) : null;
+        return thumbnailFile != null ? FileUtils.sendFile(thumbnailFile, thumbnailFile.getName()) : null;
     }
     
     @GetMapping(value = API_HISTOGRAM_DIRECTORY_IMAGE)
-    public ResponseEntity<Resource> apiDownloadImageHistogram(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+    public ResponseEntity<Resource> apiDownloadImageHistogram(@PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_HISTOGRAM_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File histogramFile = fileService.getImageHistogram(decodedImageDir, decodedImage);
-        return histogramFile != null ? FileUtils.sendFile(response, histogramFile, histogramFile.getName()) : null;
+        return histogramFile != null ? FileUtils.sendFile(histogramFile, histogramFile.getName()) : null;
     }
     
     @GetMapping(value = API_CLOUD_COVER_DIRECTORY_IMAGE)
-    public ResponseEntity<Resource> apiDownloadImageMaskCloudCover(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+    public ResponseEntity<Resource> apiDownloadImageMaskCloudCover(@PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_CLOUD_COVER_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File cloudCoverFile = fileService.getImageCloudCover(decodedImageDir, decodedImage);
-        return cloudCoverFile != null ? FileUtils.sendFile(response, cloudCoverFile, cloudCoverFile.getName()) : null;
+        return cloudCoverFile != null ? FileUtils.sendFile(cloudCoverFile, cloudCoverFile.getName()) : null;
     }
     
     @GetMapping(value = API_COLOR_BALANCE_DIRECTORY_IMAGE)
-    public ResponseEntity<Resource> apiDownloadImageMaskColorBalance(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+    public ResponseEntity<Resource> apiDownloadImageMaskColorBalance(@PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_COLOR_BALANCE_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File histogramFile = fileService.getImageColorBalance(decodedImageDir, decodedImage);
-        return histogramFile != null ? FileUtils.sendFile(response, histogramFile, histogramFile.getName()) : null;
+        return histogramFile != null ? FileUtils.sendFile(histogramFile, histogramFile.getName()) : null;
     }
     
     @GetMapping(value = API_NIR_DIRECTORY_IMAGE)
-    public ResponseEntity<Resource> apiDownloadImageMaskNIR(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+    public ResponseEntity<Resource> apiDownloadImageMaskNIR(@PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_NIR_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File histogramFile = fileService.getImageMaskNIR(decodedImageDir, decodedImage);
-        return histogramFile != null ? FileUtils.sendFile(response, histogramFile, histogramFile.getName()) : null;
+        return histogramFile != null ? FileUtils.sendFile(histogramFile, histogramFile.getName()) : null;
     }
     
     @GetMapping(value = API_NDWI_DIRECTORY_IMAGE)
-    public ResponseEntity<Resource> apiDownloadImageMaskNDWI(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+    public ResponseEntity<Resource> apiDownloadImageMaskNDWI(@PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_NDWI_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File histogramFile = fileService.getImageMaskNDWI(decodedImageDir, decodedImage);
-        return histogramFile != null ? FileUtils.sendFile(response, histogramFile, histogramFile.getName()) : null;
+        return histogramFile != null ? FileUtils.sendFile(histogramFile, histogramFile.getName()) : null;
     }
     
     @GetMapping(value = API_BSI_DIRECTORY_IMAGE)
-    public ResponseEntity<Resource> apiDownloadImageMaskBSI(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+    public ResponseEntity<Resource> apiDownloadImageMaskBSI(@PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
         log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_BSI_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File histogramFile = fileService.getImageMaskBSI(decodedImageDir, decodedImage);
-        return histogramFile != null ? FileUtils.sendFile(response, histogramFile, histogramFile.getName()) : null;
+        return histogramFile != null ? FileUtils.sendFile(histogramFile, histogramFile.getName()) : null;
     }
     
     @ResponseBody

@@ -12,8 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ConfigurationTest {
     private final static int N2_BIT_SIZE = 8;
     private final static boolean STORE_MASKS = true;
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ConfigurationTest.class);
-    
     private static Configuration configuration;
     
     @BeforeAll

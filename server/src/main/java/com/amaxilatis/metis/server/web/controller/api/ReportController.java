@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.File;
 
@@ -55,11 +54,11 @@ public class ReportController extends BaseController {
     }
     
     @GetMapping(value = API_REPORT_DOWNLOAD, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<Resource> download(HttpServletResponse response, @PathVariable final Long reportId) {
+    public ResponseEntity<Resource> download(@PathVariable final Long reportId) {
         log.info("get:{}, reportId:{}", API_REPORT_DOWNLOAD, reportId);
         final String fullFileName = props.getReportLocation() + "/metis-" + reportId + ".csv";
         final String xlsxName = fileService.csv2xlsx(fullFileName);
-        return FileUtils.sendFile(response, new File(xlsxName), xlsxName);
+        return FileUtils.sendFile(new File(xlsxName), xlsxName);
     }
     
     @GetMapping(value = API_REPORT_DELETE, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -70,11 +69,11 @@ public class ReportController extends BaseController {
     }
     
     @GetMapping(value = API_DIRECTORY_REPORT_DOWNLOAD, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<Resource> downloadDirectoryReport(final HttpServletResponse response, @PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash) {
+    public ResponseEntity<Resource> downloadDirectoryReport(@PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash) {
         log.info("get:{}, imageDirectoryHash:{}", API_DIRECTORY_REPORT_DOWNLOAD, imageDirectoryHash);
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final File xlsxFile = fileService.generateDirectoryReportXlsx(decodedImageDir);
-        return FileUtils.sendFile(response, xlsxFile, xlsxFile.getName());
+        return FileUtils.sendFile(xlsxFile, xlsxFile.getName());
     }
     
 }

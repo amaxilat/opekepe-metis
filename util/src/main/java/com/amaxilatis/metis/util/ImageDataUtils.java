@@ -80,19 +80,28 @@ public class ImageDataUtils {
         return false;
     }
     
+    /**
+     * Calculates the alpha variance for the pixels provide.
+     *
+     * @param maxValue    the maximum value of a pixel
+     * @param pixelValues the values to compute from.
+     * @return the calculated alpha variance.
+     */
     public static double getAlphaVariance(final int maxValue, final int[] pixelValues) {
         SummaryStatistics summaryStatistics = new SummaryStatistics();
-        Set<Integer> keys = new HashSet<>();
         for (int i = 0; i < pixelValues.length; i += 4) {
-            keys.add(pixelValues[i + 3]);
             summaryStatistics.addValue(pixelValues[i + 3]);
         }
-//        if (summaryStatistics.getVariance() > 3000) {
-//            log.info("alphaSpread : [" + keys.size() + "] : " + summaryStatistics.getMean() + " : " + summaryStatistics.getVariance() + " : " + summaryStatistics.getStandardDeviation());
-//        }
         return summaryStatistics.getVariance();
     }
     
+    /**
+     * Calculates the alpha peak for the pixels provide.
+     *
+     * @param maxValue    the maximum value of a pixel
+     * @param pixelValues the values to compute from.
+     * @return the calculated alpha peak.
+     */
     public static int getAlphaPeak(final int maxValue, final int[] pixelValues) {
         Map<Integer, Integer> keys = new HashMap<>();
         for (int i = 0; i < pixelValues.length; i += 4) {

@@ -2,6 +2,9 @@ package com.amaxilatis.metis.util;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.COMPRESSION_CCITT_RLE;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.COMPRESSION_CCITT_T_4;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.COMPRESSION_CCITT_T_6;
@@ -15,6 +18,14 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.COMPRESSION_ZLIB;
 @Slf4j
 public class CompressionUtils {
     
+    private static final List<Integer> LOSSLESS_COMPRESSION_TYPES = Arrays.asList(COMPRESSION_NONE, COMPRESSION_CCITT_RLE, COMPRESSION_CCITT_T_4, COMPRESSION_CCITT_T_6, COMPRESSION_LZW, COMPRESSION_ZLIB, COMPRESSION_PACKBITS, COMPRESSION_DEFLATE);
+    
+    /**
+     * Convert the exif value describing the compression to a text representation.
+     *
+     * @param compressionExifValue the exif value for the compression key
+     * @return the text representation of the exif value.
+     */
     public static String toText(final int compressionExifValue) {
         switch (compressionExifValue) {
             case COMPRESSION_NONE:
@@ -40,10 +51,23 @@ public class CompressionUtils {
         }
     }
     
+    /**
+     * Checks if the exif value describes a compressed type.
+     *
+     * @param compressionExifValue the exif value for the compression key
+     * @return true of the exif value describes compression, false if not.
+     */
     public static boolean isCompressed(final int compressionExifValue) {
         return compressionExifValue != COMPRESSION_NONE;
     }
+    
+    /**
+     * Checks if the exif value describes a lossless compression.
+     *
+     * @param compressionExifValue the exif value for the compression key
+     * @return true if the compression is lossless, false otherwise.
+     */
     public static boolean isLossless(final int compressionExifValue) {
-        return compressionExifValue == COMPRESSION_NONE || compressionExifValue == COMPRESSION_CCITT_RLE || compressionExifValue == COMPRESSION_CCITT_T_4 || compressionExifValue == COMPRESSION_CCITT_T_6 || compressionExifValue == COMPRESSION_LZW || compressionExifValue == COMPRESSION_ZLIB || compressionExifValue == COMPRESSION_PACKBITS || compressionExifValue == COMPRESSION_DEFLATE;
+        return LOSSLESS_COMPRESSION_TYPES.contains(compressionExifValue);
     }
 }
