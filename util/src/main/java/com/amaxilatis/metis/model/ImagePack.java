@@ -47,6 +47,7 @@ import static com.amaxilatis.metis.util.CloudUtils.cleanupNDWI;
 import static com.amaxilatis.metis.util.ColorUtils.getBSI;
 import static com.amaxilatis.metis.util.ColorUtils.getNDWI;
 import static com.amaxilatis.metis.util.ColorUtils.isDark;
+import static com.amaxilatis.metis.util.ColorUtils.isWater;
 import static com.amaxilatis.metis.util.ImageDataUtils.getImageTileDataFromCoordinates;
 import static com.amaxilatis.metis.util.ImageDataUtils.isEmptyTile;
 import static com.amaxilatis.metis.util.ImageDataUtils.isValidPixel;
@@ -74,6 +75,7 @@ public class ImagePack {
     @Getter
     private boolean loaded;
     private boolean histogramLoaded;
+    private boolean cloudsDetected;
     @Getter
     private SummaryStatistics dnStats;
     @Getter
@@ -89,6 +91,7 @@ public class ImagePack {
     private BufferedImage nirMask;
     private BufferedImage bsiMask;
     private BufferedImage ndwiMask;
+    private BufferedImage waterMask;
     private final int workers;
     @Getter
     private int componentMaxValue;
@@ -157,6 +160,7 @@ public class ImagePack {
         
         this.loaded = false;
         this.histogramLoaded = false;
+        this.cloudsDetected = false;
         
     }
     
@@ -192,31 +196,33 @@ public class ImagePack {
      */
     public void loadHistogram() throws IOException, ImageProcessingException, TikaException, SAXException {
         loadImage();
-        if (!histogramLoaded) {
-            
-            final BufferedImage jImage = ImageIO.read(dataFile);
-            
-            final int componentSize = image.getColorModel().getPixelSize() / image.getColorModel().getNumComponents();
-            componentMaxValue = (int) Math.pow(2, componentSize);
-            
-            //histogram
-            //values added to histogram are always scaled to 0-256
-            this.histogram = new HistogramsHelper(256);
-            //image information
-            final int width = jImage.getWidth();
-            final int height = jImage.getHeight();
-            // pixel value statistics
-            this.dnStats = new SummaryStatistics();
-            this.colorBalanceStatistics = new SummaryStatistics();
-            
-            //mask images for color balance calculation
-            this.colorBalanceMask = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            
-            //do a pass for histogram and contrast data
-            parseImagePixels(jImage);
-            
-            this.histogramLoaded = true;
+        if (histogramLoaded) {
+            return;
         }
+        
+        detectClouds();
+        final BufferedImage jImage = ImageIO.read(dataFile);
+        
+        final int componentSize = image.getColorModel().getPixelSize() / image.getColorModel().getNumComponents();
+        componentMaxValue = (int) Math.pow(2, componentSize);
+        
+        //histogram
+        //values added to histogram are always scaled to 0-256
+        this.histogram = new HistogramsHelper(256);
+        //image information
+        final int width = jImage.getWidth();
+        final int height = jImage.getHeight();
+        // pixel value statistics
+        this.dnStats = new SummaryStatistics();
+        this.colorBalanceStatistics = new SummaryStatistics();
+        
+        //mask images for color balance calculation
+        this.colorBalanceMask = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        
+        //do a pass for histogram and contrast data
+        parseImagePixels(jImage);
+        
+        histogramLoaded = true;
     }
     
     /**
@@ -234,6 +240,10 @@ public class ImagePack {
      * @throws IOException
      */
     public void detectClouds() throws IOException {
+        if (cloudsDetected) {
+            return;
+        }
+        
         final BufferedImage jImage = ImageIO.read(dataFile);
         //image information
         final int width = jImage.getWidth();
@@ -244,6 +254,7 @@ public class ImagePack {
         this.nirMask = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         this.bsiMask = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         this.ndwiMask = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        this.waterMask = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         
         final long start = System.currentTimeMillis();
         log.info("[{}] cloud detection...", name);
@@ -256,6 +267,7 @@ public class ImagePack {
         
         double percentage = cloudPixels / validPixels;
         log.info(String.format("[%s][N4] cloud-detection result: %1.3f took: %d sec", name, percentage, (System.currentTimeMillis() - start) / 1000));
+        cloudsDetected = true;
     }
     
     private CloudDetectionResult detectCloudsInTilesOfImage(final BufferedImage image, final int width, final int height) throws IOException {
@@ -270,6 +282,7 @@ public class ImagePack {
                 nirMask.setRGB(w, h, GRAY_RGB);
                 bsiMask.setRGB(w, h, BLACK_RGB);
                 ndwiMask.setRGB(w, h, GRAY_RGB);
+                waterMask.setRGB(w, h, GRAY_RGB);
             }
         }
         
@@ -336,7 +349,7 @@ public class ImagePack {
                 log.error("future is not cancelled or done???");
             }
         }
-    
+        cleanupNDWI(waterMask, 0, 0, image.getWidth(), image.getHeight());
         tfCloudPixels -= cleanupNDWI(cloudDetectionMask, 0, 0, image.getWidth(), image.getHeight());
         
         return new CloudDetectionResult(null, null, (int) tfCheckedPixels, (int) tfCloudPixels, tfCloudPixels / tfCheckedPixels);
@@ -355,6 +368,7 @@ public class ImagePack {
             ImageIO.write(nirMask, "png", new File(file.getParentFile(), file.getName().replace("mask", "nir")));
             ImageIO.write(bsiMask, "png", new File(file.getParentFile(), file.getName().replace("mask", "bsi")));
             ImageIO.write(ndwiMask, "png", new File(file.getParentFile(), file.getName().replace("mask", "ndwi")));
+            ImageIO.write(waterMask, "png", new File(file.getParentFile(), file.getName().replace("mask", "water")));
         }
     }
     
@@ -400,6 +414,7 @@ public class ImagePack {
                 try {
                     ndwi = (int) (getNDWI(nir, g) * 255);
                     ndwiMask.setRGB(x, y, new Color(ndwi, ndwi, ndwi).getRGB());
+                    waterMask.setRGB(x, y, isWater(ndwi) ? WHITE_RGB : BLACK_RGB);
                     final boolean isCloudPixel = !isDark(r, g, b) && (125 < ndwi && ndwi < 140) && (85 < bsi && bsi < 95);
                     thisTileCloudPixels += isCloudPixel ? 1 : 0;
                     cloudDetectionMask.setRGB(x, y, isCloudPixel ? WHITE_RGB : BLACK_RGB);
@@ -428,13 +443,17 @@ public class ImagePack {
             for (int i = 0; i < size; i++) {
                 final Color color = new Color(dnValues[i], false);
                 if (isValidPixel(256, color)) {
-                    //update histogram for check 5,6
-                    updateHistogram(color);
-                    //update the cloud data for check 7
-                    updateContrastData(color);
                     
                     final int x = (i) % width;
                     final int y = (i) / width + heightStart;
+    
+                    if (waterMask.getRGB(x, y) == BLACK_RGB) {
+                        //update histogram for check 5,6
+                        updateHistogram(color);
+                    }
+                    //update the cloud data for check 7
+                    updateContrastData(color);
+                    
                     updateColorBalance(x, y, color);
                     
                     validPixelCount++;

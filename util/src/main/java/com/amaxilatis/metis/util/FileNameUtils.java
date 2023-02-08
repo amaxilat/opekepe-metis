@@ -137,6 +137,17 @@ public class FileNameUtils {
     }
     
     /**
+     * Returns the full path to the image's WATER mask.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's WATER mask file.
+     */
+    public static String getImageWaterMaskFilename(final String location, final String dir, final String name) {
+        return String.format("%s/%s/%s", location, dir, name + ".water.png");
+    }
+    
+    /**
      * Returns the full path to the image's color balance mask.
      *
      * @param dir  the directory of the image.

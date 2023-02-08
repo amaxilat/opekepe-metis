@@ -107,4 +107,8 @@ public class ColorUtils {
         return r < 10 && g < 10 && b < 10;
     }
     
+    public static boolean isWater(final int ndwi) {
+        return ndwi >= 230;
+    }
+    
 }
