@@ -19,6 +19,7 @@ public interface ApiRoutes {
     String API_NIR = API_BASE + "/nir";
     String API_NDWI = API_BASE + "/ndwi";
     String API_BSI = API_BASE + "/bsi";
+    String API_WATER = API_BASE + "/water";
     String API_CLOUD_COVER = API_BASE + "/cloudcover";
     String API_IMAGE_DIRECTORY = API_IMAGE + "/{" + IMAGE_DIR_HASH + "}";
     String API_THUMBNAIL_DIRECTORY = API_THUMBNAIL + "/{" + IMAGE_DIR_HASH + "}";
@@ -27,6 +28,7 @@ public interface ApiRoutes {
     String API_NIR_DIRECTORY = API_NIR + "/{" + IMAGE_DIR_HASH + "}";
     String API_NDWI_DIRECTORY = API_NDWI + "/{" + IMAGE_DIR_HASH + "}";
     String API_BSI_DIRECTORY = API_BSI + "/{" + IMAGE_DIR_HASH + "}";
+    String API_WATER_DIRECTORY = API_WATER + "/{" + IMAGE_DIR_HASH + "}";
     String API_CLOUD_COVER_DIRECTORY = API_CLOUD_COVER + "/{" + IMAGE_DIR_HASH + "}";
     String API_IMAGE_DIRECTORY_IMAGE = API_IMAGE_DIRECTORY + "/{" + IMAGE_HASH + "}";
     String API_THUMBNAIL_DIRECTORY_IMAGE = API_THUMBNAIL_DIRECTORY + "/{" + IMAGE_HASH + "}";
@@ -35,6 +37,7 @@ public interface ApiRoutes {
     String API_NIR_DIRECTORY_IMAGE = API_NIR_DIRECTORY + "/{" + IMAGE_HASH + "}";
     String API_NDWI_DIRECTORY_IMAGE = API_NDWI_DIRECTORY + "/{" + IMAGE_HASH + "}";
     String API_BSI_DIRECTORY_IMAGE = API_BSI_DIRECTORY + "/{" + IMAGE_HASH + "}";
+    String API_WATER_DIRECTORY_IMAGE = API_WATER_DIRECTORY + "/{" + IMAGE_HASH + "}";
     
     String API_CLOUD_COVER_DIRECTORY_IMAGE = API_CLOUD_COVER_DIRECTORY + "/{" + IMAGE_HASH + "}";
     String API_REPORTS = API_BASE + "/reports";

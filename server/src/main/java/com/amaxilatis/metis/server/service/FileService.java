@@ -50,6 +50,7 @@ import static com.amaxilatis.metis.server.util.ResultsUtils.*;
 import static com.amaxilatis.metis.util.FileNameUtils.createDirectories;
 import static com.amaxilatis.metis.util.FileNameUtils.deleteIfExists;
 import static com.amaxilatis.metis.util.FileNameUtils.getResultFile;
+import static org.apache.commons.io.FileUtils.deleteDirectory;
 
 @Slf4j
 @Service
@@ -185,7 +186,7 @@ public class FileService {
         checkAndCreateDirectory(props.getHistogramLocation());
         checkAndCreateDirectory(props.getCloudMaskLocation());
         checkAndCreateDirectory(props.getUncompressedLocation());
-        updateImageDirs(true);
+        updateImageDirs(true, false);
     }
     
     /**
@@ -202,8 +203,9 @@ public class FileService {
      * Updates the list of available image directories and image files.
      *
      * @param generateThumbnails flag to generate or not thumbnails for the detected images.
+     * @param cleanupNonExisting flag to delete or not non-existing dataset result directories (thumbnails, cloud masks, histograms).
      */
-    public void updateImageDirs(final boolean generateThumbnails) {
+    public void updateImageDirs(final boolean generateThumbnails, final boolean cleanupNonExisting) {
         long start = System.currentTimeMillis();
         imagesDirs.clear();
         images.clear();
@@ -239,10 +241,38 @@ public class FileService {
             
             //cleanup results from deleted files
             Arrays.stream(imageDirectoryList).forEach(this::cleanupDirectoryResults);
+            
+            if (cleanupNonExisting) {
+                //cleanup results from no longer existing dataset directories
+                log.info("cleanup results from no longer existing dataset directories");
+                cleanupResultsForNoLongerValidDirectories(props.getThumbnailLocation());
+                cleanupResultsForNoLongerValidDirectories(props.getCloudMaskLocation());
+                cleanupResultsForNoLongerValidDirectories(props.getHistogramLocation());
+            }
+            
         } else {
             log.warn("[updateImageDirs] imageDirectoryList is null!!!");
         }
         log.info("[updateImageDirs] time:{}", (System.currentTimeMillis() - start));
+    }
+    
+    /**
+     * Removes the directories inside the location that do not exist in the images' directory.
+     *
+     * @param location the location to clean up.
+     */
+    private void cleanupResultsForNoLongerValidDirectories(final String location) {
+        final File locationFile = new File(location);
+        if (locationFile.exists() && locationFile.isDirectory()) {
+            Arrays.stream(Objects.requireNonNull(locationFile.listFiles())).filter(File::isDirectory).filter(file -> !images.containsKey(file.getName())).forEach(file -> {
+                try {
+                    log.info("need to delete mask and thumbnail files for directory {}", file.getName());
+                    deleteDirectory(file);
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            });
+        }
     }
     
     /**
@@ -311,6 +341,7 @@ public class FileService {
             deleteIfExists(new File(FileNameUtils.getImageNIRMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())));
             deleteIfExists(new File(FileNameUtils.getImageNDWIMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())));
             deleteIfExists(new File(FileNameUtils.getImageBSIMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())));
+            deleteIfExists(new File(FileNameUtils.getImageWaterMaskFilename(props.getCloudMaskLocation(), file.getParentFile().getName(), file.getName())));
         }
         if (task == 5) {
             deleteIfExists(new File(FileNameUtils.getImageHistogramFilename(props.getHistogramLocation(), file.getParentFile().getName(), file.getName())));
@@ -438,6 +469,17 @@ public class FileService {
      */
     String getImageMaskBSIFilename(final String dir, final String name) {
         return FileNameUtils.getImageBSIMaskFilename(props.getCloudMaskLocation(), dir, name);
+    }
+    
+    /**
+     * Returns the full path to the image's WATER mask.
+     *
+     * @param dir  the directory of the image.
+     * @param name the name of the image.
+     * @return the full  path to the image's WATER mask file.
+     */
+    String getImageMaskWaterFilename(final String dir, final String name) {
+        return FileNameUtils.getImageWaterMaskFilename(props.getCloudMaskLocation(), dir, name);
     }
     
     /**
@@ -574,6 +616,28 @@ public class FileService {
         //check if file exists
         if (maskBSIFile.exists()) {
             return maskBSIFile;
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Get or create and get the WATER of the image.
+     *
+     * @param directory the directory of the image.
+     * @param name      the name of the image.
+     * @return the file containing the WATER mask of the image.
+     */
+    public File getImageMaskWater(final String directory, final String name) {
+        final File maskWaterFile = new File(getImageMaskWaterFilename(directory, name));
+        log.debug("[{}][water] dir:{} path:{}", name, directory, maskWaterFile.getAbsolutePath());
+        //check if directory exists
+        if (!maskWaterFile.getParentFile().exists()) {
+            maskWaterFile.getParentFile().mkdir();
+        }
+        //check if file exists
+        if (maskWaterFile.exists()) {
+            return maskWaterFile;
         } else {
             return null;
         }

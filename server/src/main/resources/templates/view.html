@@ -252,7 +252,9 @@
                                                             <a class="mask-link" onclick="showMask('NDWI',this)"
                                                                style="cursor: pointer; color: #3a3b45">NDWI</a>&nbsp;|&nbsp;
                                                             <a class="mask-link" onclick="showMask('BSI',this)"
-                                                               style="cursor: pointer; color: #3a3b45">BSI</a>
+                                                               style="cursor: pointer; color: #3a3b45">BSI</a>&nbsp;|&nbsp;
+                                                            <a class="mask-link" onclick="showMask('WATER',this)"
+                                                               style="cursor: pointer; color: #3a3b45">WATER</a>
                                                         </h6>
                                                         <div class="col-auto">
                                                             <div class="btn-group" role="group"
@@ -293,6 +295,7 @@
                 const nir_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_NIR_DIRECTORY_IMAGE}]];
                 const ndwi_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_NDWI_DIRECTORY_IMAGE}]];
                 const bsi_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_BSI_DIRECTORY_IMAGE}]];
+                const water_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_WATER_DIRECTORY_IMAGE}]];
                 const directoryReport_url = [[${T(com.amaxilatis.metis.server.web.controller.ApiRoutes).API_DIRECTORY_REPORT_DOWNLOAD}]];
                 const imageDirectoryHash = /*[[${imageDirectoryHash}]]*/ '';
 
@@ -310,6 +313,9 @@
                             break;
                         case 'BSI':
                             maskImg.attr("src", bsi_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
+                            break;
+                        case 'WATER':
+                            maskImg.attr("src", water_url.replace("{imageDirectoryHash}", imageDirectoryHash).replace("{imageHash}", selected_image));
                             break;
                     }
                     $(e).css('color', '#4e73df');

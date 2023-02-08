@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.File;
@@ -39,6 +40,7 @@ import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_NIR_DIREC
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_POOL;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_SCAN_IMAGES;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_THUMBNAIL_DIRECTORY_IMAGE;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_WATER_DIRECTORY_IMAGE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.IMAGE_DIR_HASH;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.IMAGE_HASH;
 
@@ -59,9 +61,9 @@ public class ApiController extends BaseController {
     
     @ResponseBody
     @GetMapping(value = API_SCAN_IMAGES, produces = MediaType.APPLICATION_JSON_VALUE)
-    public SortedSet<ImageFileInfo> scanImages() {
-        log.info("get:{}", API_SCAN_IMAGES);
-        fileService.updateImageDirs(true);
+    public SortedSet<ImageFileInfo> scanImages(@RequestParam("cleanup") boolean cleanup) {
+        log.info("get:{} cleanup: {}", API_SCAN_IMAGES, cleanup);
+        fileService.updateImageDirs(true, cleanup);
         return apiImages();
     }
     
@@ -149,6 +151,15 @@ public class ApiController extends BaseController {
         final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
         final String decodedImage = fileService.getStringFromHash(imageHash);
         final File histogramFile = fileService.getImageMaskBSI(decodedImageDir, decodedImage);
+        return histogramFile != null ? FileUtils.sendFile(histogramFile, histogramFile.getName()) : null;
+    }
+    
+    @GetMapping(value = API_WATER_DIRECTORY_IMAGE)
+    public ResponseEntity<Resource> apiDownloadImageMaskWATER(@PathVariable(IMAGE_DIR_HASH) final String imageDirectoryHash, @PathVariable(IMAGE_HASH) final String imageHash) {
+        log.info("get:{}, imageDirectoryHash:{}, imageHash:{}", API_WATER_DIRECTORY_IMAGE, imageDirectoryHash, imageHash);
+        final String decodedImageDir = fileService.getStringFromHash(imageDirectoryHash);
+        final String decodedImage = fileService.getStringFromHash(imageHash);
+        final File histogramFile = fileService.getImageMaskWater(decodedImageDir, decodedImage);
         return histogramFile != null ? FileUtils.sendFile(histogramFile, histogramFile.getName()) : null;
     }
     

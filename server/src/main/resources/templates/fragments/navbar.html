@@ -233,7 +233,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Κλείσιμο</button>
                         <input type="submit" class="btn btn-info" value="Αλλαγή"/>
                     </div>
                 </form>
@@ -315,14 +315,44 @@
             /*]]>*/
             function updateFiles() {
                 $("#reload-files").addClass("fa-spin");
-                $.get(image_scan_url, function (result) {
+                $.get(image_scan_url, {"cleanup": $("#cleanup").is(':checked')}, function (result) {
                     location.reload();
                 });
             }
         </script>
-        <button class="btn btn-primary" onclick="updateFiles()" title="Ανανέωση Εικόνων" style="margin-bottom: 20px;">
+        <a class="btn btn-primary" title="Ανανέωση Εικόνων" style="margin-bottom: 20px;" data-toggle="modal"
+           data-target="#sync-files-modal">
             <i id="reload-files" class="fas fa-2x fa-sync-alt"></i>
-        </button>
+        </a>
+        <!--        onclick="updateFiles()" -->
+
+        <div class="modal fade" id="sync-files-modal"
+             tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <span>Ανανέωση Λίστας Αρχείων</span>
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body text-left">
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" name="cleanup" id="cleanup"/>
+                            <label class="form-check-label" for="cleanup">
+                                Εκκαθάριση αποτελεσμάτων ελέγχων για σετ ορθοφωτοχαρτών που έχουν διαγραφεί.
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"> Κλείσιμο</button>
+                        <button type="submit" class="btn btn-primary" onclick="updateFiles()">Ανανέωση</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Divider -->
