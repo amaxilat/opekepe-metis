@@ -2,6 +2,7 @@ package com.amaxilatis.metis.server.web.controller;
 
 import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
+import com.amaxilatis.metis.server.model.UserDTO;
 import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
 import com.amaxilatis.metis.server.service.JobService;
@@ -43,18 +44,23 @@ public class BaseController {
     @Value("${spring.application.name}")
     String appName;
     
-    protected void prepareModel(final Model model) {
+    protected UserDTO getCurrentUser() {
         if (!(SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof String)) {
             Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             log.info("{}", principal);
             if (principal instanceof User) {
                 final User u = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                model.addAttribute("u", userService.getBySpringUser(u));
+                return userService.getBySpringUser(u);
             } else if (principal instanceof LdapUserDetailsImpl) {
                 final LdapUserDetailsImpl u = (LdapUserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                model.addAttribute("u", userService.getByLdapUser(u));
+                return userService.getByLdapUser(u);
             }
         }
+        return null;
+    }
+    
+    protected void prepareModel(final Model model) {
+        model.addAttribute("u", getCurrentUser());
         model.addAttribute("vp", versionProperties);
         model.addAttribute("pool", imageProcessingService.getPoolInfo());
         model.addAttribute("imageDirectories", fileService.getImagesDirs());

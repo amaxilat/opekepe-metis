@@ -72,7 +72,8 @@ public class ReportController extends BaseController {
     @GetMapping(value = API_REPORT_TASKS_CANCEL, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public String reportTasksCancel(@PathVariable final Long reportId) {
         log.info("get:{}, reportId:{}", API_REPORT_TASKS_CANCEL, reportId);
-        reportService.deleteTasksByReportId(reportId);
+    
+        reportService.deleteTasksByReportId(reportId, getCurrentUser());
         return "redirect:/";
     }
     

@@ -6,6 +6,7 @@ import com.amaxilatis.metis.server.db.model.Report;
 import com.amaxilatis.metis.server.db.model.Task;
 import com.amaxilatis.metis.server.db.repository.ReportRepository;
 import com.amaxilatis.metis.server.db.repository.TaskRepository;
+import com.amaxilatis.metis.server.model.UserDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +26,8 @@ public class ReportService {
     
     private final ReportRepository reportRepository;
     private final TaskRepository taskRepository;
+    
+    private final NotificationService notificationService;
     private final MetisProperties props;
     
     public Report createReport(final MetisProperties props, final FileJob fileJob) {
@@ -61,7 +64,7 @@ public class ReportService {
         }
     }
     
-    public void deleteTasksByReportId(long reportId) {
+    public void deleteTasksByReportId(long reportId, final UserDTO userDTO) {
         log.info("deleteTasksByReportId({})", reportId);
         final List<Task> tasks = taskRepository.findTasksByReportId(reportId);
         log.info("deleting {} tasks for report {}...", tasks.size(), reportId);
@@ -70,6 +73,9 @@ public class ReportService {
             taskRepository.deleteById(task.getId());
             count++;
         }
-        log.info("deleted {} tasks for report {}...", count, reportId);
+        if (count>0) {
+            log.info("deleted {} tasks for report {}, sending notification...", count, reportId);
+            notificationService.notifyCanceled(reportId, count, userDTO);
+        }
     }
 }
