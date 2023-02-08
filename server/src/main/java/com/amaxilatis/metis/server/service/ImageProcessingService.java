@@ -94,7 +94,14 @@ public class ImageProcessingService {
                 isLastId = remainingTasks == 1 ? task.getReportId() : null;
             }
             new ImageProcessingTask(processingQueueConfiguration, fileService, task.getOutFileName(), task.getFileName(), tasks, getConfiguration(), notificationService, isLastId, metisProperties.isStoreHelperMasks()).run();
-            taskRepository.delete(optTask.get());
+            Optional<Task> completedTaskOptional = taskRepository.findById(task.getId());
+            if (completedTaskOptional.isPresent()) {
+                try {
+                    taskRepository.delete(optTask.get());
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                }
+            }
         }
     }
     

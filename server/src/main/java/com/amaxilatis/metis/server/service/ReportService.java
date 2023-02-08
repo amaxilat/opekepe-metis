@@ -3,7 +3,9 @@ package com.amaxilatis.metis.server.service;
 import com.amaxilatis.metis.model.FileJob;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.db.model.Report;
+import com.amaxilatis.metis.server.db.model.Task;
 import com.amaxilatis.metis.server.db.repository.ReportRepository;
+import com.amaxilatis.metis.server.db.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -21,6 +24,7 @@ import java.util.Date;
 public class ReportService {
     
     private final ReportRepository reportRepository;
+    private final TaskRepository taskRepository;
     private final MetisProperties props;
     
     public Report createReport(final MetisProperties props, final FileJob fileJob) {
@@ -55,5 +59,17 @@ public class ReportService {
         } catch (Exception e) {
             log.info("stored database backup in {}", backupLocation);
         }
+    }
+    
+    public void deleteTasksByReportId(long reportId) {
+        log.info("deleteTasksByReportId({})", reportId);
+        final List<Task> tasks = taskRepository.findTasksByReportId(reportId);
+        log.info("deleting {} tasks for report {}...", tasks.size(), reportId);
+        int count = 0;
+        for (final Task task : tasks) {
+            taskRepository.deleteById(task.getId());
+            count++;
+        }
+        log.info("deleted {} tasks for report {}...", count, reportId);
     }
 }

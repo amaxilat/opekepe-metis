@@ -7,3 +7,7 @@
 .ldapuser {
     background: #4e73df;
 }
+
+.selected {
+    background: lightblue;
+}

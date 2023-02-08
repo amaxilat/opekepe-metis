@@ -40,6 +40,7 @@ public interface ApiRoutes {
     String API_REPORTS = API_BASE + "/reports";
     String API_REPORT = API_BASE + "/report";
     String API_REPORT_DOWNLOAD = API_REPORT + "/{" + REPORT_ID + "}/download";
+    String API_REPORT_TASKS_CANCEL = API_REPORT + "/{" + REPORT_ID + "}/tasks/cancel";
     String API_DIRECTORY_REPORT_DOWNLOAD = API_IMAGE + "/{" + IMAGE_DIR_HASH + "}/report";
     String API_REPORT_DELETE = API_REPORT + "/{" + REPORT_ID + "}/delete";
     

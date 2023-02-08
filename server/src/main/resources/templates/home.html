@@ -40,6 +40,11 @@
                                             <span class="icon"><i class="fas fa-file-export"></i></span>
                                             <span class="text">Αναφορά</span>
                                         </button>
+                                        <button type="button" class="btn btn-warning btn-sm" disabled data-toggle="modal"
+                                                data-target='#modal-cancel-report-tasks' id="cancelTasksButton">
+                                            <span class="icon"><i class="fas fa-cancel"></i></span>
+                                            <span class="text">Ακύρωση Ελέγχων</span>
+                                        </button>
                                         <button type="button" class="btn btn-danger btn-sm" disabled data-toggle="modal"
                                                 data-target='#modal-delete-report' id="deleteButton">
                                             <span class="icon"><i class="fas fa-trash"></i></span>
@@ -49,6 +54,7 @@
                                 </div>
                             </div>
                             <div th:replace="fragments/modals :: modal-delete-report('modal-delete-report')"></div>
+                            <div th:replace="fragments/modals :: modal-cancel-report-tasks('modal-cancel-report-tasks')"></div>
                             <div class="card-body">
                                 <table id="dataTable2" class="table">
                                     <thead>
@@ -122,10 +128,14 @@
             $(this).toggleClass('selected');
             $('#downloadButton').prop("disabled", false);
             $('#deleteButton').prop("disabled", false);
+            $('#cancelTasksButton').prop("disabled", false);
             $("#deleteReportId").text($($('#dataTable2 tbody tr.selected td')[0]).text());
             $("#deleteReportName").text($($('#dataTable2 tbody tr.selected td')[2]).text());
             $("#deleteReportDirectory").text($($('#dataTable2 tbody tr.selected td')[1]).text());
             $("#deleteReportDate").text($($('#dataTable2 tbody tr.selected td')[4]).text());
+            $("#cancelReportTasksName").text($($('#dataTable2 tbody tr.selected td')[2]).text());
+            $("#cancelReportTasksDirectory").text($($('#dataTable2 tbody tr.selected td')[1]).text());
+            $("#cancelReportTasksDate").text($($('#dataTable2 tbody tr.selected td')[4]).text());
         });
 
         $('#downloadButton').click(function () {

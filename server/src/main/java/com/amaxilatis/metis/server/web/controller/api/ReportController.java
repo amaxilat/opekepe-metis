@@ -30,6 +30,7 @@ import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_DIRECTORY
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_REPORTS;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_REPORT_DELETE;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_REPORT_DOWNLOAD;
+import static com.amaxilatis.metis.server.web.controller.ApiRoutes.API_REPORT_TASKS_CANCEL;
 import static com.amaxilatis.metis.server.web.controller.ApiRoutes.IMAGE_DIR_HASH;
 
 @Slf4j
@@ -65,6 +66,13 @@ public class ReportController extends BaseController {
     public String reportDelete(@PathVariable final Long reportId) {
         log.info("get:{}, reportId:{}", API_REPORT_DELETE, reportId);
         reportService.delete(reportId);
+        return "redirect:/";
+    }
+    
+    @GetMapping(value = API_REPORT_TASKS_CANCEL, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public String reportTasksCancel(@PathVariable final Long reportId) {
+        log.info("get:{}, reportId:{}", API_REPORT_TASKS_CANCEL, reportId);
+        reportService.deleteTasksByReportId(reportId);
         return "redirect:/";
     }
     
