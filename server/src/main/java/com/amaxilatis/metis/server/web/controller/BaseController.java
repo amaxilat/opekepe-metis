@@ -3,6 +3,7 @@ package com.amaxilatis.metis.server.web.controller;
 import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.model.UserDTO;
+import com.amaxilatis.metis.server.service.BackupService;
 import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
 import com.amaxilatis.metis.server.service.JobService;
@@ -26,16 +27,18 @@ public class BaseController {
     protected final ImageProcessingService imageProcessingService;
     protected final JobService jobService;
     protected final ReportService reportService;
+    protected final BackupService backupService;
     protected final MetisProperties props;
     protected final BuildProperties buildProperties;
     protected final BuildVersionConfigurationProperties versionProperties;
     
-    public BaseController(final UserService userService, final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties, final BuildVersionConfigurationProperties versionProperties) {
+    public BaseController(final UserService userService, final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final BackupService backupService, final MetisProperties props, final BuildProperties buildProperties, final BuildVersionConfigurationProperties versionProperties) {
         this.userService = userService;
         this.fileService = fileService;
         this.imageProcessingService = imageProcessingService;
         this.jobService = jobService;
         this.reportService = reportService;
+        this.backupService = backupService;
         this.props = props;
         this.buildProperties = buildProperties;
         this.versionProperties = versionProperties;

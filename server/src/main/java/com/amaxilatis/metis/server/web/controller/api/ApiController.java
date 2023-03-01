@@ -5,6 +5,7 @@ import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.model.ImageFileInfo;
 import com.amaxilatis.metis.server.model.PoolInfo;
+import com.amaxilatis.metis.server.service.BackupService;
 import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
 import com.amaxilatis.metis.server.service.JobService;
@@ -48,8 +49,8 @@ import static com.amaxilatis.metis.server.web.controller.ApiRoutes.IMAGE_HASH;
 @Controller
 public class ApiController extends BaseController {
     
-    public ApiController(final UserService userService, final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties, final BuildVersionConfigurationProperties versionProperties) {
-        super(userService, fileService, imageProcessingService, jobService, reportService, props, buildProperties, versionProperties);
+    public ApiController(final UserService userService, final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final BackupService backupService, final MetisProperties props, final BuildProperties buildProperties, final BuildVersionConfigurationProperties versionProperties) {
+        super(userService, fileService, imageProcessingService, jobService, reportService, backupService, props, buildProperties, versionProperties);
     }
     
     @ResponseBody
@@ -166,7 +167,7 @@ public class ApiController extends BaseController {
     @ResponseBody
     @GetMapping(value = API_BACKUP)
     public String apiBackup() {
-        reportService.backup();
+        backupService.getBackup();
         return "ok";
     }
     

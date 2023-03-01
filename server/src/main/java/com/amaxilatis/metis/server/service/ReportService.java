@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.datatables.mapping.DataTablesInput;
 import org.springframework.data.jpa.datatables.mapping.DataTablesOutput;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -48,20 +47,6 @@ public class ReportService {
     
     public DataTablesOutput<Report> findAll(final DataTablesInput input) {
         return reportRepository.findAll(input);
-    }
-    
-    @Scheduled(cron = "0 0 0 * * ?")
-    public void backup() {
-        if (StringUtils.isEmpty(props.getDbBackupLocation())) {
-            return;
-        }
-        final String backupLocation = props.getDbBackupLocation() + String.format("\\%d-metisdb-backup\\", System.currentTimeMillis());
-        try {
-            log.info("backing up database to {}", backupLocation);
-            reportRepository.backup(backupLocation);
-        } catch (Exception e) {
-            log.info("stored database backup in {}", backupLocation);
-        }
     }
     
     public void deleteTasksByReportId(long reportId, final UserDTO userDTO) {

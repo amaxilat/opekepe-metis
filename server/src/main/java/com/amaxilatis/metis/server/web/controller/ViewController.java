@@ -3,6 +3,7 @@ package com.amaxilatis.metis.server.web.controller;
 import com.amaxilatis.metis.server.config.BuildVersionConfigurationProperties;
 import com.amaxilatis.metis.server.config.MetisProperties;
 import com.amaxilatis.metis.server.model.ImageFileInfo;
+import com.amaxilatis.metis.server.service.BackupService;
 import com.amaxilatis.metis.server.service.FileService;
 import com.amaxilatis.metis.server.service.ImageProcessingService;
 import com.amaxilatis.metis.server.service.JobService;
@@ -38,8 +39,8 @@ import static com.amaxilatis.metis.server.web.controller.ApiRoutes.VIEW_USER;
 @Controller
 public class ViewController extends BaseController {
     
-    public ViewController(final UserService userService, final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final MetisProperties props, final BuildProperties buildProperties, final BuildVersionConfigurationProperties versionProperties) {
-        super(userService, fileService, imageProcessingService, jobService, reportService, props, buildProperties, versionProperties);
+    public ViewController(final UserService userService, final FileService fileService, final ImageProcessingService imageProcessingService, final JobService jobService, final ReportService reportService, final BackupService backupService, final MetisProperties props, final BuildProperties buildProperties, final BuildVersionConfigurationProperties versionProperties) {
+        super(userService, fileService, imageProcessingService, jobService, reportService, backupService, props, buildProperties, versionProperties);
     }
     
     @GetMapping(VIEW_LOGIN)
