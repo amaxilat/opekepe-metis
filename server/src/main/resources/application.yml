@@ -43,6 +43,11 @@ spring:
     username: sa
     password: password
     driverClassName: org.apache.derby.jdbc.EmbeddedDriver
+    hikari:
+      minimum-idle: 2
+      maximum-pool-size: 20
+      connection-timeout: 300000
+      leak-detection-threshold: 300000
   jpa:
     hibernate:
       use-new-id-generator-mappings: false
